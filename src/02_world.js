@@ -138,9 +138,9 @@ function genWorld(){
   WPICKS.push({type:'pistol',x:POI.safe.x+90,y:POI.safe.y},{type:'smg',x:60.5*T,y:141.5*T},{type:'health',x:POI.hosp.x+80,y:POI.hosp.y},
     {type:'health',x:110*T,y:96*T},{type:'smg',x:140*T,y:36*T},{type:'pistol',x:63*T,y:66*T},{type:'health',x:23.5*T,y:142*T},{type:'smg',x:30*T,y:20.5*T},{type:'shotgun',x:90.5*T,y:141.6*T},{type:'rifle',x:148*T,y:47.5*T},{type:'rocket',x:151*T,y:31*T},{type:'grenade',x:142*T,y:121*T},{type:'flame',x:100.5*T,y:8.5*T},
     {type:'armor',x:POI.cops.x-90,y:POI.cops.y},{type:'armor',x:112*T,y:120*T},{type:'bribe',x:8.5*T,y:100*T},{type:'bribe',x:111*T,y:30*T},{type:'bribe',x:55.5*T,y:9.4*T});
-  const ct=POI.court;WPICKS.push({type:'rocket',x:ct.x-70,y:ct.y+40},{type:'armor',x:ct.x+70,y:ct.y+40},{type:'cash',x:ct.x,y:ct.y-50,amt:800,once:'court'},{type:'chest',x:25.3*T,y:162.5*T,once:'wreck'},{type:'cash',x:157.5*T,y:79.5*T,amt:500,once:'lh'});
+  const ct=POI.court;WPICKS.push({type:'magnum',x:ct.x-70,y:ct.y+40},{type:'armor',x:ct.x+70,y:ct.y+40},{type:'cash',x:ct.x,y:ct.y-50,amt:800,once:'court'},{type:'chest',x:25.3*T,y:162.5*T,once:'wreck'},{type:'cash',x:157.5*T,y:79.5*T,amt:500,once:'lh'});
   TOKENS.push({id:TOKENS.length,x:ct.x,y:ct.y+60},{id:TOKENS.length+1,x:157.4*T,y:82.6*T});
-  genCity2();genProps();genProps2();genFun();genStunts();genLadders();
+  genCity2();genProps();genProps2();genFun();genStunts();genHealth();genTrack();genWeapons();genLadders();
 }
 function sprayBlock(x0,y0,x1,y1){fillT(x0,y0,x1,y0+2,TL.CONC);addBld(x0,y0+3,x1,y1,1.4,'#8e5ea2',{logo:'✦',logoC:'#f9e79f'});const sp={x:(x0+x1+1)/2*T,y:(y0+1.5)*T};SPRAYS.push(sp);return sp;}
 function splitLots(x0,y0,x1,y1,dep,out,R){const w=x1-x0+1,h=y1-y0+1;

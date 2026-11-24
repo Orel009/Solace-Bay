@@ -63,6 +63,7 @@ html,body{margin:0;height:100%;background:#0b0b14;overflow:hidden;touch-action:n
 #pause h2{margin:0;font:900 30px Rubik,system-ui;color:#5fe0d0;letter-spacing:2px}
 .stats{font:600 14px Rubik,system-ui;opacity:.85;text-align:center}
 .port #wbar{right:calc(14px + env(safe-area-inset-right));bottom:calc(210px + env(safe-area-inset-bottom))}.port #obj{top:calc(150px + env(safe-area-inset-top));max-width:calc(var(--vw,100vw)*0.92)}.port #timer{top:calc(205px + env(safe-area-inset-top))}.port #toast{top:calc(250px + env(safe-area-inset-top))}.port #bPause{top:calc(150px + env(safe-area-inset-top));left:calc(14px + env(safe-area-inset-left));right:auto}
+#bF{display:none;width:46px;height:46px;right:calc(200px + env(safe-area-inset-right));bottom:calc(90px + env(safe-area-inset-bottom))}
 #bX{display:none;width:52px;height:52px;right:calc(196px + env(safe-area-inset-right));bottom:calc(26px + env(safe-area-inset-bottom))}
 #clock{position:absolute;top:calc(var(--ms,120px) + 12px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));width:var(--ms,120px);text-align:center;font:700 13px Rubik,system-ui;text-shadow:0 1px 3px #000;direction:ltr}
 #area{position:absolute;top:calc(112px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));font:italic 900 24px Rubik,system-ui;color:#ffe9a8;text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.8);opacity:0;transition:opacity .6s;letter-spacing:.5px}
@@ -111,7 +112,7 @@ html,body{margin:0;height:100%;background:#0b0b14;overflow:hidden;touch-action:n
 </div>
 <div id="controls">
  <div id="stickZone"></div><div id="stickBase"><div id="stickKnob"></div></div>
- <div id="btns"><button class="cb" id="bAct"></button><button class="cb" id="bEnter"></button><button class="cb" id="bB"></button><button class="cb" id="bW"></button><button class="cb" id="bX"></button>
+ <div id="btns"><button class="cb" id="bAct"></button><button class="cb" id="bEnter"></button><button class="cb" id="bB"></button><button class="cb" id="bW"></button><button class="cb" id="bX"></button><button class="cb" id="bF"></button>
  <div id="wbar"></div><div id="tbar"></div><div id="ibar"></div></div>
 </div>
 <div id="dlg"><div class="box"><div class="who"></div><div class="txt"></div><div class="hint"></div></div></div>
@@ -367,9 +368,9 @@ function genWorld(){
   WPICKS.push({type:'pistol',x:POI.safe.x+90,y:POI.safe.y},{type:'smg',x:60.5*T,y:141.5*T},{type:'health',x:POI.hosp.x+80,y:POI.hosp.y},
     {type:'health',x:110*T,y:96*T},{type:'smg',x:140*T,y:36*T},{type:'pistol',x:63*T,y:66*T},{type:'health',x:23.5*T,y:142*T},{type:'smg',x:30*T,y:20.5*T},{type:'shotgun',x:90.5*T,y:141.6*T},{type:'rifle',x:148*T,y:47.5*T},{type:'rocket',x:151*T,y:31*T},{type:'grenade',x:142*T,y:121*T},{type:'flame',x:100.5*T,y:8.5*T},
     {type:'armor',x:POI.cops.x-90,y:POI.cops.y},{type:'armor',x:112*T,y:120*T},{type:'bribe',x:8.5*T,y:100*T},{type:'bribe',x:111*T,y:30*T},{type:'bribe',x:55.5*T,y:9.4*T});
-  const ct=POI.court;WPICKS.push({type:'rocket',x:ct.x-70,y:ct.y+40},{type:'armor',x:ct.x+70,y:ct.y+40},{type:'cash',x:ct.x,y:ct.y-50,amt:800,once:'court'},{type:'chest',x:25.3*T,y:162.5*T,once:'wreck'},{type:'cash',x:157.5*T,y:79.5*T,amt:500,once:'lh'});
+  const ct=POI.court;WPICKS.push({type:'magnum',x:ct.x-70,y:ct.y+40},{type:'armor',x:ct.x+70,y:ct.y+40},{type:'cash',x:ct.x,y:ct.y-50,amt:800,once:'court'},{type:'chest',x:25.3*T,y:162.5*T,once:'wreck'},{type:'cash',x:157.5*T,y:79.5*T,amt:500,once:'lh'});
   TOKENS.push({id:TOKENS.length,x:ct.x,y:ct.y+60},{id:TOKENS.length+1,x:157.4*T,y:82.6*T});
-  genCity2();genProps();genProps2();genFun();genStunts();genLadders();
+  genCity2();genProps();genProps2();genFun();genStunts();genHealth();genTrack();genWeapons();genLadders();
 }
 function sprayBlock(x0,y0,x1,y1){fillT(x0,y0,x1,y0+2,TL.CONC);addBld(x0,y0+3,x1,y1,1.4,'#8e5ea2',{logo:'✦',logoC:'#f9e79f'});const sp={x:(x0+x1+1)/2*T,y:(y0+1.5)*T};SPRAYS.push(sp);return sp;}
 function splitLots(x0,y0,x1,y1,dep,out,R){const w=x1-x0+1,h=y1-y0+1;
@@ -481,7 +482,7 @@ function explodeVeh(v,src){v.dead=true;v.burn=7;v.col='#2b2b2b';
   const d=v.driver;v.driver=null;v.ai=null;
   if(d===G.player){G.player.veh=null;G.player.x=v.x;G.player.y=v.y;killPed(G.player,src,'boom');}
   explodeAt(v.x,v.y,src,v);if(v.t.armored)for(let k=0;k<6;k++)mkPickup('cash',v.x+rr(-50,50),v.y+rr(-50,50),{amt:ri(300,700)});}
-function explodeAt(x,y,src,skip){sfx.boom();G.shake=Math.max(G.shake||0,14);G.boom={x,y,t:1};
+function explodeAt(x,y,src,skip){sfx.boom();boomReact(x,y);G.shake=Math.max(G.shake||0,14);G.boom={x,y,t:1};
   for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-x,p.y-y)<520){p.st='flee';p.ft=6;p.fx=x;p.fy=y;}react(nearestCiv(x,y,520),'boom');post('boom');
   for(let i=0;i<26;i++)part('fire',x+rr(-18,18),y+rr(-18,18),rr(-140,140),rr(-140,140),rr(0.4,0.9),rr(8,16));
   for(let i=0;i<14;i++)part('smoke',x+rr(-20,20),y+rr(-20,20),rr(-40,40),rr(-40,40),rr(1,2),rr(12,22));
@@ -516,8 +517,7 @@ function fire(op,ov,x,y,ang,dmg,spread,expl,o){o=o||{};const a=ang+rr(-spread,sp
   if(o.kind==='flame')return;
   if(o.kind!=='nade')part('flash',x+Math.cos(a)*20,y+Math.sin(a)*20,0,0,0.06,expl?14:7);
   if(!o.quiet&&(op===G.player||hyp(x-G.player.x,y-G.player.y)<700))sfx.shot(expl);
-  if(!o.quiet){for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-x,p.y-y)<380){if(p.st==='call'||p.brawl>0)continue;if(p.id%4===1){p.st='cower';p.ft=4;}else{p.st='flee';p.ft=5;p.fx=x;p.fy=y;}}
-    if(op===G.player){const nc=nearestCiv(x,y,380);if(nc&&G.sayCD<=0)sfx.scream(dv(nc.x,nc.y),nc.voice||200);react(nc,'shots');}}}
+  if(!o.quiet)shotReact(x,y,op);}
 function updateBullets(dt){for(const b of G.bullets){const steps=Math.max(1,Math.ceil(hyp(b.vx,b.vy)*dt/10)),sdt=dt/steps;
   if(b.kind==='flame')part('fire',b.x+rr(-4,4),b.y+rr(-4,4),b.vx*0.1,b.vy*0.1,0.22,rr(5,10));
   for(let k=0;k<steps&&!b.dead;k++){b.x+=b.vx*sdt;b.y+=b.vy*sdt;const tt=tileAt(b.x,b.y);
@@ -525,15 +525,17 @@ function updateBullets(dt){for(const b of G.bullets){const steps=Math.max(1,Math
     if((tt===TL.BLD&&!(b.h&&bAt(b.x,b.y).ht<=b.h+0.2))||tt===TL.FENCE){b.dead=true;if(b.kind!=='flame')part('spark',b.x,b.y,rr(-50,50),rr(-50,50),0.2,2);if(b.expl)explodeAt(b.x,b.y,b.op);break;}
     for(const p of G.peds){if(p.dead||p.veh||p===b.op)continue;if((p.x-b.x)**2+(p.y-b.y)**2<130){hurtPed(p,b.dmg,b.op,'shot');if(b.kind==='flame')p.burn=3;b.dead=true;if(b.expl)explodeAt(b.x,b.y,b.op);break;}}
     if(b.dead)break;
+    if(bulletHitsPlayer(b)){b.dead=true;break;}
     for(const v of G.vehicles){if(v===b.ov||v.sunk||v.alt>0.25)continue;if(pointInVeh(v,b.x,b.y,2)){if(!b.expl&&b.kind!=='flame')addHole(v,b.x,b.y);damageVeh(v,b.dmg*(b.expl?4.5:0.45),b.op,b.expl?'boom':'shot');vehShot(v,b);b.dead=true;part('spark',b.x,b.y,rr(-60,60),rr(-60,60),0.25,2);
       if(b.expl)explodeAt(b.x,b.y,b.op,v);break;}}}
   b.life-=dt;if(b.life<=0){b.dead=true;if(b.expl)explodeAt(b.x,b.y,b.op);}}
+  for(const b of G.bullets)if(b.dead&&b.kind==='molo'&&!b.landed){b.landed=1;moloLand(b.x,b.y);}
   G.bullets=G.bullets.filter(b=>!b.dead);}
 
 function part(type,x,y,vx,vy,life,size){if(G.parts.length>450)return;G.parts.push({type,x,y,vx,vy,life,max:life,size});}
 function splash(x,y,n){for(let i=0;i<n;i++)part('splash',x+rr(-14,14),y+rr(-14,14),rr(-90,90),rr(-90,90),rr(0.4,0.8),rr(3,6));}
 function updateParts(dt){for(const p of G.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.94;p.vy*=0.94;p.life-=dt;
-  if(p.type==='smoke'||p.type==='wake'||p.type==='steam'||p.type==='dust')p.size+=dt*10;}
+  if(p.type==='smoke'||p.type==='wake'||p.type==='steam'||p.type==='dust'||p.type==='gas')p.size+=dt*10;}
   G.parts=G.parts.filter(p=>p.life>0);
   if(G.decals.length>600)G.decals.splice(0,G.decals.length-600);}
 
@@ -545,7 +547,7 @@ function copSees(r){const P=G.player,px=P.x,py=P.y;
   for(const v of G.vehicles)if(v.t.police&&!v.dead&&v.driver==='cop'&&(v.x-px)**2+(v.y-py)**2<r*r)return true;
   return false;}
 function crime(n,always){if(G.state!=='play')return;if(G.time-G.lastCrime<1.1)return;
-  if(!always&&!copVisible()){plusWitness();return;}G.lastCrime=G.time;addHeat((always?1.5:0.7)*n);const P=G.player;G.lastSeen={x:P.x,y:P.y};G.seenVeh=P.veh?P.veh.id:0;G.seenOut=G.outfit;}
+  if(!always&&!copVisible()){plusWitness();return;}G.lastCrime=G.time;addHeat((always?1.2:0.55)*n);const P=G.player;G.lastSeen={x:P.x,y:P.y};G.seenVeh=P.veh?P.veh.id:0;G.seenOut=G.outfit;}
 function los(x1,y1,x2,y2){const d=hyp(x2-x1,y2-y1),n=Math.ceil(d/24);for(let i=1;i<n;i++){const t=tileAt(x1+(x2-x1)*i/n,y1+(y2-y1)*i/n);if(t===TL.BLD||t===TL.FENCE)return false;}return true;}
 function onScreen(x,y,m){const c=G.cam,hw=G.vw/2/c.s+m,hh=G.vh/2/c.s+m;return Math.abs(x-c.x)<hw&&Math.abs(y-c.y)<hh;}
 
@@ -591,6 +593,8 @@ function nextNodeToward(x,y,tx,ty){const [i,j]=nearestNode(x,y);const np=nodePos
   for(let d=0;d<4;d++){if(!validDir(i,j,d))continue;const p=nodePos(i+DIRS[d][0],j+DIRS[d][1]);const dd=hyp(p.x-tx,p.y-ty);if(dd<bd){bd=dd;best=p;}}
   return best||np;}
 function chaseDrive(v,tx,ty,dt){const ai=v.ai,d=hyp(tx-v.x,ty-v.y);let gx,gy;
+  if(ai.mode==='chase'&&!v.mission&&d>650&&d<1600&&G.seenNow&&!onScreen(v.x,v.y,200)&&!v.t.boat){if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<60)ai.wp=nextNodeToward(v.x,v.y,tx,ty);const dx=ai.wp.x-v.x,dy=ai.wp.y-v.y,dd=hyp(dx,dy)||1,sp=Math.max(v.t.max*0.82,370);
+    v.a=Math.atan2(dy,dx);v.vx=dx/dd*sp;v.vy=dy/dd*sp;v.speed=sp;v.thr=1;v.str=0;v.hb=0;ai.stuck=0;ai.rev=0;return d;}
   if(d<420&&los(v.x,v.y,tx,ty)){gx=tx;gy=ty;ai.wp=null;}
   else{if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<80)ai.wp=nextNodeToward(v.x,v.y,tx,ty);gx=ai.wp.x;gy=ai.wp.y;}
   if(ai.rev>0){ai.rev-=dt;v.thr=-1;v.str=ai.revDir;v.hb=0;return d;}
@@ -603,10 +607,10 @@ function chaseDrive(v,tx,ty,dt){const ai=v.ai,d=hyp(tx-v.x,ty-v.y);let gx,gy;
   if(Math.abs(v.speed)<22)ai.stuck+=dt;else ai.stuck=Math.max(0,ai.stuck-dt);
   if(ai.stuck>1.1){ai.stuck=0;ai.rev=0.85;ai.revDir=-(Math.sign(diff)||1);}
   return d;}
-function aiChase(v,dt){const ai=v.ai,P=G.player,tgt=P.veh||P,law=ai.faction==='police'||ai.faction==='army';
+function aiChase(v,dt){const ai=v.ai,P=G.player,tgt=P.veh||P,law=ai.faction==='police'||ai.faction==='army';if(ai.wait>0){ai.wait-=dt;v.thr=0;v.hb=1;return;}if(ai.faction==='police')v.siren=G.wanted>0;
   if(P.dead){v.thr=0;v.hb=1;return;}
   if(law&&!v.mission&&G.wanted===0){trafficFromHere(v);v.driver='civ';if(v.t.police)v.driver='cop';return;}
-  const seen=!law||v.mission||G.seenNow||!G.lastSeen;let tx=tgt.x,ty=tgt.y;
+  const seen=!law||v.mission||G.seenNow||!G.lastSeen;let tx=tgt.x,ty=tgt.y;{const d0=hyp(tgt.x-v.x,tgt.y-v.y);if(P.veh&&d0>180&&d0<900){const k=clamp(d0/600,0.2,0.8);tx+=P.veh.vx*k;ty+=P.veh.vy*k;}}
   if(!seen){const ls=G.lastSeen;if(ai.sp||hyp(v.x-ls.x,v.y-ls.y)<300){ai.spT=(ai.spT||0)-dt;
       if(!ai.sp||ai.spT<=0||hyp(v.x-ai.sp.x,v.y-ai.sp.y)<150){const [i,j]=nearestNode(ls.x,ls.y);ai.sp=nodePos(clamp(i+ri(-2,2),0,XS.length-1),clamp(j+ri(-2,2),0,YS.length-1));ai.spT=7;}
       tx=ai.sp.x;ty=ai.sp.y;}else{tx=ls.x;ty=ls.y;}}
@@ -623,7 +627,7 @@ function unload(v){const ai=v.ai;const n=v.occ;v.occ=0;
   for(let k=0;k<n;k++){const side=k?1:-1,ca=Math.cos(v.a),sa=Math.sin(v.a);
     let x=v.x-sa*side*(v.t.w*0.5+14),y=v.y+ca*side*(v.t.w*0.5+14);if(solidPed(tileAt(x,y))){x=v.x;y=v.y;}
     const type=ai.faction==='police'?'cop':ai.faction==='army'?'soldier':'gang';
-    const p=mkPed(type,x,y,{faction:ai.faction,hostile:type!=='cop',persist:false,st:'chase'});p.cool=rr(0.6,1.4);if(v.mission)p.mission=true;}
+    const p=mkPed(type,x,y,{faction:ai.faction,hostile:type!=='cop',persist:false,st:'chase'});p.cool=rr(0.6,1.4);if(type==='cop')p.car=v;if(v.mission)p.mission=true;}
   v.driver=null;v.ai=null;}
 function spawnChaser(faction,type,col,ringMin,ringMax){const P=G.player;const nodes=[];
   for(let i=0;i<XS.length;i++)for(let j=0;j<YS.length;j++){const np=nodePos(i,j),d=hyp(np.x-P.x,np.y-P.y);if(d>=ringMin&&d<=ringMax&&!onScreen(np.x,np.y,80)&&!G.vehicles.some(o=>hyp(o.x-np.x,o.y-np.y)<90))nodes.push([i,j]);}
@@ -642,6 +646,7 @@ function aiPed(p,dt){if(p.dead||p.veh||p.medicP)return;
   if(p.sayT>0)p.sayT-=dt;
   p.cool-=dt;
   if(p.stun>0){p.stun-=dt;p.walk=0;return;}
+  if(p.car&&p.type==='cop'&&copReturn(p,dt))return;
   if(p.brawl>0&&plusBrawl(p,dt))return;
   if(p.prey&&plusPrey(p,dt))return;
   if(p.war&&!p.hostile&&plusWar(p,dt))return;
@@ -655,14 +660,16 @@ function aiCiv(p,dt){p.tm-=dt;
   if(p.st==='call'){p.callT-=dt;p.a=Math.atan2(p.y-p.fy,p.x-p.fx);walkDir(p,55,dt);if(p.callT<=0){p.st='flee';p.ft=4;const P=G.player;
       if(!P.dead&&hyp(p.x-P.x,p.y-P.y)<1000){setStars(Math.max(1,G.wanted));addHeat(1.2);G.lastSeen={x:P.x,y:P.y};G.seenVeh=P.veh?P.veh.id:0;toast(tr('witness'));}}return;}
   if(p.st==='cower'){p.ft-=dt;p.walk=0;if(p.ft<=0)p.st='walk';return;}
-  if(p.st==='chat'){p.ft-=dt;p.walk=0;const o=p.mate;if(!o||o.dead||o.st!=='chat'||p.ft<=0){p.st='walk';p.mate=null;p.tm=rr(1,3);return;}p.a=Math.atan2(o.y-p.y,o.x-p.x);p.ct-=dt;
-    if(p.ct<=0){p.ct=3.2;say(p,'chat',1.5);const vv=dv(p.x,p.y);if(vv>0.15)sfx.voice(p,vv);}return;}
+  if(p.st==='film'){filmTick(p,dt);return;}
+  if(p.st==='beg'){begTick(p,dt);return;}
+  if(p.st==='dance'){p.ft-=dt;p.a+=dt*9;p.walk=0;if(p.ft<=0)p.st='walk';return;}
+  if(p.st==='chat'){p.ft-=dt;p.walk=0;const o=p.mate;if(!o||o.dead||o.st!=='chat'||p.ft<=0){if(p.conv&&p.conv.a===p&&o)o.conv=null;p.conv=null;p.st='walk';p.mate=null;p.tm=rr(1,3);return;}p.a=Math.atan2(o.y-p.y,o.x-p.x);convTick(p,o,dt);return;}
   if(p.st==='flee'){p.ft-=dt;p.a=Math.atan2(p.y-p.fy,p.x-p.fx)+Math.sin(G.time*2+p.id)*0.4;walkDir(p,p.kind==='elder'?75:p.kind==='dog'?170:130,dt);if(p.ft<=0)p.st='walk';return;}
   if(p.tm<=0){p.tm=rr(2,6);for(const o of G.peds)if(o.dead&&!o.veh&&hyp(o.x-p.x,o.y-p.y)<95){p.st='flee';p.ft=4;p.fx=o.x;p.fy=o.y;react(p,'body');return;}
     if(p.kind==='dog'){if(rand()<0.3&&dv(p.x,p.y)>0.2){say(p,'dog',1.2);sfx.bark(dv(p.x,p.y));}}
     else{if(p.kind==='tourist'&&rand()<0.3){p.st='idle';part('flash',p.x+Math.cos(p.a)*12,p.y+Math.sin(p.a)*12,0,0,0.1,9);return;}
       if(G.rep<-15&&rand()<0.2&&hyp(p.x-G.player.x,p.y-G.player.y)<140){p.st='flee';p.ft=3;p.fx=G.player.x;p.fy=G.player.y;react(p,'psycho');return;}
-      if(rand()<0.14)for(const o of G.peds){if(o===p||o.type!=='civ'||o.dead||o.kind==='dog'||(o.st!=='walk'&&o.st!=='idle')||hyp(o.x-p.x,o.y-p.y)>64)continue;p.st=o.st='chat';p.ft=o.ft=rr(5,9);p.mate=o;o.mate=p;p.ct=0.3;o.ct=1.9;return;}}
+      if(rand()<0.16&&!(p.chatT>G.time))for(const o of G.peds){if(o===p||o.type!=='civ'||o.dead||o.kind==='dog'||o.chatT>G.time||(o.st!=='walk'&&o.st!=='idle')||hyp(o.x-p.x,o.y-p.y)>64)continue;p.st=o.st='chat';p.ft=o.ft=rr(5,9);p.mate=o;o.mate=p;p.ct=0.3;o.ct=1.9;return;}}
    if(rand()<0.12)p.st='idle';else{p.st='walk';p.a=pick([0,Math.PI/2,Math.PI,-Math.PI/2])+rr(-0.12,0.12);}}
   if(p.st==='idle'){p.walk=0;return;}
   if(p.st==='chase')p.st='walk';
@@ -676,13 +683,14 @@ function aiHostile(p,dt){const P=G.player,tgt=P.veh||P,d=hyp(tgt.x-p.x,tgt.y-p.y
   if(p.type==='cop'&&!G.seenNow&&G.lastSeen&&!(d<sightRange()&&los(p.x,p.y,tgt.x,tgt.y))){const ls=G.lastSeen,dl=hyp(ls.x-p.x,ls.y-p.y);p.arr=0;
     if(dl>70){p.a=Math.atan2(ls.y-p.y,ls.x-p.x);walkDir(p,110,dt);}else{p.tm-=dt;if(p.tm<=0){p.tm=rr(1,2.5);p.sa=rr(0,TAU);}p.a=p.sa||0;walkDir(p,60,dt);}return;}
   p.a=Math.atan2(tgt.y-p.y,tgt.x-p.x);
+  if(p.type==='cop'&&p.sayT<=0&&rand()<dt*0.3&&onScreen(p.x,p.y,0)){say(p,G.wanted>=3?'copHard':G.wanted<=1?'cop':'copChase');sfx.voice(p,dv(p.x,p.y));}
   const arrest=p.type==='cop'&&G.wanted<=1;
   const keep=arrest?14:(p.type==='soldier'?220:150);
   if(d>keep||!los(p.x,p.y,tgt.x,tgt.y)){walkDir(p,p.type==='soldier'?100:125,dt);}else p.walk=0;
   if(arrest){if(!P.veh&&!P.roof&&!P.climb&&!(P.jump>0)&&d<28){G.bustBy=G.time;if(p.cool<=0){p.cool=1.5;hurtPed(P,5,p,'punch');sfx.punch();G.stagger=0.3;G.hurtFlash=0.3;}if(p.sayT<=0)say(p,'cop');}
     else if(P.veh&&d<44&&Math.abs(P.veh.speed)<25&&!P.veh.t.boat){p.arr+=dt;if(p.arr>1.5){p.arr=0;exitVehicle();toast(tr('dragged'));sfx.punch();}}else p.arr=0;return;}
-  if(p.cool<=0&&d<340&&los(p.x,p.y,tgt.x,tgt.y)){p.cool=p.type==='soldier'?0.55:rr(0.8,1.3);
-    fire(p,null,p.x,p.y,p.a,p.type==='soldier'?14:p.type==='cop'?8:11,p.type==='soldier'?0.1:p.type==='cop'?0.17:0.14);}}
+  if(p.cool<=0&&d<340&&los(p.x,p.y,tgt.x,tgt.y)){if(!fireBudget(p)){p.cool=rr(0.2,0.5);return;}p.cool=p.type==='soldier'?0.6:rr(0.9,1.5);
+    fire(p,null,p.x,p.y,p.a,p.type==='soldier'?12:p.type==='cop'?7:9,p.type==='soldier'?0.12:p.type==='cop'?0.2:0.16);}}
 function civLine(p){const lines=p.type==='gang'?(p.faction==='tide'?CHAT_TIDE:CHAT_SAINTS):p.type==='cop'?CHAT_COP:CHAT;p.say=L(pick(lines));p.sayT=3;sfx.chat(300);}
 const CHAT=[{he:'יום יפה, נכון?',en:'Nice day, huh?'},{he:'ראית את המחירים בטיילת? שוד!',en:'Seen the prices on the boardwalk? Robbery!'},
  {he:'אל תתקרב לאי הצבאי. שמעתי דברים.',en:'Stay away from the army island. I hear things.'},{he:'הקדושים שולטים בלילות של מרכז העיר.',en:'The Saints own downtown at night.'},
@@ -747,7 +755,7 @@ function clockStr(){const h=Math.floor(ENV.clock),m=Math.floor((ENV.clock-h)*6)*
 // traffic lights: returns [east-west, north-south]
 function lightState(i,j){const t=(G.time+((i*3+j*5)%14))%14;return[t<7?'r':t<12.5?'g':'y',t<5.5?'g':t<7?'y':'r'];}
 function sightRange(){return lerp(760,480,ENV.dark)*(1-0.3*ENV.fog-0.12*ENV.rain);}
-function copVisible(){if(G.heli&&G.heli.see)return true;const P=G.player,px=P.x,py=P.y,R=sightRange(),R2=R*R;
+function copVisible(){if(G.player.ride&&G.player.ride.tr)return false;if(G.heli&&G.heli.see)return true;const P=G.player,px=P.x,py=P.y,R=sightRange(),R2=R*R;
   for(const p of G.peds)if(p.type==='cop'&&!p.dead&&(p.x-px)**2+(p.y-py)**2<R2&&los(p.x,p.y,px,py))return true;
   for(const v of G.vehicles)if((v.t.police||v.t.army)&&!v.dead&&v.ai&&v.ai.mode==='chase'&&(v.x-px)**2+(v.y-py)**2<R2&&los(v.x,v.y,px,py))return true;
   for(const v of G.vehicles)if(v.t.police&&!v.dead&&v.driver==='cop'&&(v.x-px)**2+(v.y-py)**2<R2&&los(v.x,v.y,px,py))return true;
@@ -883,7 +891,6 @@ const REACT={bump:[R2('היי! תיזהר!','Hey! Watch it!'),R2('מה הבעי�
  call:[R2('הלו, משטרה? ראיתי הכול!','Hello, police? I saw everything!')],mug:[R2('קח! רק אל תפגע בי!',"Take it! Just don't hurt me!")],fight:[R2('אתה רוצה מכות?','You want a fight?'),R2('בוא הנה!','Come here!')],
  thanks:[R2('תודה! הצלת אותי!','Thank you! You saved me!')],crash:[R2('הרסת לי את האוטו!','You wrecked my car!')],vendor:[R2('נקניקייה חמה, 20 דולר!','Hot dogs, 20 bucks!')],snack:[R2('בתיאבון!','Enjoy!')],
  full:[R2('אתה נראה שבע, חבר.','You look full, pal.')],fare:[R2('תודה, נהג.','Thanks, driver.')],help:[R2('הצילו!','Help!')],rain:[R2('איזה מבול...','What a downpour...')],cop:[R2('עצור! משטרה!','Freeze! Police!'),R2('ידיים למעלה!','Hands up!')]};
-function say(p,key,dur){if(!p)return;p.say=L(pick(REACT[key]));p.sayT=dur||2.2;}
 function react(p,key){if(!p||G.sayCD>0)return;G.sayCD=0.9;say(p,key);if(p.kind==='dog')sfx.bark(dv(p.x,p.y));else sfx.voice(p,dv(p.x,p.y));}
 function nearestCiv(x,y,r){let b=null,bd=r;for(const p of G.peds){if(p.type!=='civ'||p.dead)continue;const d=hyp(p.x-x,p.y-y);if(d<bd){bd=d;b=p;}}return b;}
 function bAt(x,y){return BUILDINGS[BMAP[Math.floor(y/T)*MW+Math.floor(x/T)]];}
@@ -943,8 +950,12 @@ function drawDamage(v){const t=v.t,Lh=t.l/2,Wh=t.w/2,dm=1-v.hp/t.hp,car=!t.boat&
   g.restore();}
 
 // ---------- ped behaviours ----------
-function plusBrawl(p,dt){const P=G.player;if(P.dead||P.veh||P.roof||P.climb){p.brawl=0;return false;}p.brawl-=dt;const d=hyp(P.x-p.x,P.y-p.y);p.a=Math.atan2(P.y-p.y,P.x-p.x);
-  if(d>23)walkDir(p,128,dt);else{p.walk=0;if(p.cool<=0&&!(P.jump>0)){p.cool=0.85;hurtPed(P,7,p,'punch');sfx.punch();P.kvx=Math.cos(p.a)*130;P.kvy=Math.sin(p.a)*130;G.hurtFlash=0.4;}}return true;}
+function plusBrawl(p,dt){const P=G.player;if(P.dead||P.veh||P.roof||P.climb){p.brawl=0;return false;}p.brawl-=dt;const d=hyp(P.x-p.x,P.y-p.y);p.a=Math.atan2(P.y-p.y,P.x-p.x);if(p.hitT>0)p.hitT-=dt;
+  const W=WEAP[G.weapon]||{};if(G.weapon!=='fist'&&!W.melee&&d<320){gunReact(p);return true;}
+  if(p.dodge>0){p.dodge-=dt;const s=p.id%2?1:-1;movePed(p,-Math.sin(p.a)*s*140*dt,Math.cos(p.a)*s*140*dt);return true;}
+  if(d>23)walkDir(p,128,dt);else{p.walk=0;if(G.punchT>0.15&&rand()<dt*3){p.dodge=0.25;return true;}
+    if(p.cool<=0&&!(P.jump>0)){p.bc=(p.bc||0)+1;const K=KINDS[p.kind]||{},kick=p.bc%3===0,dmg=(kick?11:6)*(K.tough?1.3:1);p.cool=kick?1.1:rr(0.55,0.85);p.hitK=kick?'kick':p.bc%2?'jab':'cross';p.hitT=0.22;
+      hurtPed(P,dmg,p,'punch');sfx.punch();const kb=kick?220:110;P.kvx=Math.cos(p.a)*kb;P.kvy=Math.sin(p.a)*kb;G.hurtFlash=0.4;if(kick)G.shake=Math.max(G.shake||0,3);if(p.sayT<=0&&rand()<0.3)say(p,'fight');}}return true;}
 function plusPrey(p,dt){const q=p.prey;if(!q||q.dead||q.remove){p.prey=null;return false;}const d=hyp(q.x-p.x,q.y-p.y);p.a=Math.atan2(q.y-p.y,q.x-p.x);
   if(d>22)walkDir(p,118,dt);else if(p.cool<=0){p.cool=1;hurtPed(q,6,p,'punch');sfx.punch();}q.st='flee';q.ft=2;q.fx=p.x;q.fy=p.y;if(q.sayT<=0&&rand()<dt)say(q,'help');return true;}
 function plusWar(p,dt){p.wt=(p.wt||0)-dt;if(p.wt<=0){p.wt=0.7;let b=null,bd=330;for(const o of G.peds){if(!o.war||o.dead||o.faction===p.faction)continue;const d=hyp(o.x-p.x,o.y-p.y);if(d<bd){bd=d;b=o;}}p.tg=b;}
@@ -952,7 +963,7 @@ function plusWar(p,dt){p.wt=(p.wt||0)-dt;if(p.wt<=0){p.wt=0.7;let b=null,bd=330;
   if(p.cool<=0&&los(p.x,p.y,o.x,o.y)){p.cool=rr(0.7,1.3);fire(p,null,p.x,p.y,p.a,10,0.16);}return true;}
 function plusWitness(){if(G.callCD>0)return;const P=G.player;if(P.roof)return;let best=null,bd=340;
   for(const p of G.peds){if(p.type!=='civ'||p.kind==='dog'||p.dead||p.stun>0||p.st==='call'||p.brawl>0)continue;const d=hyp(p.x-P.x,p.y-P.y);if(d<bd&&d>70&&los(p.x,p.y,P.x,P.y)){bd=d;best=p;}}
-  if(best){best.st='call';best.callT=4.5;best.fx=P.x;best.fy=P.y;G.callCD=10;say(best,'call',4.5);}}
+  if(best){best.st='call';best.callT=4.5;best.fx=P.x;best.fy=P.y;G.callCD=15;say(best,'call',4.5);}}
 function findSpot(rmin,rmax){const P=G.player;for(let k=0;k<30;k++){const a=rr(0,TAU),r=rr(rmin,rmax),x=P.x+Math.cos(a)*r,y=P.y+Math.sin(a)*r,t=tileAt(x,y);if((t===TL.WALK||t===TL.CONC)&&!onScreen(x,y,60))return{x,y};}return null;}
 function plusEvents(dt){const P=G.player;if(G.sayCD>0)G.sayCD-=dt;if(G.callCD>0)G.callCD-=dt;
   const ev=G.ev;if(ev){if(ev.v.dead||ev.v.remove||hyp(ev.v.x-P.x,ev.v.y-P.y)>1900)G.ev=null;
@@ -973,7 +984,7 @@ function plusTaxi(dt){const P=G.player,v=P.veh;if(G.fareCD>0)G.fareCD-=dt;
   else{G.fare.t-=dt;if(hyp(v.x-G.fare.x,v.y-G.fare.y)<95&&Math.abs(v.speed)<70){const pay=G.fare.pay+(G.fare.t>0?Math.round(G.fare.pay*0.5):0);G.money+=pay;toast(fmt(tr('farePaid'),pay));sfx.pass();G.rep=Math.min(50,G.rep+2);post('taxi');
       const p=mkPed('civ',v.x-Math.sin(v.a)*30,v.y+Math.cos(v.a)*30);say(p,'fare');G.fare=null;G.fareCD=2.5;}}}
 function plusHeli(dt){const P=G.player;if(G.heliCD>0)G.heliCD-=dt;let h=G.heli;
-  if(!h){if(G.wanted>=3&&!(G.heliCD>0)&&!P.dead){const a=rr(0,TAU);G.heli={x:P.x+Math.cos(a)*1100,y:P.y+Math.sin(a)*1100,a:0,vx:0,vy:0,see:false,ph:0};toast(tr('heli'));}return;}
+  if(!h){if(G.wanted>=3&&!(G.heliCD>0)&&!P.dead){const a=rr(0,TAU);G.heli={x:P.x+Math.cos(a)*1100,y:P.y+Math.sin(a)*1100,a:0,vx:0,vy:0,see:false,ph:0,hp:280};toast(tr('heli'));}return;}
   const leave=G.wanted<3||P.dead;let tx,ty;
   if(leave){tx=h.x+(h.x-P.x)*2+1;ty=h.y+(h.y-P.y)*2+1;if(hyp(h.x-P.x,h.y-P.y)>1500){G.heli=null;return;}}
   else if(G.seenNow||h.see){tx=P.x;ty=P.y;}else{const ls=G.lastSeen||P;h.ph+=dt*0.7;tx=ls.x+Math.cos(h.ph)*270;ty=ls.y+Math.sin(h.ph*1.3)*270;}
@@ -998,7 +1009,7 @@ const WICON={fist:WSV('<path d="M14 9a3 3 0 0 1 6 0a3 3 0 0 1 6 0a3 3 0 0 1 6 0v
  armor:WSV('<path d="M14 3h6l4 3 4-3h6l4 6-4 3v9H14v-9l-4-3z"/>')};
 
 // ---------- heat / wanted, shops, robberies, ped kinds, wildlife, feed ----------
-const SHOPS=[],GAS=[],TH=[0,1,4,10,20,34,52];
+const SHOPS=[],GAS=[],TH=[0,1,5,13,25,40,60];
 function starsFor(h){let s=0;for(let i=1;i<=6;i++)if(h>=TH[i])s=i;return s;}
 function setStars(n){G.heat=Math.max(G.heat||0,TH[n]);if(G.wanted<n){G.wanted=n;if(n>=3)post('stars');}G.unseen=0;}
 function addHeat(x){G.heat=(G.heat||0)+x;G.rep=Math.max(-50,(G.rep||0)-x*0.4);const s=starsFor(G.heat);if(s>G.wanted){G.wanted=s;if(s>=3)post('stars');}G.unseen=0;}
@@ -1276,10 +1287,10 @@ function mapGlyph(q,k,x,y,r,txt){q.fillStyle=MAPC[k];q.strokeStyle='#0b0d14';q.l
    case'hosp':q.fillRect(x-1.8*u,y-6*u,3.6*u,12*u);q.fillRect(x-6*u,y-1.8*u,12*u,3.6*u);break;
    case'air':q.beginPath();q.moveTo(x,y-7*u);q.lineTo(x+1.6*u,y-1*u);q.lineTo(x+7*u,y+2*u);q.lineTo(x+1.4*u,y+2*u);q.lineTo(x+1*u,y+5*u);q.lineTo(x+3*u,y+6.5*u);q.lineTo(x-3*u,y+6.5*u);q.lineTo(x-1*u,y+5*u);q.lineTo(x-1.4*u,y+2*u);q.lineTo(x-7*u,y+2*u);q.lineTo(x-1.6*u,y-1*u);q.closePath();q.fill();break;
    case'way':q.fillRect(x-4*u,y-6*u,1.8*u,12*u);q.beginPath();q.moveTo(x-2.2*u,y-6*u);q.lineTo(x+6*u,y-3*u);q.lineTo(x-2.2*u,y);q.fill();break;
-   case'market':T2('24');break;case'bank':T2('$');break;case'casino':T2('♦');break;case'spray':T2('✦');break;case'cops':T2('★');break;case'side':T2('?');break;case'sale':T2('$');break;
+   case'market':T2('24');break;case'bank':T2('$');break;case'casino':T2('♦');break;case'spray':T2('✦');break;case'cops':T2('★');break;case'side':T2('?');break;case'sale':T2('$');break;case'train':T2('🚆');break;
    case'biz':q.fillRect(x-6*u,y-2.5*u,12*u,8*u);q.beginPath();q.moveTo(x-2.6*u,y-2.5*u);q.lineTo(x-2.6*u,y-5.5*u);q.lineTo(x+2.6*u,y-5.5*u);q.lineTo(x+2.6*u,y-2.5*u);q.stroke();break;default:T2(txt||'!');}}
 function mapItems(){const it=[];for(const s of SHOPS)if(!(s.k==='mall'&&s.side===0)&&!s.gasStore)it.push([s.k==='home'&&!owned(s.pid)?'sale':s.k,s.sx,s.sy]);for(const gs of GAS)it.push(['gas',gs.x,gs.y]);
-  for(const b of PROPS)it.push([owned(b.id)?'biz':'sale',b.x,b.y,'',1]);for(const sp of SPRAYS)it.push(['spray',sp.x,sp.y]);
+  for(const b of PROPS)it.push([owned(b.id)?'biz':'sale',b.x,b.y,'',1]);for(const sp of SPRAYS)it.push(['spray',sp.x,sp.y]);for(const st of STATIONS)it.push(['train',st.gx,st.gy]);
   it.push(['hosp',POI.hosp.x,POI.hosp.y],['cops',POI.cops.x,POI.cops.y],['air',POI.airport.x,POI.airport.y],['air',POI.airport2.x,POI.airport2.y]);
   if(!G.mission){const n=nextMission();if(n)it.push(['main',n.start.x,n.start.y,n.ic]);for(const sm of sideAvail())it.push(['side',sm.start.x,sm.start.y]);}else{const t=curTarget();if(t)it.push(['main',t.x,t.y,'!']);}
   if(G.way)it.push(['way',G.way.x,G.way.y]);return it;}
@@ -1288,15 +1299,15 @@ function closeMap(){$('mapview').style.display='none';if(G.mapFrom==='pause'){G.
 function drawMap(){const c=$('bigmap'),q=c.getContext('2d'),dpr=G.dpr,cw=c.clientWidth,ch=c.clientHeight;if(c.width!==Math.round(cw*dpr)||c.height!==Math.round(ch*dpr)){c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);}
   const port=ch>cw*1.15,leg=port?0:Math.min(cw*0.3,210)*dpr,aw=c.width-leg,z=port?2.5:1.45,sc=Math.min(aw/(MW*T),c.height/(MH*T))*0.97*z,rtl=G.lang==='he',pn=G.mapPan,mw=MW*T*sc,mh=MH*T*sc,vx0=rtl?0:leg,vh=port?c.height-150*dpr:c.height;
   let ox=vx0+aw/2-pn.x*sc,oy=vh/2-pn.y*sc;ox=mw<=aw?vx0+(aw-mw)/2:clamp(ox,vx0+aw-mw-12,vx0+12);oy=mh<=vh?(vh-mh)/2:clamp(oy,vh-mh-12,12);pn.x=(vx0+aw/2-ox)/sc;pn.y=(vh/2-oy)/sc;G.mapT={sc,ox,oy};
-  q.fillStyle='#0d2233';q.fillRect(0,0,c.width,c.height);q.imageSmoothingEnabled=true;q.drawImage(MINIMG,ox,oy,MW*T*sc,MH*T*sc);gpsPath(q,ox,oy,sc,3*dpr);
+  q.fillStyle='#0d2233';q.fillRect(0,0,c.width,c.height);q.imageSmoothingEnabled=true;q.drawImage(MINIMG,ox,oy,MW*T*sc,MH*T*sc);trackMini(q,ox,oy,sc,2*dpr);gpsPath(q,ox,oy,sc,3*dpr);
   q.font=`italic 900 ${11*dpr}px Rubik,sans-serif`;q.textAlign='center';q.textBaseline='middle';q.fillStyle='rgba(255,255,255,0.5)';
   for(const [k,tx,ty] of [['down',45,30],['res',45,90],['harb',55,128],['beach',111,96],['fort',142,10],['crown',198,16],['strip',198,66],['east',198,118],['air',208,196],['glass',305,16],['vista',305,70],['forge',305,120],['air2',305,196]])q.fillText(L(AREAS[k]),ox+tx*T*sc,oy+ty*T*sc);
   const r=Math.max(7,Math.min(11,cw/70))*dpr;for(const it of mapItems())if(it[4])mapGlyph(q,it[0],ox+it[1]*sc+r*0.95,oy+it[2]*sc-r*0.95,r*0.66,it[3]);else mapGlyph(q,it[0],ox+it[1]*sc,oy+it[2]*sc,it[0]==='way'||it[0]==='main'?r*1.25:r,it[3]);
   const P=G.player,px=ox+(P.veh?P.veh.x:P.x)*sc,py=oy+(P.veh?P.veh.y:P.y)*sc,pu=(Math.sin(performance.now()/160)+1)/2;q.strokeStyle=`rgba(255,255,255,${0.9-pu*0.7})`;q.lineWidth=2*dpr;q.beginPath();q.arc(px,py,(8+pu*12)*dpr,0,TAU);q.stroke();
   q.save();q.translate(px,py);q.rotate(P.veh?P.veh.a:P.a);q.fillStyle='#fff';q.strokeStyle='#000';q.lineWidth=2*dpr;q.beginPath();q.moveTo(10*dpr,0);q.lineTo(-7*dpr,-7*dpr);q.lineTo(-3*dpr,0);q.lineTo(-7*dpr,7*dpr);q.closePath();q.fill();q.stroke();q.restore();
-  if(port){const ks2=['main','side','way','home','sale','biz','guns','clothes','market','mall','bank','casino','gas','spray','hosp','cops','air'],y0=c.height-150*dpr,cwd=c.width/3,rh2=19*dpr;q.fillStyle='rgba(8,10,20,0.92)';q.fillRect(0,y0,c.width,150*dpr);q.textBaseline='middle';q.direction=rtl?'rtl':'ltr';
+  if(port){const ks2=['main','side','way','home','sale','biz','train','guns','clothes','market','mall','bank','casino','gas','spray','hosp','cops','air'],y0=c.height-150*dpr,cwd=c.width/3,rh2=19*dpr;q.fillStyle='rgba(8,10,20,0.92)';q.fillRect(0,y0,c.width,150*dpr);q.textBaseline='middle';q.direction=rtl?'rtl':'ltr';
     ks2.forEach((k,i)=>{const col=i%3,row=(i/3)|0,cx0=rtl?c.width-col*cwd-12*dpr:col*cwd+12*dpr,y=y0+14*dpr+row*rh2;mapGlyph(q,k,cx0,y,7*dpr,k==='main'?'!':'');q.fillStyle='#fff';q.font=`600 ${10*dpr}px Rubik,sans-serif`;q.textAlign=rtl?'right':'left';q.fillText(L(MAPN[k]).split(' (')[0].split(':')[0],rtl?cx0-11*dpr:cx0+11*dpr,y,cwd-26*dpr);});q.direction='ltr';return;}
-  const lx=rtl?c.width-leg:0;q.fillStyle='rgba(8,10,20,0.88)';q.fillRect(lx,0,leg,c.height);const ks=['main','side','way','home','sale','biz','guns','clothes','market','mall','bank','casino','gas','spray','hosp','cops','air'],rh=Math.min(26*dpr,(c.height-50*dpr)/ks.length),lr=Math.min(9*dpr,rh*0.4);
+  const lx=rtl?c.width-leg:0;q.fillStyle='rgba(8,10,20,0.88)';q.fillRect(lx,0,leg,c.height);const ks=['main','side','way','home','sale','biz','train','guns','clothes','market','mall','bank','casino','gas','spray','hosp','cops','air'],rh=Math.min(26*dpr,(c.height-50*dpr)/ks.length),lr=Math.min(9*dpr,rh*0.4);
   q.font=`700 ${Math.min(13*dpr,rh*0.55)}px Rubik,sans-serif`;q.textBaseline='middle';q.direction=rtl?'rtl':'ltr';
   ks.forEach((k,i)=>{const y=44*dpr+i*rh,ix=rtl?c.width-16*dpr:16*dpr;mapGlyph(q,k,ix,y,lr,k==='main'?'!':'');q.fillStyle='#fff';q.font=`700 ${Math.min(13*dpr,rh*0.55)}px Rubik,sans-serif`;q.textAlign=rtl?'right':'left';q.fillText(L(MAPN[k]),rtl?ix-16*dpr:ix+16*dpr,y);});
   q.direction='ltr';}
@@ -1591,12 +1602,16 @@ function vehFx(v,vf,vr,dt){const t=v.t;v.wr=(v.wr||0)+vf*dt*0.55;if(!v.onScreen|
 function drawBody(p,isP){if(p.kind==='dog'){drawDog(p);return;}
   const air=isP&&p.jump>0,moving=p.walk>0,sw=air?6:moving?Math.sin(p.walk*0.16)*7:0,of=isP?OUTFIT():null,shirt=isP?of.shirt:p.shirt,hat=isP?of.hat:p.hat,pants=isP?'#26303d':(p.pants||'#23232b'),sk=p.skin,sl=p.bare?sk:shirt,tc=p.bare?sk:shirt;
   const leg=(o,y)=>{g.fillStyle=p.bare?sk:pants;rrect(g,-5+o,y,10,5.2,2.4);g.fill();g.fillStyle=p.bare?'#e9d8b5':(isP?'#f2f2f2':'#101014');g.beginPath();g.ellipse(5.6+o,y+2.6,3.5,2.7,0,0,TAU);g.fill();};
-  leg(sw,-7.3);leg(-sw,2.1);
-  const punch=isP&&G.punchT>0?11:0,wp=isP?G.weapon:p.wpn,armed=wp&&wp!=='fist'&&(isP||p.hostile||p.war||(p.type==='cop'&&G.wanted>1)||p.type==='soldier'),long=armed&&wp!=='pistol';
+  const pk=isP&&G.punchT>0?G.punchK||'jab':(!isP&&p.hitT>0?p.hitK:null),pt=isP?clamp(G.punchT/0.22,0,1):clamp((p.hitT||0)/0.22,0,1),ext=Math.sin(Math.PI*(1-pt));
+  if(pk==='kick'||pk==='stomp'){leg(-sw*0.3,-7.3);g.fillStyle=p.bare?sk:pants;rrect(g,-3,1.6,10+ext*(pk==='kick'?13:6),5.4,2.6);g.fill();g.fillStyle=isP?'#f2f2f2':'#101014';g.beginPath();g.ellipse(8+ext*(pk==='kick'?13:6),4.3,3.8,3,0,0,TAU);g.fill();}else{leg(sw,-7.3);leg(-sw,2.1);}
+  const wp=isP?G.weapon:p.wpn,W=WEAP[wp]||{},mel=W.melee,armed=wp&&wp!=='fist'&&(isP||p.hostile||p.war||(p.type==='cop'&&G.wanted>1)||p.type==='soldier'),long=armed&&!mel&&!['pistol','magnum','grenade','molotov'].includes(wp);
   const arm=(hx,hy,s)=>{g.strokeStyle='rgba(0,0,0,0.3)';g.lineWidth=6;g.lineCap='round';g.beginPath();g.moveTo(-0.5,s*8.6);g.lineTo(hx,hy);g.stroke();g.strokeStyle=sl;g.lineWidth=4.6;g.beginPath();g.moveTo(-0.5,s*8.6);g.lineTo(hx,hy);g.stroke();g.lineCap='butt';g.fillStyle=sk;g.beginPath();g.arc(hx,hy,2.7,0,TAU);g.fill();};
   if(air){arm(6,-14,-1);arm(6,14,1);}else if(p.st==='cower'){arm(5,-4.5,-1);arm(5,4.5,1);}
-  else if(armed){arm(9,4.8,1);if(long)arm(15,3.2,-1);else arm(3-sw*0.5,-11,-1);}
-  else{arm(2-sw*0.8+punch,-11.2,-1);arm(2+sw*0.8,11.2,1);}
+  else if(p.st==='film'){arm(11,-3,-1);arm(11,3,1);}else if(p.st==='beg'){arm(4,-13,-1);arm(4,13,1);}else if(p.st==='dance'||isP&&G.danceT>0){const q=Math.sin(G.time*14);arm(4+q*4,-14,-1);arm(4-q*4,14,1);}
+  else if(pk==='jab'){arm(4+ext*11,-6,-1);arm(2,11,1);}else if(pk==='cross'){arm(2,-11,-1);arm(4+ext*11,4,1);}else if(pk==='hook'){arm(2,-11,-1);arm(6+ext*7,10-ext*14,1);}
+  else if(pk==='shove'){arm(5+ext*10,-7,-1);arm(5+ext*10,7,1);}else if(pk==='swing'){const sa=-1.4+2.6*(1-pt);arm(Math.cos(sa)*12,Math.sin(sa)*12,1);arm(Math.cos(sa)*10,Math.sin(sa)*10-2,-1);}else if(pk==='stab'){arm(2,-11,-1);arm(5+ext*10,4,1);}
+  else if(armed&&!mel){arm(9,4.8,1);if(long)arm(15,3.2,-1);else arm(3-sw*0.5,-11,-1);}
+  else{arm(2-sw*0.8,-11.2,-1);arm(2+sw*0.8,11.2,1);}
   if(p.kind==='biz'){g.fillStyle='#6b4a2b';rrect(g,-1+sw*0.8,12.6,8.5,5.2,1.2);g.fill();g.fillStyle='#c9a15b';g.fillRect(2+sw*0.8,12.6,1.5,5.2);}
   if(p.kind==='elder'){g.strokeStyle='#5d4037';g.lineWidth=1.7;g.beginPath();g.moveTo(3+sw*0.8,11.5);g.lineTo(14,14);g.stroke();}
   // torso
@@ -1608,7 +1623,8 @@ function drawBody(p,isP){if(p.kind==='dog'){drawDog(p);return;}
   if(p.kind==='biz'&&!p.fem){g.fillStyle='#ecf0f1';g.beginPath();g.moveTo(1.5,-3.2);g.lineTo(6,0);g.lineTo(1.5,3.2);g.fill();g.fillStyle='#c0392b';g.fillRect(2.6,-0.9,3.2,1.8);}
   if(p.kind==='tourist'||p.kind==='punk'&&p.id%2){g.fillStyle=p.kind==='punk'?'#1b1b1b':'#3b6ea5';rrect(g,-8.6,-5.5,5,11,2);g.fill();}
   g.strokeStyle=isP?'rgba(190,255,216,0.95)':'rgba(0,0,0,0.42)';g.lineWidth=isP?1.5:1;tp();g.stroke();
-  if(armed){g.fillStyle='#17181b';const wl=wp==='pistol'?9:wp==='rocket'?21:17;g.fillRect(9,3.4,wl,wp==='rocket'||wp==='shotgun'?4:3);if(long){g.fillStyle='#4b3a2a';g.fillRect(5,3.4,5,3.6);}if(wp==='rocket'){g.fillStyle='#5b6b3a';g.fillRect(22,2.8,8,5);}}
+  if(armed||(isP&&mel)){if(pk==='swing'){const sa=-1.4+2.6*(1-pt);g.save();g.translate(Math.cos(sa)*12,Math.sin(sa)*12);g.rotate(sa);drawGun(wp);g.restore();}else if(pk==='stab'){g.save();g.translate(5+ext*10,4);drawGun(wp);g.restore();}else{g.save();g.translate(mel?2+sw*0.8:9,mel?11.2:4.8);if(mel&&wp==='bat')g.rotate(-0.5);drawGun(wp);g.restore();}}
+  if(p.st==='film'){g.fillStyle='#16161d';rrect(g,11,-3.5,4,7.5,1.2);g.fill();g.fillStyle='#9fe3ff';g.fillRect(11.6,-2.8,2.8,6);}
   if(p.kind==='tourist'){g.fillStyle='#1c1c1c';rrect(g,5.8,-3,4.5,6,1);g.fill();g.fillStyle='#8fd3ff';g.fillRect(8.8,-1.2,1.5,2.4);}
   // head
   g.fillStyle='rgba(0,0,0,0.25)';g.beginPath();g.arc(0.4,0.6,6.5,0,TAU);g.fill();
@@ -1628,6 +1644,22 @@ function drawDown(p,isP,stars){const of=isP?OUTFIT():null,shirt=p.bare?p.skin:(i
   g.fillStyle=shirt;rrect(g,-12,-8,22,16,7);g.fill();g.strokeStyle='rgba(0,0,0,0.4)';g.lineWidth=1;rrect(g,-12,-8,22,16,7);g.stroke();
   g.fillStyle=p.skin;g.beginPath();g.arc(14,0,5.7,0,TAU);g.fill();g.fillStyle=isP?'#3b2a1a':p.hair;g.beginPath();g.arc(15.4,0,4.8,0,TAU);g.fill();
   if(stars){g.fillStyle='#ffe14d';for(let k=0;k<3;k++){const a=G.time*6+k*2.1;g.fillRect(14+Math.cos(a)*10-1.5,Math.sin(a)*10-1.5,3,3);}}}
+
+function drawGun(wp){const R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h);},D='#17181b',M='#3a3d44',WD='#6b4a2b';
+  switch(wp){case'pistol':R(0,-1.6,9,3.2,D);R(0,1.2,3,3.2,M);break;
+   case'magnum':R(0,-1.8,13,3.4,'#b8bec6');g.fillStyle='#8a9098';g.beginPath();g.arc(3,0,2.8,0,TAU);g.fill();R(-1,1.2,3.2,3.6,WD);break;
+   case'smg':R(-1,-1.8,13,3.6,D);R(4,1.6,2.6,5,M);R(-4,-1.2,3.5,2.4,M);break;
+   case'shotgun':R(-5,-2,7,4,WD);R(2,-1.9,17,1.7,D);R(2,0.3,17,1.7,D);R(6,-2.1,5,4.2,'#4a3324');break;
+   case'rifle':R(-6,-1.8,7,3.6,WD);R(1,-1.6,17,3.2,D);R(7,1.4,3,5,M);R(7,-3.6,6,1.6,M);break;
+   case'sniper':R(-7,-1.6,8,3.2,WD);R(1,-1.1,25,2.2,D);g.fillStyle='#0d0e10';rrect(g,5,-4.6,10,3.4,1.4);g.fill();g.fillStyle='#7fd4ff';g.fillRect(14.2,-4.2,1,2.6);break;
+   case'flame':g.fillStyle='#b03a2e';rrect(g,-16,-5,8,10,3);g.fill();R(-8,-0.8,8,1.6,'#555');R(0,-1.6,14,3.2,'#6d7177');g.fillStyle=`rgba(255,160,40,${0.6+0.4*Math.sin(G.time*30)})`;g.beginPath();g.arc(15,0,2,0,TAU);g.fill();break;
+   case'rocket':g.fillStyle='#4f5d2f';rrect(g,-6,-3.5,28,7,2.5);g.fill();R(22,-4.2,4,8.4,'#2f3a1c');g.fillStyle='#c0392b';g.beginPath();g.moveTo(26,-3);g.lineTo(31,0);g.lineTo(26,3);g.fill();R(2,3,3,4,M);break;
+   case'minigun':R(-6,-4,10,8,'#2c3e50');for(let k=-1;k<=1;k++)R(4,k*2.4-0.9,20,1.8,D);g.fillStyle='rgba(255,255,255,'+(0.2+0.2*Math.sin(G.time*60))+')';g.fillRect(8,-3.5,2,7);break;
+   case'grenade':g.fillStyle='#5f7a3a';g.beginPath();g.arc(1,0,3.4,0,TAU);g.fill();R(0,-4.6,2,1.6,M);break;
+   case'molotov':g.fillStyle='#2e7d32';rrect(g,-2,-2.6,8,5.2,2);g.fill();R(6,-1.2,3.5,2.4,'#1b5e20');g.fillStyle=`rgba(255,${130+Math.floor(80*Math.sin(G.time*25))},30,0.95)`;g.beginPath();g.arc(10.5,0,2.4+Math.sin(G.time*31),0,TAU);g.fill();break;
+   case'bat':g.fillStyle='#a1785a';g.beginPath();g.moveTo(-1,-1.2);g.lineTo(20,-2.6);g.quadraticCurveTo(23,0,20,2.6);g.lineTo(-1,1.2);g.closePath();g.fill();R(-3,-1.3,3,2.6,'#3e2a1a');break;
+   case'knife':R(-2,-1.2,5,2.4,'#2b2b33');g.fillStyle='#d5dae0';g.beginPath();g.moveTo(3,-1.4);g.lineTo(11,-0.4);g.lineTo(3,1.4);g.closePath();g.fill();break;
+   default:R(0,-1.5,10,3,D);}}
 
 // ---------- Meridian: second city, second airport, flights, new vehicles ----------
 XS.push(272,284,298,310,324,336);
@@ -1739,7 +1771,7 @@ function flyPanel(item,m){const d=document.createElement('div');d.className='sta
   for(const k in AIRP){if(k===G.flyFrom)continue;const A=AIRP[k];item('✈ '+L(A.n),tr('flySub'),owned('b_air')?0:300,()=>{setTimeout(()=>{closeShop();const P=G.player,q=A.p();P.x=q.x;P.y=q.y+70;P.mvx=P.mvy=0;G.cam.x=P.x;G.cam.y=P.y;ENV.clock=(ENV.clock+1.2)%24;calcLight();G.area=null;toast(fmt(tr('flew'),L(A.n)),4);sfx.pass();saveGame();},0);},null);}}
 function propsUpdate(dt){const P=G.player;G.playT=(G.playT||0)+dt;G.nearProp=null;G.nearUse=null;
   if(P.veh&&P.veh.hot){P.veh.hot=0;P.veh.persist=false;setStars(2);toast(tr('hotCar'),3.5);P.veh.alarm=8;}
-  if(P.veh||P.inside||P.roof||P.climb)return;for(const u of USES){const d=hyp(P.x-u.x,P.y-u.y);if(d<(u.r||50))G.nearUse=u;}
+  if(P.veh||P.inside||P.roof||P.climb||P.ride)return;for(const u of USES){const d=hyp(P.x-u.x,P.y-u.y);if(d<(u.r||50))G.nearUse=u;}
   if(G.wanted>0)return;let bd=46;for(const b of PROPS){const d=hyp(P.x-b.x,P.y-b.y);if(d<bd){bd=d;G.nearProp=b;}}
   for(const s of SHOPS)if(s.k==='home'&&!owned(s.pid)){const d=hyp(P.x-s.sx,P.y-s.sy);if(d<bd){bd=d;G.nearProp=s;}}}
 function drawPropTop(){const P=G.player,c=G.cam,pu=(Math.sin(G.time*4)+1)/2;
@@ -1839,7 +1871,7 @@ function roofFun(b,rx,ry,rw,rh,cx,cy,d){const k=b.seed%11,m=Math.min(rw,rh);
 function drawPropTop(){const P=G.player,c=G.cam,pu=(Math.sin(G.time*4)+1)/2;
   for(const u of USES){if(Math.abs(u.x-c.x)>1100||Math.abs(u.y-c.y)>800)continue;const col=u.col||'#8fd3ff';g.globalAlpha=0.3+pu*0.25;g.fillStyle=col;g.beginPath();g.arc(u.x,u.y,26+pu*5,0,TAU);g.fill();g.globalAlpha=1;g.strokeStyle=col;g.lineWidth=4;g.setLineDash([10,6]);g.lineDashOffset=-G.time*18;g.beginPath();g.arc(u.x,u.y,26,0,TAU);g.stroke();g.setLineDash([]);
     g.fillStyle='#0b1020';g.font='bold 24px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(u.ic||'!',u.x,u.y+1);}
-  if(P.veh)return;if(G.nearUse){const u=G.nearUse;bubble(u.x,u.y-44,typeof u.lb==='string'?tr(u.lb):L(u.lb));return;}
+  if(P.veh||P.ride)return;if(G.nearUse){const u=G.nearUse;bubble(u.x,u.y-44,u.station?fmt(tr('trBoard'),L(u.station.name),5):typeof u.lb==='string'?tr(u.lb):L(u.lb));return;}
   const b=G.nearProp;if(!b)return;const id=pid(b),own=owned(id),x=b.sx||b.x,y=(b.sy||b.y)-44;
   bubble(x,y,own?fmt(tr('propCollect'),propIncome(b).toLocaleString('en-US')):fmt(tr('propPrompt'),L(b.name),b.price.toLocaleString('en-US')));}
 G.gps=store.get('sb_gps',true);
@@ -1860,7 +1892,7 @@ function spawner(dt){G.spawnT-=dt;if(G.spawnT>0)return;G.spawnT=0.25;const P=G.p
   let traffic=0,chasers={police:0,army:0},civs=0;
   for(const v of G.vehicles)if(!v.remove&&v.ai){if(v.ai.mode==='traffic')traffic++;else if(v.ai.mode==='chase'&&chasers[v.ai.faction]!=null)chasers[v.ai.faction]++;}
   for(const p of G.peds)if(!p.remove&&!p.dead&&p.type!=='soldier'&&p!==P&&hyp(p.x-cx,p.y-cy)<1500)civs++;
-  const night=ENV.dark,ar=areaAt(cx,cy),lively=ar==='strip'||ar==='neon'||ar==='glass'||ar==='downtown'||ar==='beach',rainK=1-0.25*ENV.rain,
+  const night=ENV.dark,ar=areaAt(cx,cy),lively=ar==='strip'||ar==='down'||ar==='glass'||ar==='beach'||ar==='vista',rainK=1-0.25*ENV.rain,
     nkCar=(1-0.2*night)*rainK,nkPed=(1-(lively?0.05:0.3)*night)*rainK,rural=ar==='mil'||ar==='air'||ar==='air2';
   const tc=Math.round((rural?10:24)*nkCar),pc=Math.round((rural?12:46)*nkPed);
   for(let k=0;k<2&&traffic<tc;k++,traffic++)spawnTraffic(cx,cy);
@@ -1922,8 +1954,297 @@ function curTarget(){const M=G.mission;if(M&&M.target)return M.target;if(!M&&G.f
 function drawLife(inV){drawStunts(inV);const J=G.pat;if(J&&J.st==='go'&&inV(J.x,J.y,60)){const pu=(Math.sin(G.time*5)+1)/2;g.fillStyle=`rgba(255,60,60,${0.25+pu*0.25})`;g.beginPath();g.arc(J.x,J.y,30+pu*6,0,TAU);g.fill();g.fillStyle='#f4f6f7';g.fillRect(J.x-10,J.y-3,20,6);g.fillRect(J.x-3,J.y-10,6,20);}}
 function drawSirens(){const on=Math.floor(G.time*8)%2;g.globalCompositeOperation='lighter';for(const v of G.vehicles){if(!v.siren||v.dead||!v.onScreen)continue;const ca=Math.cos(v.a),sa=Math.sin(v.a),f=v.t.l*0.18;
   glow(g,on?GL.red||'#ff3030':GL.blue||'#3d6bff',v.x+ca*f-sa*8,v.y+sa*f+ca*8,110,0.55);}g.globalAlpha=1;g.globalCompositeOperation='source-over';}
-function lifeTick(dt){medicWatch(dt);stuntTick(dt);medicJobTick(dt);
+function lifeTick(dt){trainsTick(dt);firesTick(dt);heliExtra(dt);roadblockTick(dt);emoteTick(dt);medicWatch(dt);fireWatch(dt);talkTick(dt);stuntTick(dt);medicJobTick(dt);
   if(ENV.dark>0.5&&rand()<dt*0.4){for(const p of G.peds)if(p.party&&!p.dead&&p.st==='chat'&&rand()<0.3&&onScreen(p.x,p.y,0)){say(p,'party',2.5);sfx.voice(p,0.6);break;}}}
+
+// ---------- v6: two-way conversations, context, no-repeat lines ----------
+const CONVS=[{"t": [], "l": [{"he": "ראית את המחירים של הדירות פה?", "en": "Seen the apartment prices around here?"}, {"he": "ראיתי. אני גר באוטו עכשיו.", "en": "I have. I live in my car now."}, {"he": "איזה אוטו?", "en": "Which car?"}, {"he": "זה שגנבו לי אתמול.", "en": "The one that got stolen yesterday."}]}, {"t": [], "l": [{"he": "אתה בא למסיבה ביום שישי?", "en": "Coming to the party on Friday?"}, {"he": "תלוי מי מארגן.", "en": "Depends who is hosting."}, {"he": "אני.", "en": "Me."}, {"he": "אז לא.", "en": "Then no."}]}, {"t": [], "l": [{"he": "קראתי שזאת העיר הכי בטוחה במדינה.", "en": "I read this is the safest city in the country."}, {"he": "איפה קראת?", "en": "Where did you read that?"}, {"he": "על שלט של העירייה.", "en": "On a city hall billboard."}, {"he": "השלט הזה נגנב אתמול.", "en": "That billboard was stolen yesterday."}]}, {"t": [], "l": [{"he": "הבוס ביקש ממני לעבוד בסוף השבוע.", "en": "My boss asked me to work the weekend."}, {"he": "ומה אמרת?", "en": "And what did you say?"}, {"he": "אמרתי כן.", "en": "I said yes."}, {"he": "גיבור. גיבור עייף.", "en": "A hero. A tired hero."}]}, {"t": [], "l": [{"he": "אתה מכיר את גאס מהנקניקיות?", "en": "Do you know Gus, the hot dog guy?"}, {"he": "כולם מכירים את גאס.", "en": "Everyone knows Gus."}, {"he": "הוא חייב לי עשרים דולר.", "en": "He owes me twenty bucks."}, {"he": "הוא חייב לכולם עשרים דולר.", "en": "He owes everyone twenty bucks."}]}, {"t": [], "l": [{"he": "חשבתי לקנות כלב.", "en": "I was thinking of getting a dog."}, {"he": "איזה?", "en": "What kind?"}, {"he": "כזה שנובח על שוטרים.", "en": "One that barks at cops."}, {"he": "כלומר כל כלב בעיר הזאת.", "en": "So, any dog in this city."}]}, {"t": [], "l": [{"he": "שמעת על הברווז הענק בפארק?", "en": "Heard about the giant duck in the park?"}, {"he": "שמעתי שהוא זז בלילה.", "en": "I heard it moves at night."}, {"he": "ברווזים לא זזים בלילה.", "en": "Ducks do not move at night."}, {"he": "ברווזים רגילים לא.", "en": "Normal ducks do not."}]}, {"t": [], "l": [{"he": "התחלתי לרוץ כל בוקר.", "en": "I started running every morning."}, {"he": "באמת? כמה?", "en": "Really? How far?"}, {"he": "עד המאפייה.", "en": "To the bakery."}, {"he": "וחזרה?", "en": "And back?"}, {"he": "באוטובוס.", "en": "By bus."}]}, {"t": [], "l": [{"he": "ראית את המשחק אתמול?", "en": "Did you see the game last night?"}, {"he": "ראיתי. כאב לי.", "en": "I did. It hurt."}, {"he": "בשבוע הבא ננצח.", "en": "We will win next week."}, {"he": "אמרת את זה גם בשבוע שעבר.", "en": "You said that last week too."}]}, {"t": [], "l": [{"he": "אני חושב לעבור למרידיאן.", "en": "I am thinking of moving to Meridian."}, {"he": "יקר שם.", "en": "It is expensive there."}, {"he": "אבל יש רכבת לעבודה.", "en": "But there is a train to work."}, {"he": "גם הרכבת יקרה.", "en": "The train is expensive too."}]}, {"t": [], "l": [{"he": "אמא שלי שואלת מתי אני מתחתן.", "en": "My mom keeps asking when I am getting married."}, {"he": "ומה אמרת לה?", "en": "What did you tell her?"}, {"he": "שאני מחכה שהריבית תרד.", "en": "That I am waiting for interest rates to drop."}]}, {"t": [], "l": [{"he": "קניתי טלפון חדש.", "en": "I bought a new phone."}, {"he": "מה הוא עושה?", "en": "What does it do?"}, {"he": "את מה שהישן עשה.", "en": "What the old one did."}, {"he": "אז למה קנית?", "en": "So why did you buy it?"}, {"he": "הישן נפל לים ליד המזח.", "en": "The old one fell in the sea by the pier."}]}, {"t": [], "l": [{"he": "אתה מאמין במזל?", "en": "Do you believe in luck?"}, {"he": "אני מאמין בקזינו.", "en": "I believe in the casino."}, {"he": "זה ההפך ממזל.", "en": "That is the opposite of luck."}, {"he": "תגיד את זה לארנק שלי.", "en": "Tell that to my wallet."}]}, {"t": [], "l": [{"he": "כמה זמן אתה כבר מחכה לאוטובוס?", "en": "How long have you been waiting for the bus?"}, {"he": "מתי היה החורף?", "en": "When was winter?"}]}, {"t": [], "l": [{"he": "שמעת את התחנה החדשה ברדיו?", "en": "Heard the new radio station?"}, {"he": "נאון אף־אם?", "en": "Neon FM?"}, {"he": "לא, זאת עם הבחור שצועק.", "en": "No, the one with the guy who yells."}, {"he": "כולן עם הבחור שצועק.", "en": "They all have the guy who yells."}]}, {"t": [], "l": [{"he": "מה אתה עושה בעבודה, בעצם?", "en": "What do you actually do at work?"}, {"he": "אני מנהל פגישות.", "en": "I run meetings."}, {"he": "על מה?", "en": "About what?"}, {"he": "על פגישות קודמות.", "en": "About previous meetings."}]}, {"t": [], "l": [{"he": "המזגן שלי מתקלקל כל קיץ.", "en": "My AC breaks every summer."}, {"he": "תזמין טכנאי.", "en": "Call a technician."}, {"he": "הטכנאי גר אצלי כבר חודש.", "en": "The technician has been living with me for a month."}]}, {"t": [], "l": [{"he": "ראית איך נוהגים פה?", "en": "Have you seen how people drive here?"}, {"he": "ראיתי. אני הולך ברגל מאז.", "en": "I have. I have been walking ever since."}, {"he": "גם על המדרכה נוסעים.", "en": "They drive on the sidewalk too."}, {"he": "אז אני הולך מהר.", "en": "Then I walk fast."}]}, {"t": [], "l": [{"he": "מצאתי עשרה דולר על הרצפה.", "en": "I found ten bucks on the ground."}, {"he": "איפה?", "en": "Where?"}, {"he": "ליד הכספומט שפוצץ אתמול.", "en": "Next to the ATM that blew up yesterday."}, {"he": "תחזיר אותם.", "en": "Give it back."}, {"he": "למי? לכספומט?", "en": "To whom? The ATM?"}]}, {"t": [], "l": [{"he": "אשתי רוצה שנלך לים בסוף השבוע.", "en": "My wife wants to go to the beach this weekend."}, {"he": "נשמע נחמד.", "en": "Sounds nice."}, {"he": "אני רוצה ללכת לישון בסוף השבוע.", "en": "I want to sleep this weekend."}, {"he": "גם נשמע נחמד.", "en": "Also sounds nice."}]}, {"t": [], "l": [{"he": "אתה יודע מה הסוד להצלחה?", "en": "Do you know the secret to success?"}, {"he": "מה?", "en": "What?"}, {"he": "גם אני לא. חשבתי שאתה יודע.", "en": "Me neither. I thought you knew."}]}, {"t": ["night"], "l": [{"he": "מאוחר. כדאי ללכת הביתה.", "en": "It is late. We should go home."}, {"he": "הבית שלי זה הבר הזה.", "en": "That bar is my home."}, {"he": "הבר סגור.", "en": "The bar is closed."}, {"he": "אז הבית שלי זה הספסל הזה.", "en": "Then this bench is my home."}]}, {"t": ["night"], "l": [{"he": "אתה שומע את זה?", "en": "Do you hear that?"}, {"he": "מה?", "en": "What?"}, {"he": "שקט.", "en": "Silence."}, {"he": "בעיר הזאת? זה מפחיד יותר מיריות.", "en": "In this city? That is scarier than gunfire."}]}, {"t": ["night"], "l": [{"he": "הירח יפה הלילה.", "en": "The moon is pretty tonight."}, {"he": "זה פנס רחוב.", "en": "That is a streetlight."}, {"he": "גם הוא יפה.", "en": "Also pretty."}]}, {"t": ["night"], "l": [{"he": "למה אתה ער בשעה כזאת?", "en": "Why are you up at this hour?"}, {"he": "השכן מנגן בתופים.", "en": "My neighbor plays drums."}, {"he": "בשתיים בלילה?", "en": "At two in the morning?"}, {"he": "הוא אומר שזה הכי שקט אז.", "en": "He says it is quietest then."}]}, {"t": ["morning"], "l": [{"he": "בוקר טוב.", "en": "Good morning."}, {"he": "מה טוב בו?", "en": "What is good about it?"}, {"he": "הקפה.", "en": "Coffee."}, {"he": "נגמר הקפה.", "en": "We are out of coffee."}, {"he": "אז רק בוקר.", "en": "Then just morning."}]}, {"t": ["rain"], "l": [{"he": "שכחתי מטרייה.", "en": "I forgot my umbrella."}, {"he": "שוב?", "en": "Again?"}, {"he": "יש לי עשר מטריות. כולן בבית.", "en": "I own ten umbrellas. All at home."}]}, {"t": ["rain"], "l": [{"he": "הגשם הזה לא נגמר.", "en": "This rain never ends."}, {"he": "לפחות הוא שוטף את העיר.", "en": "At least it washes the city."}, {"he": "יש פה הרבה מה לשטוף.", "en": "There is a lot to wash here."}]}, {"t": ["rain"], "l": [{"he": "החזאי אמר שמש.", "en": "The forecast said sunny."}, {"he": "איזה חזאי?", "en": "Which forecaster?"}, {"he": "זה שגר בבונקר.", "en": "The one who lives in a bunker."}]}, {"t": ["beach"], "l": [{"he": "המים קרים היום?", "en": "Is the water cold today?"}, {"he": "אני לא יודע, אני רק מסתכל על השחפים.", "en": "No idea, I am just watching the seagulls."}, {"he": "למה?", "en": "Why?"}, {"he": "אחד מהם גנב לי סנדוויץ׳. אני מחכה לנקמה.", "en": "One of them stole my sandwich. I am waiting for revenge."}]}, {"t": ["beach"], "l": [{"he": "שכחתי קרם הגנה.", "en": "I forgot sunscreen."}, {"he": "רואים.", "en": "It shows."}, {"he": "כמה רואים?", "en": "How much does it show?"}, {"he": "אתה בצבע של כבאית.", "en": "You are the color of a fire truck."}]}, {"t": ["harbor"], "l": [{"he": "מאמא סולט שוב קנתה משהו בנמל.", "en": "Mama Salt bought something at the harbor again."}, {"he": "מה הפעם?", "en": "What this time?"}, {"he": "את הנמל.", "en": "The harbor."}]}, {"t": ["harbor"], "l": [{"he": "ריח של דגים פה.", "en": "Smells like fish here."}, {"he": "זה נמל.", "en": "It is a harbor."}, {"he": "לא, הריח בא ממך.", "en": "No, the smell is coming from you."}]}, {"t": ["downtown"], "l": [{"he": "יש לי פגישה בעוד חמש דקות.", "en": "I have a meeting in five minutes."}, {"he": "איפה?", "en": "Where?"}, {"he": "בקומה הארבעים.", "en": "On the fortieth floor."}, {"he": "המעלית מקולקלת.", "en": "The elevator is broken."}, {"he": "אז יש לי פגישה מחר.", "en": "Then my meeting is tomorrow."}]}, {"t": ["glass"], "l": [{"he": "המגדל של הילו צריך עוד קומה.", "en": "The Halo tower needs another floor."}, {"he": "למה?", "en": "Why?"}, {"he": "כי השכן בנה אחת.", "en": "Because the neighbor built one."}]}, {"t": ["glass"], "l": [{"he": "בניין חדש, אותו נוף.", "en": "New building, same view."}, {"he": "איזה נוף?", "en": "What view?"}, {"he": "של הבניין הקודם.", "en": "Of the last building."}]}, {"t": ["strip"], "l": [{"he": "הפסדתי הכול בקזינו.", "en": "I lost everything at the casino."}, {"he": "הכול?", "en": "Everything?"}, {"he": "חוץ מהכבוד.", "en": "Except my dignity."}, {"he": "חכה, יש להם שולחן גם לזה.", "en": "Wait, they have a table for that too."}]}, {"t": ["strip"], "l": [{"he": "ראית מישהו זוכה בג׳קפוט?", "en": "Ever seen anyone hit the jackpot?"}, {"he": "פעם אחת.", "en": "Once."}, {"he": "ומה קרה?", "en": "What happened?"}, {"he": "הוא השקיע את הכול בעוד ג׳קפוט.", "en": "He put it all into another jackpot."}]}, {"t": ["neon"], "l": [{"he": "אל תסתובב פה בלילה.", "en": "Do not hang around here at night."}, {"he": "למה?", "en": "Why?"}, {"he": "הקדושים לא אוהבים תיירים.", "en": "The Saints do not like tourists."}, {"he": "אני לא תייר.", "en": "I am not a tourist."}, {"he": "תגיד להם את זה.", "en": "Tell them that."}]}, {"t": ["forge"], "l": [{"he": "המפעל עובד גם בלילה?", "en": "Does the factory run at night too?"}, {"he": "המפעל עובד. אנחנו לא.", "en": "The factory does. We do not."}]}, {"t": ["forge"], "l": [{"he": "מה מייצרים במפעל הזה, בעצם?", "en": "What does this factory actually make?"}, {"he": "ברגים.", "en": "Screws."}, {"he": "בשביל מה?", "en": "For what?"}, {"he": "בשביל מפעל ברגים אחר.", "en": "For another screw factory."}]}, {"t": ["air"], "l": [{"he": "הטיסה שלי מתעכבת כבר שלוש שעות.", "en": "My flight has been delayed three hours."}, {"he": "לאן אתה טס?", "en": "Where are you flying?"}, {"he": "למרידיאן.", "en": "To Meridian."}, {"he": "ברכבת כבר היית שם.", "en": "By train you would be there already."}]}, {"t": ["crown"], "l": [{"he": "הגנן שלי התפטר.", "en": "My gardener quit."}, {"he": "איזה סיוט.", "en": "What a nightmare."}, {"he": "עכשיו הדשא סתם... ירוק.", "en": "Now the grass is just... green."}]}, {"t": ["crown"], "l": [{"he": "קניתי עוד יאכטה.", "en": "I bought another yacht."}, {"he": "לא הייתה לך כבר אחת?", "en": "Did you not have one already?"}, {"he": "היא הייתה בודדה.", "en": "She was lonely."}]}, {"t": ["tourist"], "l": [{"he": "סליחה, איפה החוף?", "en": "Excuse me, where is the beach?"}, {"he": "אתה עומד עליו.", "en": "You are standing on it."}]}, {"t": ["tourist"], "l": [{"he": "צילמתי היום ארבע מאות תמונות.", "en": "I took four hundred photos today."}, {"he": "של מה?", "en": "Of what?"}, {"he": "של יונה אחת.", "en": "Of one pigeon."}]}, {"t": ["elder"], "l": [{"he": "פעם כל זה היה שדות.", "en": "All of this used to be fields."}, {"he": "ומה היה פה?", "en": "And what was here?"}, {"he": "שדות. אמרתי.", "en": "Fields. I said."}]}, {"t": ["elder"], "l": [{"he": "בגיל שלי כבר לא בורחים מהמשטרה.", "en": "At my age you do not run from the police anymore."}, {"he": "אז מה עושים?", "en": "So what do you do?"}, {"he": "הולכים מהר ומתלוננים.", "en": "You walk fast and complain."}]}, {"t": ["biz"], "l": [{"he": "שמעת? המניה ירדה.", "en": "Did you hear? The stock dropped."}, {"he": "איזו?", "en": "Which one?"}, {"he": "כולן.", "en": "All of them."}]}, {"t": ["biz"], "l": [{"he": "אני עובד מהבית היום.", "en": "I am working from home today."}, {"he": "אבל אתה ברחוב.", "en": "But you are in the street."}, {"he": "הבית שלי זה הטלפון.", "en": "My phone is my home."}]}, {"t": ["punk"], "l": [{"he": "הלהקה שלנו מופיעה מחר.", "en": "Our band is playing tomorrow."}, {"he": "איפה?", "en": "Where?"}, {"he": "בחניון.", "en": "In the parking garage."}, {"he": "שוב?", "en": "Again?"}, {"he": "החניון הוא הקהל הכי טוב שלנו.", "en": "The garage is our best crowd."}]}, {"t": ["worker"], "l": [{"he": "כמה זמן לוקח לתקן את הכביש הזה?", "en": "How long does it take to fix this road?"}, {"he": "תלוי.", "en": "Depends."}, {"he": "במה?", "en": "On what?"}, {"he": "אם מישהו יבדוק.", "en": "On whether anyone checks."}]}, {"t": ["party"], "l": [{"he": "איפה המסיבה הבאה?", "en": "Where is the next party?"}, {"he": "איפה שהמשטרה עוד לא הגיעה.", "en": "Wherever the cops have not shown up yet."}]}, {"t": ["party"], "l": [{"he": "אני לא שיכור.", "en": "I am not drunk."}, {"he": "אתה מדבר עם עמוד.", "en": "You are talking to a pole."}, {"he": "והוא מקשיב יותר טוב ממך.", "en": "And it listens better than you."}]}, {"t": ["party"], "l": [{"he": "עוד שיר אחד ואנחנו הולכים.", "en": "One more song and we go."}, {"he": "אמרת את זה לפני שלוש שעות.", "en": "You said that three hours ago."}, {"he": "והיו מאז שירים מעולים.", "en": "And there have been great songs since."}]}, {"t": ["shots"], "l": [{"he": "שמעת את היריות?", "en": "Did you hear the shots?"}, {"he": "שמעתי. אני לא יוצא יותר מהבית.", "en": "I did. I am not leaving the house anymore."}, {"he": "אבל אתה בחוץ.", "en": "But you are outside."}, {"he": "כי הבית מפחיד יותר.", "en": "Because home is scarier."}]}, {"t": ["shots"], "l": [{"he": "עוד פעם יריות?", "en": "Gunfire again?"}, {"he": "זאת העיר. בשבוע הבא יגידו שזה זיקוקים.", "en": "It is this city. Next week they will call it fireworks."}]}, {"t": ["shots"], "l": [{"he": "מישהו נפגע?", "en": "Was anyone hurt?"}, {"he": "רק האוטו שלי. שוב.", "en": "Just my car. Again."}]}, {"t": ["cops"], "l": [{"he": "למה יש פה כל כך הרבה שוטרים?", "en": "Why are there so many cops around?"}, {"he": "מחפשים מישהו.", "en": "They are looking for someone."}, {"he": "את מי?", "en": "Who?"}, {"he": "את מי שמחפשים תמיד.", "en": "The usual someone."}]}, {"t": ["cops"], "l": [{"he": "תסתכל לרצפה כשהשוטרים עוברים.", "en": "Look at the ground when the cops pass."}, {"he": "למה?", "en": "Why?"}, {"he": "ככה לא שואלים אותך שאלות.", "en": "That way they do not ask you questions."}]}, {"t": ["cops"], "l": [{"he": "השוטר הזה רשם לי דוח על חניה.", "en": "That cop gave me a parking ticket."}, {"he": "איפה חנית?", "en": "Where did you park?"}, {"he": "על הניידת שלו.", "en": "On his cruiser."}]}, {"t": ["boom"], "l": [{"he": "ראית את הפיצוץ?", "en": "Did you see the explosion?"}, {"he": "ראיתי. הביטוח שלי לא יאמין.", "en": "I did. My insurance will not believe it."}]}, {"t": ["boom"], "l": [{"he": "זה היה פיצוץ או רעם?", "en": "Was that an explosion or thunder?"}, {"he": "בעיר הזאת? כנראה שניהם.", "en": "In this city? Probably both."}]}, {"t": ["wanted"], "l": [{"he": "זה לא הבחור מהחדשות?", "en": "Is that not the guy from the news?"}, {"he": "איזה בחור?", "en": "What guy?"}, {"he": "זה שכל המשטרה רודפת אחריו.", "en": "The one the whole police force is chasing."}, {"he": "אל תסתכל עליו. תעשה שאתה מדבר איתי.", "en": "Do not look at him. Pretend you are talking to me."}, {"he": "אני מדבר איתך.", "en": "I am talking to you."}]}, {"t": ["player"], "l": [{"he": "ראית את הבחור הזה?", "en": "See that guy?"}, {"he": "איזה?", "en": "Which one?"}, {"he": "זה שעומד ומקשיב לנו.", "en": "The one standing there listening to us."}, {"he": "תדבר יותר בשקט.", "en": "Talk quieter."}]}, {"t": ["player"], "l": [{"he": "נראה לי שהוא מסתכל עלינו.", "en": "I think he is looking at us."}, {"he": "תחייך.", "en": "Smile."}, {"he": "למה?", "en": "Why?"}, {"he": "אולי הוא מהטלוויזיה.", "en": "Maybe he is from TV."}]}];
+Object.assign(REACT,{"shots": [{"he": "יריות! רוצו!", "en": "Shots! Run!"}, {"he": "אלוהים אדירים!", "en": "Oh my god!"}, {"he": "תתכופפו!", "en": "Get down!"}, {"he": "לא שוב! לא היום!", "en": "Not again! Not today!"}, {"he": "מישהו מתקשר למשטרה?!", "en": "Is someone calling the police?!"}, {"he": "רק קניתי חלב!", "en": "I just went out for milk!"}, {"he": "זה אמיתי?! זה אמיתי!", "en": "Is that real?! That is real!"}, {"he": "כולם לברוח!", "en": "Everybody run!"}, {"he": "אני לא פה! לא ראיתם אותי!", "en": "I am not here! You never saw me!"}, {"he": "אמא!", "en": "Mom!"}, {"he": "למה תמיד ברחוב שלי?!", "en": "Why is it always my street?!"}, {"he": "תפסיק לירות, משוגע!", "en": "Stop shooting, you maniac!"}], "shots_elder": [{"he": "בימים שלי לפחות היו מנומסים!", "en": "In my day they were at least polite!"}, {"he": "הלב שלי! הלב!", "en": "My heart! My heart!"}, {"he": "אני מתקשר לנכד שלי!", "en": "I am calling my grandson!"}], "shots_biz": [{"he": "יש לי פגישה בעוד עשר דקות!", "en": "I have a meeting in ten minutes!"}, {"he": "זה לא היה בתוכנית העבודה!", "en": "This was not in the quarterly plan!"}, {"he": "מישהו, תעביר את זה למחלקה המשפטית!", "en": "Someone forward this to legal!"}], "shots_tourist": [{"he": "זה חלק מהסיור?!", "en": "Is this part of the tour?!"}, {"he": "איפה השגרירות?!", "en": "Where is the embassy?!"}, {"he": "אף אחד לא סיפר על זה במדריך!", "en": "The guidebook never mentioned this!"}], "shots_punk": [{"he": "סוף סוף משהו קורה פה!", "en": "Finally something happens around here!"}, {"he": "זה כמו בהופעה שלנו!", "en": "Just like our gig!"}], "shots_worker": [{"he": "אני בהפסקה, אחי!", "en": "I am on my break, man!"}, {"he": "עוד דבר לתקן מחר...", "en": "Another thing to fix tomorrow..."}], "gun": [{"he": "יש לו נשק!", "en": "He has a gun!"}, {"he": "אל תירה!", "en": "Do not shoot!"}, {"he": "קח הכול, רק תוריד את זה!", "en": "Take everything, just lower that!"}, {"he": "וואו, וואו, בוא נירגע.", "en": "Whoa, whoa, let us calm down."}, {"he": "אני רק עובר פה!", "en": "I am just passing through!"}, {"he": "זה צעצוע, נכון? נכון?!", "en": "That is a toy, right? Right?!"}, {"he": "לא ראיתי כלום, אני כבר הולך.", "en": "I saw nothing, I am leaving."}, {"he": "למה שלוף אצלך?!", "en": "Why is that thing out?!"}], "body": [{"he": "שמישהו יזמין אמבולנס!", "en": "Somebody call an ambulance!"}, {"he": "אני לא ראיתי כלום...", "en": "I saw nothing..."}, {"he": "הוא נושם?", "en": "Is he breathing?"}, {"he": "אוי, לא. לא, לא, לא.", "en": "Oh no. No, no, no."}, {"he": "אני הולך מפה, אני לא רוצה להיות עד.", "en": "I am out of here. I do not want to be a witness."}, {"he": "מישהו יודע עזרה ראשונה?", "en": "Does anyone know first aid?"}, {"he": "זאת העיר הזאת, אחי. זאת העיר.", "en": "It is this city, man. It is this city."}], "boom": [{"he": "מה זה היה?!", "en": "What was that?!"}, {"he": "פיצוץ!", "en": "Explosion!"}, {"he": "האוזניים שלי!", "en": "My ears!"}, {"he": "זה היה האוטו שלי?!", "en": "Was that my car?!"}, {"he": "מישהו קרא לכבאים?", "en": "Did anyone call the fire department?"}, {"he": "זה הגז? זה הגז!", "en": "Is it gas? It is gas!"}, {"he": "וואו. טוב. אני עובר דירה.", "en": "Wow. Okay. I am moving."}], "crash": [{"he": "הרסת לי את האוטו!", "en": "You wrecked my car!"}, {"he": "יש לך ביטוח?!", "en": "Do you have insurance?!"}, {"he": "איפה למדת לנהוג?!", "en": "Where did you learn to drive?!"}, {"he": "זה היה ליסינג!", "en": "That was a lease!"}, {"he": "אני אתבע אותך!", "en": "I will sue you!"}, {"he": "רק לפני שבוע ניקיתי אותו!", "en": "I just washed it last week!"}], "bump": [{"he": "היי! תיזהר!", "en": "Hey! Watch it!"}, {"he": "מה הבעיה שלך?", "en": "What is your problem?"}, {"he": "סליחה גם לך!", "en": "Excuse you!"}, {"he": "יש מקום על כל המדרכה!", "en": "There is a whole sidewalk!"}, {"he": "אתה רואה אותי בכלל?", "en": "Can you even see me?"}, {"he": "אוי, הנעליים החדשות!", "en": "Ugh, my new shoes!"}, {"he": "תסתכל לאן אתה הולך!", "en": "Look where you are going!"}, {"he": "ממהר למשהו?", "en": "In a hurry?"}], "bump_elder": [{"he": "צעירים...", "en": "Young people..."}, {"he": "בגילי דוחפים רק בתור לרופא!", "en": "At my age you only push in the doctor's line!"}], "bump_biz": [{"he": "זאת חליפה של אלפיים דולר!", "en": "This suit cost two grand!"}, {"he": "אני על שיחה!", "en": "I am on a call!"}], "horn": [{"he": "מה אתה צופר?!", "en": "Stop honking!"}, {"he": "סבלנות!", "en": "Patience!"}, {"he": "עוד צפירה אחת ואני מתיישב פה!", "en": "One more honk and I sit down right here!"}, {"he": "אני הולך כמה שאני יכול!", "en": "I am walking as fast as I can!"}, {"he": "גם לך יום טוב!", "en": "Have a nice day too!"}, {"he": "שמעתי, שמעתי!", "en": "I heard you, I heard you!"}], "car": [{"he": "משוגע!", "en": "Maniac!"}, {"he": "תלמד לנהוג!", "en": "Learn to drive!"}, {"he": "כמעט דרסת אותי!", "en": "You almost ran me over!"}, {"he": "זאת מדרכה, לא כביש!", "en": "This is a sidewalk, not a road!"}, {"he": "המשטרה! שמישהו יקרא למשטרה!", "en": "Police! Somebody call the police!"}, {"he": "ראיתי את החיים שלי עוברים מול העיניים!", "en": "I saw my life flash before my eyes!"}, {"he": "ראית את הלוחית? מישהו ראה את הלוחית?!", "en": "Did you get the plate? Did anyone get the plate?!"}], "call": [{"he": "הלו, משטרה? ראיתי הכול!", "en": "Hello, police? I saw everything!"}, {"he": "כן, שלום, יש פה בחור עם {0}. הוא מסוכן!", "en": "Yes, hi, there is a guy here in {0}. He is dangerous!"}, {"he": "משטרה? תבואו מהר, הוא עוד פה!", "en": "Police? Come fast, he is still here!"}, {"he": "אני רוצה לדווח על פשע. כן, עכשיו. כן, שוב.", "en": "I want to report a crime. Yes, now. Yes, again."}, {"he": "הוא לבוש {0}. לא, אני לא צוחק.", "en": "He is wearing {0}. No, I am not joking."}, {"he": "הלו? אני מחזיק... כן, אני מחכה.", "en": "Hello? I am on hold... yes, I will wait."}], "cop": [{"he": "עצור! משטרה!", "en": "Freeze! Police!"}, {"he": "ידיים למעלה!", "en": "Hands up!"}, {"he": "על הרצפה, עכשיו!", "en": "On the ground, now!"}, {"he": "אתה עצור!", "en": "You are under arrest!"}, {"he": "אל תזוז!", "en": "Do not move!"}, {"he": "זה ייגמר רע בשבילך!", "en": "This ends badly for you!"}], "copChase": [{"he": "עצור במקום!", "en": "Stop right there!"}, {"he": "אין לך לאן לברוח!", "en": "You have nowhere to run!"}, {"he": "יחידה שתיים, הוא רץ מזרחה!", "en": "Unit two, he is heading east!"}, {"he": "זה לא שווה את זה, חבר!", "en": "It is not worth it, pal!"}, {"he": "תיכנע!", "en": "Give yourself up!"}, {"he": "ראיתי אותך!", "en": "I see you!"}, {"he": "אני מבקש תגבורת!", "en": "Requesting backup!"}, {"he": "לא נוותר עליך!", "en": "We will not let you go!"}], "copHard": [{"he": "כל הניידות, אש חופשית!", "en": "All units, weapons free!"}, {"he": "זה החשוד! תורידו אותו!", "en": "That is the suspect! Take him down!"}, {"he": "תשכח מהבית, אתה הולך לכלא!", "en": "Forget home, you are going to jail!"}, {"he": "הצבא בדרך, כדאי לך להיכנע!", "en": "The army is on its way, you should surrender!"}], "copnear": [{"he": "וואו, תראה כמה ניידות.", "en": "Wow, look at all those cruisers."}, {"he": "מישהו בצרות גדולות.", "en": "Someone is in big trouble."}, {"he": "אני מקווה שזה לא בגללי.", "en": "I hope this is not about me."}, {"he": "שוב מרדף? כל יום פה סרט.", "en": "Another chase? Every day is a movie here."}, {"he": "תתרחק מהכביש, הם לא עוצרים.", "en": "Get off the road, they do not stop."}, {"he": "אני מצלם את זה.", "en": "I am filming this."}, {"he": "זה בגלל הבחור ההוא?", "en": "Is it because of that guy?"}], "film": [{"he": "זה הולך להיות ויראלי!", "en": "This is going viral!"}, {"he": "מישהו מצלם? אני מצלם!", "en": "Is anyone filming? I am filming!"}, {"he": "תעשו לייק ותירשמו!", "en": "Like and subscribe!"}, {"he": "ילדים, אל תנסו את זה בבית.", "en": "Kids, do not try this at home."}, {"he": "החדשות ישלמו לי על זה.", "en": "The news will pay me for this."}, {"he": "הקצב, הקצב! איזה סרטון!", "en": "The action! What a video!"}], "brave": [{"he": "רק תנסה, אני לא מפחד!", "en": "Try it, I am not scared!"}, {"he": "עשיתי צבא, אחי!", "en": "I served, man!"}, {"he": "אני מכיר קרטה! בערך!", "en": "I know karate! Sort of!"}], "fight": [{"he": "אתה רוצה מכות?", "en": "You want a fight?"}, {"he": "בוא הנה!", "en": "Come here!"}, {"he": "טעות גדולה, חבר!", "en": "Big mistake, pal!"}, {"he": "עכשיו אני כועס!", "en": "Now I am angry!"}, {"he": "אתה עוד תתחרט על זה!", "en": "You are going to regret that!"}, {"he": "רק את החולצה הזאת קיבלתי מתנה!", "en": "This shirt was a gift!"}], "rain": [{"he": "איזה מבול...", "en": "What a downpour..."}, {"he": "הנעליים שלי ספוגות.", "en": "My shoes are soaked."}, {"he": "מי הזמין את הגשם הזה?", "en": "Who ordered this rain?"}, {"he": "לפחות האוטו יהיה נקי.", "en": "At least my car gets a wash."}], "psycho": [{"he": "זה הבחור מהחדשות!", "en": "That is the guy from the news!"}, {"he": "תתרחק ממני!", "en": "Stay away from me!"}, {"he": "אני לא רוצה צרות!", "en": "I do not want trouble!"}, {"he": "תעשה שאתה לא רואה אותו.", "en": "Pretend you do not see him."}], "chat": [{"he": "מה העניינים?", "en": "How is it going?"}, {"he": "ראית את מזג האוויר?", "en": "Seen the weather?"}, {"he": "כן, בטח.", "en": "Yeah, sure."}, {"he": "לגמרי.", "en": "Totally."}, {"he": "באמת?", "en": "Really?"}]});
+
+// ---------- v6: conversation engine, no-repeat picker, varied reactions ----------
+G.bags={};G.convUsed=new Set();
+function bagPick(key,arr){let b=G.bags[key];if(!b||!b.length||b.n!==arr.length){const last=b&&b.last;b=G.bags[key]=arr.map((_,i)=>i);for(let i=b.length-1;i>0;i--){const r=Math.floor(rand()*(i+1));[b[i],b[r]]=[b[r],b[i]];}b.n=arr.length;if(b.length>1&&b[b.length-1]===last){[b[0],b[b.length-1]]=[b[b.length-1],b[0]];}}
+  const i=b.pop();b.last=i;return i;}
+function say(p,key,dur){if(!p)return;const kk=p.kind&&REACT[key+'_'+p.kind];let pool=REACT[key],k=key;if(kk&&(!pool||rand()<0.55)){pool=kk;k=key+'_'+p.kind;}if(!pool||!pool.length)return;
+  let t=L(pool[bagPick(k,pool)]);if(t.indexOf('{0}')>=0)t=t.replace('{0}',L(OUTFIT()));p.say=t;p.sayT=dur||Math.min(4,1.6+t.length*0.035);}
+const AREATAG={down:['neon','downtown'],harb:['harbor'],beach:['beach'],crown:['crown'],strip:['strip'],glass:['glass','downtown'],forge:['forge'],air:['air'],air2:['air'],vista:['beach'],east:[],res:[]};
+function ctxTags(p,o){const P=G.player,t=new Set(),h=ENV.clock,ar=areaAt(p.x,p.y);
+  if(ENV.dark>0.5)t.add('night');if(h>=6&&h<10.5)t.add('morning');if(ENV.rain>0.3)t.add('rain');
+  for(const a of (AREATAG[ar]||[]))t.add(a);for(const q of [p,o]){if(q.kind)t.add(q.kind);if(q.party)t.add('party');}
+  if(G.time-(G.shotT??-99)<35&&hyp(G.shotX-p.x,G.shotY-p.y)<1000)t.add('shots');
+  if(G.time-(G.boomT??-99)<45&&hyp(G.boomX-p.x,G.boomY-p.y)<1200)t.add('boom');
+  if(G.wanted>0&&hyp(P.x-p.x,P.y-p.y)<700)t.add('cops');else for(const q of G.peds)if(q.type==='cop'&&!q.dead&&hyp(q.x-p.x,q.y-p.y)<380){t.add('cops');break;}
+  const dP=hyp(P.x-p.x,P.y-p.y);if(G.wanted>=2&&dP<280&&!P.veh)t.add('wanted');if(dP<95&&!P.veh&&!P.inside)t.add('player');return t;}
+function pickConv(p,o){const tags=ctxTags(p,o),cand=[];for(let i=0;i<CONVS.length;i++){const c=CONVS[i];if(c.t.every(x=>tags.has(x)))cand.push(i);}
+  let free=cand.filter(i=>!G.convUsed.has(i));if(!free.length){for(const i of cand)G.convUsed.delete(i);free=cand;}
+  let tot=0;const w=free.map(i=>{const k=CONVS[i].t.length?4:1;tot+=k;return k;});let r=rand()*tot,pick2=free[0];for(let k=0;k<free.length;k++){r-=w[k];if(r<=0){pick2=free[k];break;}}
+  G.convUsed.add(pick2);return CONVS[pick2];}
+function convTick(p,o,dt){if(!p.conv&&!o.conv){if(!onScreen(p.x,p.y,300))return;const c=pickConv(p,o);p.conv=o.conv={c,i:0,t:rr(0.2,0.9),a:p,b:o};p.ft=o.ft=60;}
+  const cv=p.conv;if(!cv||cv.a!==p)return;cv.t-=dt;if(cv.t>0)return;
+  if(cv.i>=cv.c.l.length){for(const q of [cv.a,cv.b]){q.conv=null;q.st='walk';q.mate=null;q.tm=rr(1,3);q.chatT=G.time+rr(20,40);q.a=rr(0,TAU);}return;}
+  const sp=cv.i%2?cv.b:cv.a,ls=cv.i%2?cv.a:cv.b;if(sp.dead||ls.dead||sp.st!=='chat'){cv.i=cv.c.l.length;return;}
+  sp.say=L(cv.c.l[cv.i]);sp.sayT=Math.min(4.8,1.5+sp.say.length*0.05);cv.t=sp.sayT+0.3;cv.i++;const vv=dv(sp.x,sp.y);if(vv>0.12)sfx.voice(sp,vv);}
+function shotReact(x,y,op){G.shotT=G.time;G.shotX=x;G.shotY=y;let spoke=0;
+  for(const p of G.peds){if(p.type!=='civ'||p.dead||p.medicP||hyp(p.x-x,p.y-y)>380)continue;if(p.st==='call'||p.brawl>0)continue;if(p.st==='film'||p.st==='cower'||p.st==='flee'){continue;}
+    const K=p.kind,r=((p.id*2654435761)>>>0)%100;p.conv=null;
+    if(K==='dog'){p.st='flee';p.ft=5;p.fx=x;p.fy=y;continue;}
+    if((K==='tourist'||K==='punk'||K==='casual')&&r<(K==='casual'?12:35)){p.st='film';p.ft=rr(4,8);p.fx=x;p.fy=y;}
+    else if(((K==='elder'||K==='biz')&&r<55)||r<14){p.st='cower';p.ft=rr(3,6);}
+    else{p.st='flee';p.ft=rr(4,7);p.fx=x;p.fy=y;}
+    if(spoke<2&&G.sayCD<=0&&onScreen(p.x,p.y,0)&&rand()<0.6){spoke++;const key=p.st==='film'?'film':(K==='worker'&&r<25&&op===G.player)?'brave':'shots';say(p,key);
+      if(key==='shots'&&spoke===1)sfx.scream(dv(p.x,p.y),p.voice||200);else sfx.voice(p,dv(p.x,p.y));if(spoke===2)G.sayCD=1.1;}}}
+function boomReact(x,y){G.boomT=G.time;G.boomX=x;G.boomY=y;let n=0;for(const p of G.peds){if(p.type!=='civ'||p.dead||hyp(p.x-x,p.y-y)>520||!onScreen(p.x,p.y,0))continue;if(n<2&&rand()<0.5){n++;setTimeout(()=>{if(!p.dead){say(p,'boom');sfx.voice(p,dv(p.x,p.y));}},n*500+rr(200,500));}}}
+function talkTick(dt){G.talkT=(G.talkT||0)-dt;if(G.talkT>0)return;G.talkT=1.3;const P=G.player;
+  if(G.wanted>0){for(const v of G.vehicles){if(!v.siren||v.dead||!v.onScreen)continue;for(const p of G.peds){if(p.type!=='civ'||p.dead||p.kind==='dog'||p.sayT>0||p.st==='flee'||hyp(p.x-v.x,p.y-v.y)>260)continue;if(rand()<0.35){say(p,'copnear');sfx.voice(p,dv(p.x,p.y)*0.8);if(rand()<0.4){p.st='film';p.ft=rr(3,6);p.fx=v.x;p.fy=v.y;}}break;}break;}}
+  if(ENV.rain>0.5&&rand()<0.2)for(const p of G.peds){if(p.type!=='civ'||p.dead||p.sayT>0||p.st==='chat'||!onScreen(p.x,p.y,0))continue;say(p,'rain');sfx.voice(p,dv(p.x,p.y)*0.7);break;}}
+function filmTick(p,dt){p.ft-=dt;p.walk=0;const P=G.player;if(hyp(P.x-p.x,P.y-p.y)<500&&G.time-(G.shotT||0)<4){p.fx=P.x;p.fy=P.y;}p.a=Math.atan2(p.fy-p.y,p.fx-p.x);
+  if(rand()<dt*0.9)part('flash',p.x+Math.cos(p.a)*13,p.y+Math.sin(p.a)*13,0,0,0.07,5);if(hyp(P.x-p.x,P.y-p.y)<60&&!P.veh){p.st='flee';p.ft=3;p.fx=P.x;p.fy=P.y;say(p,'gun');return;}if(p.ft<=0){p.st='walk';p.tm=rr(1,3);}}
+
+// ---------- v6: faster emergency services, cops return to their cars, fire crews, health ----------
+Object.assign(VT.police,{max:505,acc:460,grip:7,turn:3});Object.assign(VT.ambulance,{max:520,acc:420});Object.assign(VT.firetruck,{max:440,acc:320});
+Object.assign(STR.he,{fireCome:'מכבי האש בדרך',fireOut:'הכבאים כיבו את השריפה',healthPick:'+חיים',regen:'החיים מתמלאים לאט כשלא פוגעים בך'});
+Object.assign(STR.en,{fireCome:'The fire department is on its way',fireOut:'The firefighters put out the fire',healthPick:'+Health',regen:'Health slowly refills while you are not being hurt'});
+Object.assign(REACT,{copRun:[R2('חזרה לניידת!','Back to the car!'),R2('הוא בורח ברכב!','He is driving off!'),R2('לניידת, מהר!','To the cruiser, quick!'),R2('אל תאבדו אותו!','Do not lose him!')],
+ fireman:[R2('כולם אחורה!','Everybody back!'),R2('תפתחו את הזרנוק!','Open the hose!'),R2('עוד אחד? מי מצית את כל המכוניות האלה?','Another one? Who keeps torching these cars?'),R2('תנו לנו לעבוד!','Let us work!')],
+ fireDone:[R2('כבוי. מישהו שמר על נקניקייה?','Out. Anyone save a hot dog?'),R2('מתחילים לחזור לתחנה.','Heading back to the station.'),R2('עוד יום רגיל בסולס ביי.','Just another day in Solace Bay.')]});
+// --- cops walk back to their cruiser and keep chasing or leave ---
+function copReturn(p,dt){const v=p.car,P=G.player;if(!v||v.dead||v.remove||v.sunk||v===P.veh||(v.driver&&v.driver!=='cop')){p.car=null;return false;}
+  const dP=hyp(P.x-p.x,P.y-p.y),go=G.wanted===0||(P.veh&&dP>170&&Math.abs(P.veh.speed)>50)||dP>700;if(!go||p.stun>0)return false;
+  const dx=v.x-p.x,dy=v.y-p.y,d=hyp(dx,dy);
+  if(d>v.t.w*0.5+30){p.a=Math.atan2(dy,dx);walkDir(p,G.wanted>0?160:85,dt);if(G.wanted>0&&p.sayT<=0&&rand()<dt*0.5&&onScreen(p.x,p.y,0)){say(p,'copRun');sfx.voice(p,dv(p.x,p.y));}return true;}
+  p.remove=true;v.door=0.7;if(onScreen(v.x,v.y,0))sfx.door();v.occ=Math.min(2,(v.occ||0)+1);
+  const mates=G.peds.some(o=>o!==p&&o.car===v&&!o.dead&&!o.remove&&hyp(o.x-v.x,o.y-v.y)<500);
+  if(!v.driver||!v.ai){v.driver='cop';if(G.wanted>0){v.ai={mode:'chase',faction:'police',stuck:0,rev:0,wait:mates?3:0};v.siren=true;}else{v.siren=false;trafficFromHere(v);v.persist=false;}}
+  else if(v.ai&&v.ai.wait>0&&!mates)v.ai.wait=0;return true;}
+// --- shared responder driving: invisible catch-up off screen, careful arrival on screen ---
+function respDrive(v,tx,ty,dt,stopAt){const ai=v.ai;if(!onScreen(v.x,v.y,140)&&hyp(v.x-tx,v.y-ty)>380){if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<40)ai.wp=nextNodeToward(v.x,v.y,tx,ty);
+    const dx=ai.wp.x-v.x,dy=ai.wp.y-v.y,dd=hyp(dx,dy)||1,st=Math.min(dd,360*dt);v.x+=dx/dd*st;v.y+=dy/dd*st;v.a=Math.atan2(dy,dx);v.vx=dx/dd*320;v.vy=dy/dd*320;v.speed=320;v.thr=0;v.str=0;ai.stuck=0;return 1e9;}
+  const d=chaseDrive(v,tx,ty,dt);if(v.speed>d*0.75+70)v.thr=-0.7;if(d<stopAt){v.thr=v.speed>20?-1:0;v.str=0;v.hb=1;}return d;}
+function spawnResponder(type,tx,ty){const rn=ringNodes(tx,ty,800,1700).filter(([i,j])=>{const q=nodePos(i,j);return !onScreen(q.x,q.y,80);});if(!rn.length)return null;
+  const [i,j]=pick(rn),q=nodePos(i,j),v=mkVeh(type,q.x,q.y,0);v.a=Math.atan2(ty-q.y,tx-q.x);v.driver='civ';v.persist=true;v.siren=true;v.ai={mode:'medic',stuck:0,rev:0,wp:null};return v;}
+// --- fire crews ---
+function fireWatch(dt){const P=G.player;if(!G.fireJob&&G.fireCD2>0)G.fireCD2-=dt;
+  for(const v of G.vehicles)if(v.dead&&v.deadT==null)v.deadT=G.time;
+  for(const v of G.vehicles){if(!v.dead||v.fireOut||!v.onScreen||G.time-v.deadT>(v.burnFor||(v.burnFor=rr(25,45))))continue;if(rand()<0.6){part('fire',v.x+rr(-v.t.l*0.3,v.t.l*0.3),v.y+rr(-8,8),rr(-15,15),rr(-60,-25),rr(0.4,0.8),rr(6,12));if(rand()<0.4)part('smoke',v.x+rr(-10,10),v.y,rr(-20,20)-ENV.wind*30,rr(-70,-30),rr(1.4,2.4),rr(10,16));}}
+  if(!G.fireJob){if((G.fireCD2||0)>0||G.wanted>=4||P.inside)return;let tgt=null;
+    for(const v of G.vehicles){if(v.t.boat||v.t.plane||v.fireOut||v.sunk||hyp(v.x-P.x,v.y-P.y)>950)continue;if((v.fuse>0&&v.driver!==P)||(v.dead&&G.time-v.deadT<20)){tgt=v;break;}}
+    if(tgt){G.fireJob={w:tgt,t:rr(3,6)};tgt.persist=true;}return;}
+  const J=G.fireJob,w=J.w;if(w.remove||(!w.dead&&!(w.fuse>0))||w===P.veh&&!w.dead){endFire();return;}
+  if(!J.v){J.t-=dt;if(J.t>0)return;J.v=spawnResponder('firetruck',w.x,w.y);if(!J.v){J.t=2;return;}J.st='drive';J.T=50;if(hyp(w.x-P.x,w.y-P.y)<800)toast(tr('fireCome'),2.5);return;}
+  const v=J.v;J.T-=dt;if(v.dead||v.driver===P||J.T<0){endFire();return;}
+  if(J.st==='drive'){const d=respDrive(v,w.x,w.y,dt,380);if(d<380&&Math.abs(v.speed)<25){J.st='spray';J.crew=[];for(const s of [-1,1]){const m=mkPed('civ',v.x-Math.sin(v.a)*s*30,v.y+Math.cos(v.a)*s*30);setKind(m,'worker');m.shirt='#c9a227';m.pants='#2b2b33';m.hat='#c0392b';m.persist=true;m.medicP=1;J.crew.push(m);}say(J.crew[0],'fireman',2.5);sfx.door();J.work=0;}}
+  else if(J.st==='spray'){v.thr=0;v.hb=1;let ready=0;for(const m of J.crew){if(m.dead)continue;const dx=w.x-m.x,dy=w.y-m.y,d=hyp(dx,dy);m.a=Math.atan2(dy,dx);if(d>85){pMove(m,dx/d*120*dt,dy/d*120*dt);m.walk+=120*dt;}else{m.walk=0;ready++;
+      if(rand()<0.85){const a=m.a+rr(-0.12,0.12),sp=rr(260,340);part('water',m.x+Math.cos(m.a)*14,m.y+Math.sin(m.a)*14,Math.cos(a)*sp,Math.sin(a)*sp,rr(0.25,0.35),rr(3,5));}}}
+    if(ready){J.work+=dt;if(rand()<dt*5)part('steam',w.x+rr(-20,20),w.y+rr(-14,14),rr(-20,20),rr(-50,-20),rr(1,1.8),rr(10,16));if(J.work>4){if(w.dead)w.fireOut=true;else{w.fuse=0;w.hp=Math.max(w.hp,w.t.hp*0.3);}J.st='back';say(J.crew[1]||J.crew[0],'fireDone',3);if(hyp(w.x-P.x,w.y-P.y)<700)toast(tr('fireOut'),2.5);}}}
+  else if(J.st==='back'){let n=0;for(const m of J.crew){if(m.remove||m.dead)continue;n++;const dx=v.x-m.x,dy=v.y-m.y,d=hyp(dx,dy);m.a=Math.atan2(dy,dx);if(d>30){pMove(m,dx/d*120*dt,dy/d*120*dt);m.walk+=120*dt;}else{m.remove=true;}}
+    if(!n){sfx.door();v.siren=false;trafficFromHere(v);v.persist=false;w.persist=false;G.fireJob=null;G.fireCD2=10;}}}
+function endFire(){const J=G.fireJob;if(J){if(J.w)J.w.persist=false;for(const m of J.crew||[]){m.persist=false;m.medicP=0;}if(J.v&&!J.v.dead&&J.v.driver==='civ'){J.v.siren=false;J.v.persist=false;trafficFromHere(J.v);}}G.fireJob=null;G.fireCD2=12;}
+// --- health: player hits, regen, pickups ---
+function bulletHitsPlayer(b){const P=G.player;if(b.op===P||P.dead||P.ride||P.inside||b.kind==='flame'&&0)return false;if((P.x-b.x)**2+(P.y-b.y)**2>160)return false;
+  const v=P.veh;if(v&&!(v.t.bike||v.t.cart||v.t.buggy))return false;hurtPed(P,b.dmg*(v?0.6:1),b.op,'shot');if(b.kind==='flame'&&!v)P.burn=1.5;G.hurtFlash=Math.max(G.hurtFlash||0,0.45);G.shake=Math.max(G.shake||0,2.5);
+  for(let k=0;k<4;k++)part('blood',P.x,P.y,rr(-60,60),rr(-60,60),0.35,3);if(b.expl)explodeAt(b.x,b.y,b.op);return true;}
+function regenTick(dt){const P=G.player;if(P.dead||P.ride)return;if(P.burn>0){P.burn-=dt;hurtPed(P,10*dt,null,'burn');if(rand()<0.5)part('fire',P.x+rr(-5,5),P.y+rr(-5,5),0,-20,0.4,rr(4,7));}
+  const quiet=G.time-(G.lastHurt||-99);if(quiet>5&&P.hp<75){P.hp=Math.min(75,P.hp+2.5*dt);if(!G.seen.regen&&P.hp<60){G.seen.regen=1;toast(tr('regen'),4);}}}
+function genHealth(){const H=(x,y)=>WPICKS.push({type:'health',x,y});const ft=DECOR.filter(d=>d.t==='fountain');
+  H(POI.hosp.x-50,POI.hosp.y+10);H(POI.hosp.x+50,POI.hosp.y+10);for(const f of ft)H(f.x+60,f.y+60);H(POI.pier.x-40,POI.pier.y+30);H(POI.safe.x+70,POI.safe.y+30);H(POI.airport.x-120,POI.airport.y+40);H(POI.airport2.x-120,POI.airport2.y+40);
+  H(POI.brew.x-80,POI.brew.y);H(POI.dealer.x-120,POI.dealer.y+20);H(POI.club.x-90,POI.club.y+20);for(const p of PARKSPOTS.filter((_,i)=>i%41===7).slice(0,6))H(p.x,p.y);}
+function fireBudget(p){const now=G.time,cap=G.wanted>=5?7:G.wanted>=3?5:3.5;G.fb=Math.min(cap,(G.fb??cap)+(now-(G.fbT??now))*cap*0.8);G.fbT=now;if(G.fb<1)return false;G.fb-=1;return true;}
+
+// ---------- v6: Sky Line elevated train ----------
+Object.assign(STR.he,{trBoard:'🚆 תחנת {0} — לחץ על כפתור הפעולה כדי לחכות לרכבת ({1}$)',trWait:'מחכה לרכבת בתחנת {0}... (הרכבת הבאה בעוד כ־{1} שנ׳). לחץ שוב כדי לוותר.',trOn:'עלית לרכבת. התחנה הבאה: {0}. לחץ על כפתור הרכב כדי לרדת.',trNext:'התחנה הבאה: {0}',trExitNext:'תרד בתחנה הבאה: {0}',trOff:'ירדת בתחנת {0}',trAt:'הרכבת בתחנת {0}. לחץ על כפתור הרכב כדי לרדת.',trCancel:'ויתרת על הרכבת',trNoWanted:'עם כוכבי משטרה אי אפשר לעלות לרכבת',trLine:'הקו העילי'});
+Object.assign(STR.en,{trBoard:'🚆 {0} station — press the action button to wait for the train (${1})',trWait:'Waiting for the train at {0}... (next train in about {1}s). Press again to give up.',trOn:'You boarded the train. Next stop: {0}. Press the car button to get off.',trNext:'Next stop: {0}',trExitNext:'Getting off at the next stop: {0}',trOff:'You got off at {0}',trAt:'The train is at {0}. Press the car button to get off.',trCancel:'You gave up on the train',trNoWanted:'You cannot board the train with police stars',trLine:'Sky Line'});
+Object.assign(MAPN,{train:R2('תחנת רכבת','Train station')});Object.assign(MAPC,{train:'#c9d6e3'});
+const TRK={pts:[],cum:[],L:0},STATIONS=[],TRAINS=[],TRH=140,CARL=92,CARG=8,NCAR=3,TVMAX=560,TACC=140,TDEC=170;
+function genTrack(){const y0=46.4*T,y1=115.6*T,x0=8.4*T,x1=339.6*T,r=4*T,P=[];
+  const arc=(cx,cy,a0,a1)=>{for(let k=0;k<=8;k++){const a=a0+(a1-a0)*k/8;P.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r]);}};
+  P.push([x0+r,y0]);P.push([x1-r,y0]);arc(x1-r,y0+r,-Math.PI/2,0);P.push([x1,y1-r]);arc(x1-r,y1-r,0,Math.PI/2);P.push([x0+r,y1]);arc(x0+r,y1-r,Math.PI/2,Math.PI);P.push([x0,y0+r]);arc(x0+r,y0+r,Math.PI,Math.PI*1.5);
+  TRK.pts=P;TRK.cum=[0];for(let i=1;i<P.length;i++)TRK.cum.push(TRK.cum[i-1]+hyp(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));TRK.L=TRK.cum[TRK.cum.length-1];
+  const S=(name,tx,ty)=>{let best=null,bd=1e9;for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const x=Math.floor(tx)+dx,y=Math.floor(ty)+dy,t=tget(x,y);if(t!==TL.WALK&&t!==TL.CONC&&t!==TL.SAND&&t!==TL.GRASS)continue;const d=hyp(dx,dy);if(d<bd){bd=d;best=[(x+0.5)*T,(y+0.5)*T];}}
+    if(!best)return;const s=trkProj(best[0],best[1]);STATIONS.push({name,s,gx:best[0],gy:best[1]});};
+  S(R2('גבעות הניאון','Neon Heights'),40,47.5);S(R2('טיילת המרינה','Marina Mile'),96,47.5);S(R2('רמת הכתר','Crown Heights'),197,47.5);S(R2('רובע הזכוכית','Glass Quarter'),292,47.5);
+  S(R2('שדרות השקיעה','Sunset Vista'),338.5,80);S(R2('המפחה','The Forge'),318,114.5);S(R2('שער המזרח','Eastgate'),205,114.5);S(R2('שוק המלח','Saltmarket'),62,114.5);S(R2('הפרדס הישן','Old Orchard'),9.5,80);
+  STATIONS.sort((a,b)=>a.s-b.s);STATIONS.forEach((st,i)=>{st.i=i;const q=trkAt(st.s);st.px=q.x;st.py=q.y;st.a=q.a;
+    USES.push({x:st.gx,y:st.gy,r:48,ic:'🚆',col:'#c9d6e3',station:st,lb:R2('',''),fn(){trainUse(this.station);}});});
+  for(let k=0;k<3;k++)TRAINS.push({s:STATIONS[k*3].s,v:0,st:'stop',t:4+k*2,at:STATIONS[k*3],col:['#d8dee6','#e9e2cf','#d6e6df'][k],stripe:['#e84393','#00b4d8','#f39c12'][k]});}
+function trkProj(x,y){let bs=0,bd=1e18;const P=TRK.pts;for(let i=1;i<P.length;i++){const ax=P[i-1][0],ay=P[i-1][1],dx=P[i][0]-ax,dy=P[i][1]-ay,l2=dx*dx+dy*dy||1,t=clamp(((x-ax)*dx+(y-ay)*dy)/l2,0,1),qx=ax+dx*t,qy=ay+dy*t,d=(qx-x)**2+(qy-y)**2;if(d<bd){bd=d;bs=TRK.cum[i-1]+Math.sqrt(l2)*t;}}return bs;}
+function trkAt(s){s=((s%TRK.L)+TRK.L)%TRK.L;const C=TRK.cum,P=TRK.pts;let lo=0,hi=C.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(C[m]<=s)lo=m;else hi=m;}
+  const t=(s-C[lo])/((C[hi]-C[lo])||1),x=P[lo][0]+(P[hi][0]-P[lo][0])*t,y=P[lo][1]+(P[hi][1]-P[lo][1])*t;return{x,y,a:Math.atan2(P[hi][1]-P[lo][1],P[hi][0]-P[lo][0])};}
+const fwd=(a,b)=>((b-a)%TRK.L+TRK.L)%TRK.L;
+function nextStation(s){let best=null,bd=1e18;for(const st of STATIONS){const d=fwd(s+1,st.s);if(d<bd){bd=d;best=st;}}return best;}
+function trainsTick(dt){if(!TRAINS.length)return;const P=G.player;
+  for(const tr of TRAINS){if(tr.st==='stop'){tr.t-=dt;tr.v=0;if(tr.t<=0){tr.st='run';tr.at=null;tr.nx=nextStation(tr.s);if(P.ride&&P.ride.tr===tr){toast(fmt(tr2('trNext'),L(tr.nx.name)),3);}}continue;}
+    if(!tr.nx)tr.nx=nextStation(tr.s);const dist=fwd(tr.s,tr.nx.s);let ahead=1e9;for(const o of TRAINS)if(o!==tr){const d=fwd(tr.s,o.s-(CARL+CARG)*NCAR-60);if(d<ahead)ahead=d;}
+    const tgt=Math.min(TVMAX,Math.sqrt(2*TDEC*Math.max(0,Math.min(dist,ahead)-2)));tr.v=tr.v<tgt?Math.min(tgt,tr.v+TACC*dt):Math.max(tgt,tr.v-TDEC*1.6*dt);tr.s=(tr.s+tr.v*dt)%TRK.L;
+    if(dist<4&&tr.v<30){tr.s=tr.nx.s;tr.v=0;tr.st='stop';tr.t=7;tr.at=tr.nx;tr.nx=null;if(P.ride&&P.ride.tr===tr){if(P.ride.exit)trainExit(tr.at);else toast(fmt(tr2('trAt'),L(tr.at.name)),3);}
+      else if(P.ride&&P.ride.wait===tr.at&&!P.ride.tr){P.ride={tr,exit:false};sfx.door();toast(fmt(tr2('trOn'),L(nextStation(tr.s).name)),4);}}}
+  if(AU.ctx&&AU.amb){if(!AU.amb.train){const x=AU.ctx,s2=x.createBufferSource();s2.buffer=AU.noise;s2.loop=true;const fl=x.createBiquadFilter();fl.type='lowpass';fl.frequency.value=220;const gn=x.createGain();gn.gain.value=0;s2.connect(fl);fl.connect(gn);gn.connect(AU.master);s2.start();AU.amb.train=gn.gain;}
+    let near=1e9,sp=0;for(const tr of TRAINS){const q=trkAt(tr.s-CARL),d=P.ride&&P.ride.tr===tr?0:hyp(q.x-P.x,q.y-P.y);if(d<near){near=d;sp=tr.v;}}
+    const k=near<900?(1-near/900)*Math.min(1,sp/300):0;AU.amb.train.setTargetAtTime((G.state==='play'?k*0.16:0),AU.ctx.currentTime,0.2);
+    if(k>0.15&&G.state==='play'){G.clackT=(G.clackT||0)-dt*sp/300;if(G.clackT<=0){G.clackT=0.55;aT(70,0.06,'sine',0.25*k,{to:45});aT(70,0.06,'sine',0.22*k,{to:45,at:0.11});aN(0.05,0.08*k,'bandpass',900,2,{at:0.01});}}}}
+function tr2(k){return tr(k);}
+function trainUse(st){const P=G.player;if(P.ride&&P.ride.wait){P.ride=null;toast(tr('trCancel'),2);return;}
+  if(G.wanted>0){toast(tr('trNoWanted'),2.5);sfx.no();return;}if(G.money<5){toast(tr('nomoney2'),2);sfx.no();return;}
+  const here=TRAINS.find(t=>t.st==='stop'&&t.at===st);G.money-=5;sfx.blip();
+  if(here){P.ride={tr:here,exit:false};sfx.door();toast(fmt(tr('trOn'),L(nextStation(here.s).name)),4);return;}
+  let eta=1e9;for(const t of TRAINS){const d=fwd(t.s,st.s);eta=Math.min(eta,d/380+(t.st==='stop'?t.t:0)+4);}P.ride={wait:st};toast(fmt(tr('trWait'),L(st.name),Math.round(eta)),5);}
+function trainExit(st){const P=G.player;P.ride=null;P.x=st.gx;P.y=st.gy;P.mvx=P.mvy=0;sfx.door();toast(fmt(tr('trOff'),L(st.name)),3);G.gpsT=0;}
+function rideUpdate(dt){const P=G.player,R=P.ride;
+  if(R.wait){P.walk=0;P.mvx=P.mvy=0;if(IN.enterP){IN.enterP=false;trainUse(R.wait);}if(G.wanted>0){P.ride=null;}return;}
+  const tn=R.tr,q=trkAt(tn.s-CARL-CARG/2-CARL/2);P.x=q.x;P.y=q.y;P.a=q.a;P.walk=0;P.mvx=tn.v*Math.cos(q.a)*0.6;P.mvy=tn.v*Math.sin(q.a)*0.6;
+  if(IN.enterP){IN.enterP=false;if(tn.st==='stop'&&tn.at)trainExit(tn.at);else{R.exit=!R.exit;const nx=tn.nx||nextStation(tn.s);toast(R.exit?fmt(tr('trExitNext'),L(nx.name)):fmt(tr('trNext'),L(nx.name)),2.5);}}}
+// ---------- drawing ----------
+function drawTrack(inV){const DK=c=>ENV.dark>0.03?shade(c,-ENV.dark*0.62):c,P=TRK.pts,c=G.cam,vw=G.view;if(!P.length||!vw)return;const pad=400,inb=(x,y)=>x>vw[0]-pad&&x<vw[2]+pad&&y>vw[1]-pad&&y<vw[3]+pad,segIn=(a,b)=>Math.max(a[0],b[0])>vw[0]-pad&&Math.min(a[0],b[0])<vw[2]+pad&&Math.max(a[1],b[1])>vw[1]-pad&&Math.min(a[1],b[1])<vw[3]+pad,d=ENV.dark,su=ENV.sun;
+  // pillars + shadow
+  g.fillStyle=`rgba(0,4,18,${0.22*(1-d*0.5)})`;for(let i=1;i<P.length;i++){const a=P[i-1],b=P[i];if(!segIn(a,b))continue;const L2=hyp(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.floor(L2/(6*T)));
+    for(let k=0;k<=n;k++){const x=a[0]+(b[0]-a[0])*k/n,y=a[1]+(b[1]-a[1])*k/n;if(!inV(x,y,60))continue;g.fillStyle=DK('#8d949c');g.fillRect(x-9,y-9,18,18);const q=projPt(x,y,TRH);g.strokeStyle=DK('#7a828b');g.lineWidth=14;g.beginPath();g.moveTo(x,y);g.lineTo(q[0],q[1]);g.stroke();}}
+  const vx0=vw[0]-pad,vy0=vw[1]-pad,vx1=vw[2]+pad,vy1=vw[3]+pad,segs=[];
+  for(let i=1;i<P.length;i++){let [ax,ay]=P[i-1],[bx,by]=P[i];const dx=bx-ax,dy=by-ay;let t0=0,t1=1,ok=true;
+    for(const [pp,qq] of [[-dx,ax-vx0],[dx,vx1-ax],[-dy,ay-vy0],[dy,vy1-ay]]){if(pp===0){if(qq<0){ok=false;break;}}else{const r=qq/pp;if(pp<0){if(r>t1){ok=false;break;}if(r>t0)t0=r;}else{if(r<t0){ok=false;break;}if(r<t1)t1=r;}}}
+    if(ok)segs.push([projPt(ax+dx*t0,ay+dy*t0,TRH),projPt(ax+dx*t1,ay+dy*t1,TRH)]);}
+  const beam=(w,col,cap)=>{g.strokeStyle=col;g.lineWidth=w;g.lineCap=cap||'round';g.beginPath();for(const [a,b] of segs){g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);}g.stroke();};
+  g.save();beam(46,DK('#5d646c'));beam(40,DK('#a9b1ba'));beam(30,DK('#6f6656'));beam(2.5,DK('#d0d5da'));g.setLineDash([3,9]);beam(26,DK('#4a4038'),'butt');g.restore();
+  // stations: platform + canopy + sign
+  for(const st of STATIONS){if(!inV(st.px,st.py,260))continue;g.save();const q=projPt(st.px,st.py,TRH);g.translate(q[0],q[1]);g.rotate(st.a);
+    g.fillStyle='rgba(0,0,0,0.25)';g.fillRect(-150,22,300,8);g.fillStyle=DK('#c3c9cf');g.fillRect(-150,20,300,34);g.fillStyle=DK('#e6e9ec');g.fillRect(-150,20,300,5);g.fillStyle='#ffd23f';g.fillRect(-150,23,300,3);
+    g.fillStyle=DK('#2f3a46');rrect(g,-120,30,240,22,6);g.fill();g.fillStyle='rgba(255,255,255,0.12)';for(let k=-110;k<120;k+=30)g.fillRect(k,32,14,18);
+    g.restore();const sg=projPt(st.gx,st.gy,TRH*0.55);g.strokeStyle='#5d646c';g.lineWidth=5;g.beginPath();g.moveTo(st.gx,st.gy);g.lineTo(sg[0],sg[1]);g.stroke();
+    g.fillStyle='#1f5f8b';rrect(g,sg[0]-58,sg[1]-13,116,26,6);g.fill();g.strokeStyle='#e6e9ec';g.lineWidth=2;rrect(g,sg[0]-58,sg[1]-13,116,26,6);g.stroke();g.save();g.fillStyle='#fff';g.font='bold 12px Rubik,sans-serif';g.textAlign='center';g.textBaseline='middle';g.direction=G.lang==='he'?'rtl':'ltr';g.fillText('🚆 '+L(st.name),sg[0],sg[1]+1,110);g.restore();}
+  // trains
+  for(const tr of TRAINS)for(let k=0;k<NCAR;k++){const s=tr.s-k*(CARL+CARG)-CARL/2,q=trkAt(s);if(!inV(q.x,q.y,120))continue;const a=trkAt(s+CARL*0.45),b=trkAt(s-CARL*0.45),ang=Math.atan2(a.y-b.y,a.x-b.x),pp=projPt(q.x,q.y,TRH+14);
+    g.fillStyle=`rgba(0,4,18,${0.28*(1-d*0.5)})`;g.save();g.translate(q.x+su.ox*60+20,q.y+su.oy*60+26);g.rotate(ang);rrect(g,-CARL/2,-16,CARL,32,12);g.fill();g.restore();
+    g.save();g.translate(pp[0],pp[1]);g.rotate(ang);const nose=k===0?1:k===NCAR-1?-1:0;
+    g.beginPath();const L2=CARL/2,W2=17;g.moveTo(-L2+(nose<0?16:5),-W2);g.lineTo(L2-(nose>0?18:5),-W2);if(nose>0)g.quadraticCurveTo(L2+4,-W2,L2+4,0),g.quadraticCurveTo(L2+4,W2,L2-18,W2);else g.quadraticCurveTo(L2,-W2,L2,-W2+5),g.lineTo(L2,W2-5),g.quadraticCurveTo(L2,W2,L2-5,W2);
+    g.lineTo(-L2+(nose<0?16:5),W2);if(nose<0)g.quadraticCurveTo(-L2-4,W2,-L2-4,0),g.quadraticCurveTo(-L2-4,-W2,-L2+16,-W2);else g.quadraticCurveTo(-L2,W2,-L2,W2-5),g.lineTo(-L2,-W2+5),g.quadraticCurveTo(-L2,-W2,-L2+5,-W2);g.closePath();
+    const gr=g.createLinearGradient(0,-W2,0,W2);gr.addColorStop(0,DK(shade(tr.col,0.15)));gr.addColorStop(0.5,DK(tr.col));gr.addColorStop(1,DK(shade(tr.col,-0.25)));g.fillStyle=gr;g.fill();g.strokeStyle='rgba(0,0,0,0.45)';g.lineWidth=1.5;g.stroke();
+    g.fillStyle=tr.stripe;g.fillRect(-L2+6,-W2+2,CARL-12,3);g.fillRect(-L2+6,W2-5,CARL-12,3);g.fillStyle=d>0.4?'rgba(255,236,180,0.95)':'#33495c';for(let x=-L2+12;x<L2-12;x+=15){g.fillRect(x,-W2+6,10,4);g.fillRect(x,W2-10,10,4);}
+    g.fillStyle='rgba(0,0,0,0.18)';g.fillRect(-L2+10,-3,CARL-20,6);g.fillStyle='#7d8791';g.fillRect(-12,-8,24,16);
+    if(nose){g.fillStyle='#1d2733';const nx=nose>0?L2-10:-L2+4;g.beginPath();g.ellipse(nx+3,0,6,12,0,0,TAU);g.fill();g.fillStyle=nose>0?'#fff3b8':'#ff4a3a';g.fillRect(nose>0?L2:-L2-3,-11,3,5);g.fillRect(nose>0?L2:-L2-3,6,3,5);}
+    if(G.player.ride&&G.player.ride.tr===tr&&k===1){g.fillStyle='#7dffb0';g.beginPath();g.arc(0,0,6,0,TAU);g.fill();g.strokeStyle='#0b1020';g.lineWidth=2;g.stroke();}g.restore();}}
+function trainGlow(){if(ENV.dark<0.2)return;g.globalCompositeOperation='lighter';for(const tr of TRAINS){const h=trkAt(tr.s),hp=projPt(h.x,h.y,TRH+14);if(Math.abs(h.x-G.cam.x)>1400||Math.abs(h.y-G.cam.y)>1000)continue;glow(g,GL.warm,hp[0]+Math.cos(h.a)*40,hp[1]+Math.sin(h.a)*40,120,ENV.dark*0.6);
+    for(let k=0;k<NCAR;k++){const q=trkAt(tr.s-k*(CARL+CARG)-CARL/2),pp=projPt(q.x,q.y,TRH+14);glow(g,GL.warm,pp[0],pp[1],70,ENV.dark*0.35);}}
+  for(const st of STATIONS){if(Math.abs(st.px-G.cam.x)>1400||Math.abs(st.py-G.cam.y)>1000)continue;const q=projPt(st.px,st.py,TRH);glow(g,GL.white,q[0],q[1],170,ENV.dark*0.35);}g.globalAlpha=1;g.globalCompositeOperation='source-over';}
+function trackMini(c,ox,oy,sc,w){const P=TRK.pts;if(!P.length)return;c.strokeStyle='rgba(200,214,227,0.9)';c.lineWidth=w;c.setLineDash([w*2,w*1.3]);c.beginPath();for(let i=0;i<P.length;i++){const x=ox+P[i][0]*sc,y=oy+P[i][1]*sc;if(i)c.lineTo(x,y);else c.moveTo(x,y);}c.closePath();c.stroke();c.setLineDash([]);}
+
+// ---------- v7: weapons, melee combos, heli damage, smarter police, emotes ----------
+Object.assign(WEAP,{bat:{he:'מחבט בייסבול',en:'Baseball Bat',rate:0.5,melee:1,dmg:20,reach:46,arc:1.3,price:80,pack:1},knife:{he:'סכין',en:'Knife',rate:0.3,melee:1,dmg:24,reach:34,arc:0.9,price:120,pack:1},
+ magnum:{he:'מגנום',en:'Magnum',rate:0.65,dmg:58,spread:0.02,price:900,pack:18},sniper:{he:'רובה צלפים',en:'Sniper Rifle',rate:1.3,dmg:115,spread:0.004,price:4500,pack:12,range:1},
+ molotov:{he:'בקבוקי מולוטוב',en:'Molotovs',rate:0.9,dmg:0,molo:1,price:700,pack:5},minigun:{he:'מיניגאן',en:'Minigun',rate:0.05,dmg:11,spread:0.1,price:30000,pack:400,heavy:1}});
+Object.assign(WEAP.rocket,{he:'בזוקה',en:'Bazooka',price:20000,pack:3});
+WORDER.splice(0,WORDER.length,'fist','bat','knife','pistol','magnum','smg','shotgun','rifle','sniper','flame','molotov','grenade','rocket','minigun');
+Object.assign(WICON,{bat:WSV('<path d="M4 15l30-7c4-1 9-1 10 1s-2 5-6 6L8 19c-2 .5-4-.5-4-2z"/>'),knife:WSV('<rect x="5" y="10" width="13" height="5" rx="2"/><path d="M18 9h6c8 0 15 2 20 4c-5 2-12 2-20 2h-6z"/>'),
+ magnum:WSV('<path d="M6 6h32v4h4v3H26l-1 3h-3a4 4 0 0 1-8 0h-1l-2 8H6l2-10H6z"/><circle cx="18" cy="13" r="3.5"/>'),
+ sniper:WSV('<path d="M1 11h10l3-2h18v2h15v2H32v2h-8l-2 8h-4l-1-7h-5l-2 5H8l2-6H1z"/><rect x="16" y="4" width="13" height="4" rx="2"/><rect x="21" y="8" width="2" height="2"/>'),
+ molotov:WSV('<path d="M20 9h8v4c4 2 6 5 6 9v1H14v-1c0-4 2-7 6-9z"/><rect x="21" y="5" width="6" height="4"/><path d="M24 5c-3-2 0-5 2-4c0 2 3 2 1 4z"/>'),
+ minigun:WSV('<rect x="2" y="7" width="16" height="11" rx="3"/><rect x="18" y="8" width="26" height="2.4"/><rect x="18" y="11.3" width="26" height="2.4"/><rect x="18" y="14.6" width="26" height="2.4"/><rect x="8" y="18" width="5" height="5"/>'),
+ rocket:WSV('<path d="M3 9h33v7H3z"/><path d="M36 7h4v11h-4z"/><path d="M40 8.5l6 4-6 4z"/><rect x="12" y="16" width="4" height="6"/><rect x="22" y="16" width="3" height="4"/><rect x="5" y="6" width="6" height="3"/>')});
+Object.assign(STR.he,{owned2:'יש לך',heliHit:'פגעת במסוק!',dragged2:'השוטר שולף אותך מהרכב!',gotBz:'מצאת בזוקה! אל תספר לאף אחד.',gotMini:'מצאת מיניגאן סודי!'});
+Object.assign(STR.en,{owned2:'Owned',heliHit:'You hit the helicopter!',dragged2:'The cop is pulling you out of the car!',gotBz:'You found a bazooka! Tell no one.',gotMini:'You found a secret minigun!'});
+Object.assign(REACT,{beg:[R2('בבקשה! יש לי ילדים!','Please! I have kids!'),R2('אני מצטער! אני מצטער!','I am sorry! I am sorry!'),R2('קח את הארנק, הנה, קח!','Take my wallet, here, take it!'),R2('אמא שלי לא תשרוד את זה!','My mother will not survive this!'),R2('זה היה רק ויכוח, אחי!','It was just an argument, man!')],
+ pullgun:[R2('אה, ככה? גם לי יש!','Oh, like that? I have one too!'),R2('טעית בבחור, חבר!','Wrong guy, pal!'),R2('עכשיו זה רציני!','Now it is serious!'),R2('חשבת שרק לך יש?','You thought only you had one?')],
+ bizOffer:[R2('אני נותן לך את השעון! הוא שווה הון!','Take my watch! It is worth a fortune!'),R2('בוא נגיע להסדר, אני משלם!','Let us settle this, I will pay!')],
+ copDrag:[R2('החוצה מהרכב!','Out of the car!'),R2('ידיים על ההגה!','Hands on the wheel!'),R2('צא לאט!','Step out slowly!'),R2('נגמרה הנסיעה!','Ride is over!')],
+ fart:[R2('איכס! מה אכלת?!','Ew! What did you eat?!'),R2('אני לא נושם עד שאתה הולך.','I am not breathing until you leave.'),R2('יש פה דליפת גז?','Is there a gas leak?'),R2('בבקשה, יש פה ילדים!','Please, there are kids here!'),R2('זה היה אתה?!','Was that you?!'),R2('העיניים שלי שורפות!','My eyes are burning!')],
+ burp:[R2('בתיאבון, כנראה.','Bon appetit, I guess.'),R2('איזה גסות רוח!','How rude!'),R2('עשר מתוך עשר.','Ten out of ten.'),R2('נשמע כמו מנוע של משאית.','Sounded like a truck engine.')],
+ whistle:[R2('אתה שורק לי?','Are you whistling at me?'),R2('יפה, תעשה עוד אחד!','Nice, do another one!'),R2('לא, תודה.','No, thanks.'),R2('הכלב שלי בדיוק בא בגלל זה.','My dog just came running because of that.')],
+ laugh:[R2('מה מצחיק?','What is so funny?'),R2('גם אני רוצה לצחוק!','I want to laugh too!'),R2('הוא צוחק עליי?','Is he laughing at me?'),R2('מצחיק אותו משהו.','Something amuses him.')],
+ dance:[R2('יש לו קצב!','He has rhythm!'),R2('אין לו קצב.','He has no rhythm.'),R2('יאללה, גם אני!','Come on, me too!'),R2('תצלמו את זה!','Someone film this!')],
+ yell:[R2('למה אתה צועק?!','Why are you yelling?!'),R2('אני כאן, אני כאן!','I am right here!'),R2('אוי, הלב שלי.','Oh, my heart.'),R2('היי גם לך!','Hey to you too!')],
+ copFun:[R2('אדוני, זה מגעיל.','Sir, that is disgusting.'),R2('אני אעשה שלא שמעתי.','I will pretend I did not hear that.'),R2('יש קנס על זה, אתה יודע?','There is a fine for that, you know.'),R2('תמשיך ללכת, אזרח.','Keep walking, citizen.')]});
+// ---------- melee combos ----------
+function attack(){const P=G.player,w=G.weapon,W=WEAP[w];if(w==='fist'||W.melee){meleeAttack(P,w,W);return;}
+  G.fireCD=W.rate;G.weapons[w]--;if(!W.flame)P.a=autoAim(P);
+  if(W.pellets)for(let i=0;i<W.pellets;i++)fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{life:0.3,quiet:i>0});
+  else if(W.flame){fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{kind:'flame',spd:430,life:0.42});if(rand()<0.3)sfx.flame();}
+  else if(W.nade)fire(P,null,P.x,P.y,P.a,W.dmg,0.02,true,{kind:'nade',spd:400,life:0.85,quiet:1});
+  else if(W.molo){fire(P,null,P.x,P.y,P.a,0,0.03,false,{kind:'molo',spd:380,life:0.8,quiet:1});aN(0.18,0.12,'bandpass',700,1,{to:1800});}
+  else if(W.range){fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{spd:1800,life:0.62});aT(60,0.5,'sine',0.35,{to:30,rev:0.6});}
+  else{fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,!!W.expl,W.heavy?{quiet:Math.floor(G.time*20)%2}:{});if(W.heavy)G.shake=Math.max(G.shake||0,1.6);if(w==='magnum')G.shake=Math.max(G.shake||0,2.5);}
+  if(G.weapons[w]<=0){G.weapon='fist';toggleWbar(false);}crime(1,false);}
+function meleeAttack(P,w,W){const air=P.jump>0,sprint=IN.b||IN.keys.ShiftLeft||IN.keys.ShiftRight,now=G.time;G.combo=now-(G.lastPunch||0)<0.95?(G.combo||0)+1:1;G.lastPunch=now;
+  let kind,dmg,kb,stun=0,reach=W.reach||36,arc=W.arc||1.1,rate=W.rate,multi=1;
+  if(w==='fist'){if(air){kind='kick';dmg=18;kb=330;stun=1.6;reach=48;rate=0.6;}else if(sprint&&hyp(P.mvx||0,P.mvy||0)>120){kind='shove';dmg=4;kb=340;stun=0.9;rate=0.55;arc=1.3;}
+    else{const c=(G.combo-1)%4;kind=['jab','cross','hook','kick'][c];dmg=[7,9,13,15][c];kb=[60,90,240,290][c];stun=[0,0,1.1,1.5][c];if(c===3)reach=46;rate=c===3?0.55:0.3;}}
+  else if(w==='bat'){kind='swing';dmg=W.dmg+(G.combo%2?0:6);kb=290;stun=G.combo%2===0?1.6:0.7;multi=2;}else{kind='stab';dmg=W.dmg;kb=40;}
+  let down=null;for(const p of G.peds){if(p.dead||p.veh||!(p.stun>0)||hyp(p.x-P.x,p.y-P.y)>30)continue;if(Math.abs(angDiff(P.a,Math.atan2(p.y-P.y,p.x-P.x)))<1.2){down=p;break;}}
+  if(down&&kind!=='shove'&&w==='fist'){kind='stomp';dmg=14;kb=0;stun=1;rate=0.45;}
+  G.fireCD=rate;G.punchT=kind==='swing'?0.3:0.22;G.punchK=kind;
+  const hits=[];if(kind==='stomp')hits.push(down);else{const cand=[];for(const p of G.peds){if(p===P||p.dead||p.veh)continue;const d=hyp(p.x-P.x,p.y-P.y);if(d<reach&&Math.abs(angDiff(P.a,Math.atan2(p.y-P.y,p.x-P.x)))<arc)cand.push([d,p]);}cand.sort((a,b)=>a[0]-b[0]);for(const c of cand.slice(0,multi))hits.push(c[1]);}
+  if(!hits.length){aN(0.12,0.08,'bandpass',w==='bat'?500:1400,1,{to:w==='bat'?1600:3000});return;}
+  for(const best of hits){hurtPed(best,dmg+rand()*3,P,w==='knife'?'stab':'punch');if(kb){best.kvx=Math.cos(P.a)*kb;best.kvy=Math.sin(P.a)*kb;}if(stun&&!best.dead)best.stun=Math.max(best.stun||0,stun);
+    part('flash',best.x,best.y,0,0,0.08,kind==='kick'||kind==='swing'?10:7);if(w==='knife')for(let k=0;k<5;k++)part('blood',best.x,best.y,rr(-70,70),rr(-70,70),0.4,3);}
+  if(w==='bat'){aT(320,0.07,'square',0.18,{lp:1800});aN(0.1,0.3,'bandpass',900,1.2);}else if(w==='knife')aN(0.08,0.2,'highpass',2500,1);else{sfx.punch();if(kind==='kick'||kind==='hook'||kind==='stomp')aT(90,0.14,'sine',0.35,{to:45});}
+  if(kind==='kick'||kind==='hook'||kind==='swing'||kind==='stomp')G.shake=Math.max(G.shake||0,3);}
+function autoAim(P){const W=WEAP[G.weapon]||{},R=W.range?900:400;let best=null,bs=1e9;for(const p of G.peds){if(p===P||p.dead||p.veh)continue;const dx=p.x-P.x,dy=p.y-P.y,d=hyp(dx,dy);if(d>R)continue;
+  const da=Math.abs(angDiff(P.a,Math.atan2(dy,dx)));if(da>0.75)continue;let sc=d*(1+da*2);if(p.hostile||(p.type==='cop'&&G.wanted>0)||(p.type==='soldier'&&G.inBase))sc*=0.3;if(sc<bs&&los(P.x,P.y,p.x,p.y)){bs=sc;best=p;}}
+  if(!best&&G.heli&&hyp(G.heli.x-P.x,G.heli.y-P.y)<460)return Math.atan2(G.heli.y-P.y,G.heli.x-P.x);return best?Math.atan2(best.y-P.y,best.x-P.x):P.a;}
+// ---------- molotov fires ----------
+G.fires=[];
+function moloLand(x,y){if(tileAt(x,y)===TL.WATER){splash(x,y,8);return;}G.fires.push({x,y,t:6});aN(0.4,0.3,'bandpass',900,0.8,{to:300});aN(0.6,0.2,'lowpass',500,0.7);crime(1,false);G.shotT=G.time;G.shotX=x;G.shotY=y;}
+function firesTick(dt){const P=G.player;for(const f of G.fires){f.t-=dt;if(rand()<0.9)for(let k=0;k<2;k++)part('fire',f.x+rr(-45,45),f.y+rr(-45,45),rr(-12,12),rr(-50,-15),rr(0.4,0.8),rr(6,13));if(rand()<0.3)part('smoke',f.x+rr(-30,30),f.y+rr(-30,30),rr(-15,15)-ENV.wind*30,rr(-60,-25),rr(1.2,2),rr(10,16));
+    for(const p of G.peds){if(p.dead||p.veh)continue;const d=hyp(p.x-f.x,p.y-f.y);if(d<55&&!(p.burn>0))p.burn=2.2;else if(d<200&&p.type==='civ'&&p.st!=='flee'){p.st='flee';p.ft=3;p.fx=f.x;p.fy=f.y;}}
+    if(!P.veh&&!P.ride&&hyp(P.x-f.x,P.y-f.y)<50&&!(P.burn>0))P.burn=1.2;for(const v of G.vehicles)if(!v.dead&&hyp(v.x-f.x,v.y-f.y)<55)damageVeh(v,12*dt,G.player,'shot');}
+  G.fires=G.fires.filter(f=>f.t>0);}
+// ---------- police helicopter can be shot ----------
+function heliHit(b){const h=G.heli;if(!h||b.op!==G.player)return false;if(hyp(b.x-h.x,b.y-h.y)>(b.expl?64:46))return false;
+  if(!b.expl){h.hp=(h.hp??280)-b.dmg*0.8;for(let k=0;k<3;k++)part('spark',b.x,b.y,rr(-80,80),rr(-80,80),0.25,2);if(!G.seen.heliHit){G.seen.heliHit=1;toast(tr('heliHit'),2);}if(h.hp>0){if(rand()<0.25)aT(1800,0.05,'square',0.06);return true;}}
+  explodeAt(h.x,h.y,G.player);for(let k=0;k<14;k++)part('smoke',h.x+rr(-40,40),h.y+rr(-40,40),rr(-60,60),rr(-60,60),2,rr(12,20));G.heli=null;G.heliCD=50;toast(tr('heliDown'));G.money+=500;addHeat(4);post('heli');return true;}
+function heliExtra(dt){const h=G.heli;if(!h)return;if((h.hp??280)<140&&rand()<0.5)part('smoke',h.x+rr(-12,12),h.y+rr(-12,12),rr(-20,20)-ENV.wind*40,rr(-40,-10),1.4,rr(8,13));
+  if(G.wanted>=4&&h.see&&!G.player.dead){h.gcd=(h.gcd||1.5)-dt;if(h.gcd<=0){h.gcd=rr(1.6,2.6);const P=G.player,a=Math.atan2(P.y-h.y,P.x-h.x);fire({x:h.x,y:h.y,heli:1},null,h.x,h.y,a,9,0.12,false,{quiet:0});}}}
+// ---------- smarter police and thugs ----------
+function aiHostile(p,dt){const P=G.player,tgt=P.veh||P,d=hyp(tgt.x-p.x,tgt.y-p.y),cop=p.type==='cop';
+  if(cop&&!G.seenNow&&G.lastSeen&&!(d<sightRange()&&los(p.x,p.y,tgt.x,tgt.y))){const ls=G.lastSeen,dl=hyp(ls.x-p.x,ls.y-p.y);p.arr=0;
+    if(dl>70){p.a=Math.atan2(ls.y-p.y,ls.x-p.x);walkDir(p,110,dt);}else{p.tm-=dt;if(p.tm<=0){p.tm=rr(1,2.5);p.sa=rr(0,TAU);}p.a=p.sa||0;walkDir(p,60,dt);}return;}
+  p.a=Math.atan2(tgt.y-p.y,tgt.x-p.x);
+  if(cop&&p.sayT<=0&&rand()<dt*0.3&&onScreen(p.x,p.y,0)){say(p,G.wanted>=3?'copHard':G.wanted<=2?'cop':'copChase');sfx.voice(p,dv(p.x,p.y));}
+  const v=P.veh,car=v&&!v.t.boat&&!v.t.plane&&!(v.alt>0.25);
+  if(cop&&car&&Math.abs(v.speed)<45&&(G.wanted<=3||p.id%3!==0)){const ca=Math.cos(v.a),sa=Math.sin(v.a),sd=p.id%2?1:-1,dx=v.x+sa*sd*(v.t.w*0.5+13),dy=v.y-ca*sd*(v.t.w*0.5+13),dd=hyp(dx-p.x,dy-p.y);
+    if(dd>18){p.a=Math.atan2(dy-p.y,dx-p.x);walkDir(p,155,dt);p.arr=Math.max(0,(p.arr||0)-dt*0.5);}
+    else{p.walk=0;p.a=Math.atan2(v.y-p.y,v.x-p.x);p.arr=(p.arr||0)+dt;G.bustCar=Math.max(G.bustCar||0,p.arr/1.4);if(p.sayT<=0){say(p,'copDrag');sfx.voice(p,dv(p.x,p.y));}if(p.arr>1.4){p.arr=0;dragOut(p);}}return;}
+  if(cop&&car&&G.wanted<=2){walkDir(p,140,dt);return;}
+  const melee=p.wpn==='knife'||p.wpn==='bat'||!p.wpn&&p.type==='gang';
+  if(melee){if(d>24){flankMove(p,tgt,d,24,150,dt);}else{p.walk=0;if(p.cool<=0&&!P.veh&&!(P.jump>0)){p.cool=0.85;hurtPed(P,p.wpn==='knife'?12:p.wpn==='bat'?14:7,p,'punch');sfx.punch();P.kvx=Math.cos(p.a)*150;P.kvy=Math.sin(p.a)*150;G.hurtFlash=0.4;}}return;}
+  const arrest=cop&&G.wanted<=2&&!P.veh;const keep=arrest?14:(p.type==='soldier'?220:150);
+  if(d>keep||!los(p.x,p.y,tgt.x,tgt.y)){if(arrest)walkDir(p,140,dt);else flankMove(p,tgt,d,keep,p.type==='soldier'?100:125,dt);}else p.walk=0;
+  if(arrest){if(!P.roof&&!P.climb&&!(P.jump>0)&&d<28){G.bustBy=G.time;if(p.cool<=0){p.cool=1.5;hurtPed(P,4,p,'punch');sfx.punch();G.stagger=0.3;G.hurtFlash=0.3;}}return;}
+  if(p.cool<=0&&d<340&&los(p.x,p.y,tgt.x,tgt.y)){if(!fireBudget(p)){p.cool=rr(0.2,0.5);return;}p.cool=p.type==='soldier'?0.6:rr(0.9,1.5);
+    fire(p,null,p.x,p.y,p.a,p.type==='soldier'?12:cop?7:9,p.type==='soldier'?0.12:cop?0.2:0.16);}}
+function flankMove(p,tgt,d,keep,sp,dt){const ang=(p.id*2.399)%TAU,off=Math.min(keep*0.8,d*0.5),tx=tgt.x+Math.cos(ang)*off,ty=tgt.y+Math.sin(ang)*off;p.a=Math.atan2(ty-p.y,tx-p.x);walkDir(p,sp,dt);p.a=Math.atan2(tgt.y-p.y,tgt.x-p.x);}
+function dragOut(p){const P=G.player,v=P.veh;if(!v)return;exitVehicle();if(P.veh)return;toast(tr('dragged2'),2);sfx.punch();const a=Math.atan2(P.y-p.y,P.x-p.x);knockDown(0.9,Math.cos(a)*120,Math.sin(a)*120);hurtPed(P,4,p,'punch');G.bustBy=G.time;if(G.wanted<=2)G.bust=Math.max(G.bust||0,0.45);}
+function roadblockTick(dt){G.rbCD=(G.rbCD??20)-dt;const P=G.player,v=P.veh;if(G.rbCD>0||G.wanted<3||!v||Math.abs(v.speed)<200||v.t.boat||v.t.plane)return;
+  const sp=hyp(v.vx,v.vy)||1,ux=v.vx/sp,uy=v.vy/sp;for(const dist of [1100,1300,950]){const [i,j]=nearestNode(P.x+ux*dist,P.y+uy*dist),q=nodePos(i,j);if(onScreen(q.x,q.y,120)||hyp(q.x-P.x,q.y-P.y)<800)continue;
+    const dx=q.x-P.x,dy=q.y-P.y;if((dx*ux+dy*uy)/hyp(dx,dy)<0.8)continue;const pa=Math.atan2(uy,ux)+Math.PI/2,ca=Math.cos(pa),sa=Math.sin(pa);
+    for(const s of [-1,1]){const c=mkVeh('police',q.x+ca*s*34-ux*20,q.y+sa*s*34-uy*20,pa+(s>0?0.25:-0.25));c.siren=true;c.rb=true;const cp=mkPed('cop',c.x-ux*60,c.y-uy*60,{persist:false});cp.car=c;}
+    G.rbCD=rr(28,40);return;}G.rbCD=3;}
+// ---------- civilians who see a gun mid-fight ----------
+function gunReact(p){const K=KINDS[p.kind]||{},r=((p.id*2654435761)>>>0)%100,P=G.player;p.brawl=0;p.conv=null;
+  const tough=K.tough||p.kind==='worker'||p.kind==='punk';
+  if(tough&&r<45){p.type='gang';p.faction='thug';p.hostile=true;p.wpn=pick(['pistol','knife','bat']);p.shirt=p.shirt||'#3a3a3a';say(p,'pullgun',2.5);sfx.voice(p,1);return;}
+  if(p.kind==='biz'&&r<60){p.st='beg';p.ft=2.2;p.bizOffer=1;say(p,'bizOffer',2.5);sfx.voice(p,1);return;}
+  if(p.kind==='elder'||r<35){p.st='beg';p.ft=2.2;say(p,'beg',2.5);sfx.voice(p,1);return;}
+  if(r<55){p.st='call';p.callT=4;p.fx=P.x;p.fy=P.y;say(p,'call',3);return;}
+  p.st='flee';p.ft=7;p.fx=P.x;p.fy=P.y;say(p,'gun',2);sfx.scream(1,p.voice||220);}
+function begTick(p,dt){p.ft-=dt;p.walk=0;const P=G.player;p.a=Math.atan2(P.y-p.y,P.x-p.x);if(p.ft<=0){mkPickup('cash',p.x+Math.cos(p.a)*16,p.y+Math.sin(p.a)*16,{amt:p.bizOffer?ri(150,400):ri(20,90)});p.st='flee';p.ft=6;p.fx=P.x;p.fy=P.y;p.bizOffer=0;}}
+// ---------- emotes: fart, burp, whistle, laugh, dance, yell ----------
+const EMOTES=['fart','burp','whistle','laugh','dance','yell'];
+function emote(){const P=G.player;if((G.emoteCD||0)>0||P.veh||P.dead||P.inside||P.ride||G.state!=='play')return;G.emoteCD=1.1;const k=EMOTES[bagPick('emote',EMOTES)],EM={fart:'💨',burp:'😮‍💨',whistle:'🎵',laugh:'😂',dance:'🕺',yell:'📣'};
+  P.say=EM[k];P.sayT=1.4;const ca=Math.cos(P.a),sa=Math.sin(P.a);
+  if(k==='fart'){for(let i=0;i<6;i++)aT(rr(70,115),0.09,'sawtooth',0.16,{lp:420,at:i*0.065,to:rr(55,90)});aN(0.55,0.22,'bandpass',160,3,{to:90});for(let i=0;i<10;i++)part('gas',P.x-ca*10+rr(-8,8),P.y-sa*10+rr(-8,8),-ca*30+rr(-20,20),-sa*30+rr(-20,20),rr(1.2,2),rr(8,14));}
+  else if(k==='burp'){aSyl(78,0,0.55,0.32,3);aSyl(70,0.5,0.25,0.2,4);}
+  else if(k==='whistle'){aT(1300,0.25,'sine',0.13,{to:2300});aT(1250,0.45,'sine',0.13,{to:700,at:0.32});}
+  else if(k==='laugh'){for(let i=0;i<6;i++)aSyl(175-i*6,i*0.13,0.1,0.22,0);}
+  else if(k==='dance'){G.danceT=2.4;[523,659,784,659,523,784,1046].forEach((f,i)=>aT(f,0.16,'triangle',0.12,{at:i*0.16}));}
+  else{aSyl(160,0,0.42,0.35,0,0.4);P.say=G.lang==='he'?'היי!':'HEY!';}
+  let n=0;for(const p of G.peds){if(p.dead||p.veh||p.medicP||(p.type!=='civ'&&p.type!=='cop'))continue;const d=hyp(p.x-P.x,p.y-P.y);if(d>(k==='yell'?260:170))continue;
+    if(p.kind==='dog'){if(k==='fart'||k==='whistle'){p.st='walk';p.a=Math.atan2(P.y-p.y,P.x-p.x);say(p,'dog',1.2);sfx.bark(dv(p.x,p.y));}continue;}
+    if(n<3&&p.sayT<=0){n++;setTimeout(()=>{if(p.dead)return;say(p,p.type==='cop'?'copFun':k,2.6);sfx.voice(p,dv(p.x,p.y));},250+n*450);}
+    if(p.type!=='civ')continue;p.conv=null;
+    if(k==='fart'&&d<110){p.st='flee';p.ft=1.6;p.fx=P.x;p.fy=P.y;}
+    else if(k==='dance'&&rand()<0.45){p.st='dance';p.ft=rr(2.5,4);}else if(p.st==='walk'||p.st==='idle'){p.st='idle';p.tm=2;p.a=Math.atan2(P.y-p.y,P.x-p.x);}}}
+function emoteTick(dt){const P=G.player;if(G.emoteCD>0)G.emoteCD-=dt;if(P.sayT>0)P.sayT-=dt;if(G.danceT>0){G.danceT-=dt;P.a+=dt*9;if(rand()<dt*6)part('spark',P.x+rr(-20,20),P.y-20+rr(-10,10),rr(-20,20),-50,0.8,3);}
+  if(!G.emoBound){G.emoBound=1;const b=$('bF');b.innerHTML='<span style="font-size:22px">😜</span>';b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();AU.init();emote();});addEventListener('keydown',e=>{if(e.code==='KeyF')emote();});}
+  const show=!P.veh&&!P.inside&&!P.ride&&!P.dead&&G.state==='play';if(show!==G.emoShown){G.emoShown=show;$('bF').style.display=show?'flex':'none';}}
+function genWeapons(){Object.assign(PKC,{bat:['#8d6e63','/'],knife:['#95a5a6','†'],magnum:['#7f8c8d','M'],sniper:['#34495e','◎'],molotov:['#d35400','🔥'],minigun:['#2c3e50','≡']});const R=RESTRICT;WPICKS.push({type:'rocket',x:(R.x0+R.x1)/2+90,y:(R.y0+R.y1)/2-60,once:'bz1'},{type:'minigun',x:(R.x0+R.x1)/2-120,y:R.y1-160,once:'mg1'},{type:'rocket',x:343*T,y:190*T,once:'bz2'},
+  {type:'bat',x:POI.start.x+260,y:POI.start.y+40},{type:'knife',x:POI.club.x+120,y:POI.club.y+50},{type:'molotov',x:POI.brew.x+60,y:POI.brew.y+40},{type:'magnum',x:POI.cops.x-150,y:POI.cops.y+40},{type:'sniper',x:POI.halo.x+140,y:POI.halo.y+30});}
 
 const CV=document.getElementById('cv'),g=CV.getContext('2d');
 const LC=document.createElement('canvas'),lg=LC.getContext('2d');
@@ -2028,7 +2349,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
   for(const p of G.pickups){if(p.taken||p.h||!inV(p.x,p.y,30))continue;drawPickup(p);}
   for(const p of G.peds)if(p.dead&&!p.veh&&inV(p.x,p.y,30))drawPed(p);
   for(const p of G.peds)if(!p.dead&&!p.veh&&inV(p.x,p.y,30))drawPed(p);
-  if(!P.veh&&G.state!=='title'&&!P.roof&&!P.climb)drawPlayer();
+  if(!P.veh&&G.state!=='title'&&!P.roof&&!P.climb&&!(P.ride&&P.ride.tr))drawPlayer();
   for(const v of G.vehicles){v.onScreen=inV(v.x,v.y,-20);if(inV(v.x,v.y,80)&&!(v.alt>0.25))drawVeh(v);}
   const bl=[];for(const b of BUILDINGS){const x0=b.x*T,y0=b.y*T,x1=x0+b.w*T,y1=y0+b.h*T;if(x1<vx0-380||x0>vx1+380||y1<vy0-380||y0>vy1+380)continue;
     b._d=hyp((x0+x1)/2-c.x,(y0+y1)/2-c.y);bl.push(b);}
@@ -2041,7 +2362,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
     g.fill();}
   for(const p of G.parts){if(p.type==='fire'||p.type==='spark'||p.type==='flash'||!inV(p.x,p.y,30))continue;const a=p.life/p.max;
     switch(p.type){case'smoke':g.fillStyle=`rgba(60,60,60,${a*0.45})`;break;case'blood':g.fillStyle=`rgba(150,0,0,${a})`;break;
-      case'splash':g.fillStyle=`rgba(230,245,255,${a*0.8})`;break;case'wake':g.fillStyle=`rgba(240,250,255,${a*0.35})`;break;case'steam':g.fillStyle=`rgba(232,236,240,${a*0.26})`;break;case'dust':g.fillStyle=`rgba(160,136,98,${a*0.4})`;break;default:g.fillStyle='#fff';}
+      case'splash':g.fillStyle=`rgba(230,245,255,${a*0.8})`;break;case'wake':g.fillStyle=`rgba(240,250,255,${a*0.35})`;break;case'steam':g.fillStyle=`rgba(232,236,240,${a*0.26})`;break;case'water':g.fillStyle=`rgba(150,210,255,${a*0.8})`;break;case'gas':g.fillStyle=`rgba(140,190,60,${a*0.38})`;break;case'dust':g.fillStyle=`rgba(160,136,98,${a*0.4})`;break;default:g.fillStyle='#fff';}
     g.beginPath();g.arc(p.x,p.y,p.size,0,TAU);g.fill();}
   const sway=ENV.wind*5;
   for(const t of TREES){if(!inV(t.x,t.y,90))continue;let [rx,ry]=projPt(t.x,t.y,t.palm?90:70);rx+=Math.sin(tt*1.7+t.x*0.01)*sway;ry+=Math.cos(tt*1.3+t.y*0.01)*sway*0.5;
@@ -2071,6 +2392,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
     g.strokeStyle=b.expl?'#ffb347':'#fff6c0';g.lineWidth=b.expl?5:2.5;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x-b.vx*0.02,b.y-b.vy*0.02);g.stroke();}
   g.globalCompositeOperation='source-over';g.globalAlpha=1;
   bl.sort((a,b)=>b._d-a._d);for(const b of bl)drawBld(b);
+  drawTrack(inV);trainGlow();
   for(const p of G.pickups)if(p.h&&!p.taken&&inV(p.x,p.y,90)&&!(P.inside&&bAt(p.x,p.y)===P.inside.b)){const f=CAMZ/(CAMZ-p.h*50),q=projPt(p.x,p.y,p.h*50);g.save();g.translate(q[0],q[1]);g.scale(f,f);g.translate(-p.x,-p.y);drawPickup(p);g.restore();}
   if(!P.veh&&G.state!=='title'&&(P.roof||P.climb))drawPlayer();
   if(P.inside)drawInsideTop(P.inside,G.view);else drawPropTop();
@@ -2082,6 +2404,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
   const ca2=ENV.cloud*(1-d)*0.2;if(ca2>0.01){g.globalAlpha=ca2;const span=3400,ox=tt*(14+ENV.wind*40),oy=tt*(5+ENV.wind*10);
     for(let k=0;k<7;k++){const sz=900+((k*271)%600);const x=c.x-span/2+(((k*983+ox-c.x)%span)+span)%span,y=c.y-span/2+(((k*1571+oy-c.y)%span)+span)%span;g.drawImage(GL.cloud,x-sz/2,y-sz/2,sz,sz*0.75);}g.globalAlpha=1;}
   for(const p of G.peds)if(p.sayT>0&&!p.dead&&inV(p.x,p.y,20))bubble(p.x,p.y-30,p.say);
+  {const P=G.player;if(P.sayT>0&&P.say&&!P.veh&&!P.inside&&!P.ride)bubble(P.x,P.y-32,P.say);}
   // ---- screen-space weather ----
   g.setTransform(dpr,0,0,dpr,0,0);
   const rn=P.inside?0:ENV.rain;if(rn>0.03){const n=(50+150*rn)|0,dx=-8-ENV.wind*26,dy=27;g.strokeStyle=`rgba(205,220,240,${0.22+0.25*rn})`;g.lineWidth=1.3;g.beginPath();
@@ -2293,7 +2616,7 @@ function drawMini(){const P=G.player,px=P.veh?P.veh.x:P.x,py=P.veh?P.veh.y:P.y;c
   mg.fillStyle='#1d4f75';mg.fillRect(0,0,S,S);mg.imageSmoothingEnabled=true;
   mg.drawImage(MINIMG,S/2-px*sc,S/2-py*sc,MW*T*sc,MH*T*sc);
   if(ENV.dark>0.05){mg.fillStyle=`rgba(6,10,36,${ENV.dark*0.45})`;mg.fillRect(0,0,S,S);}
-  gpsPath(mg,S/2-px*sc,S/2-py*sc,sc,4);
+  trackMini(mg,S/2-px*sc,S/2-py*sc,sc,2.2);gpsPath(mg,S/2-px*sc,S/2-py*sc,sc,4);
   if(G.wanted>0&&!G.seenNow&&G.lastSeen){const bx=S/2+(G.lastSeen.x-px)*sc,by=S/2+(G.lastSeen.y-py)*sc;mg.fillStyle='rgba(255,60,60,0.22)';mg.strokeStyle='rgba(255,90,90,0.8)';mg.lineWidth=2;mg.beginPath();mg.arc(bx,by,sightRange()*sc*0.8,0,TAU);mg.fill();mg.stroke();}
   const blip=(x,y,col,r,sq)=>{let bx=S/2+(x-px)*sc,by=S/2+(y-py)*sc;const dx=bx-S/2,dy=by-S/2,dd=hyp(dx,dy),R=S/2-10;if(dd>R){bx=S/2+dx/dd*R;by=S/2+dy/dd*R;}
     mg.fillStyle=col;mg.strokeStyle='#000';mg.lineWidth=2;mg.beginPath();if(sq)mg.rect(bx-r,by-r,r*2,r*2);else mg.arc(bx,by,r,0,TAU);mg.fill();mg.stroke();};
@@ -2410,7 +2733,7 @@ function readKeys(){const k=IN.keys;let x=(k.KeyD||k.ArrowRight?1:0)-(k.KeyA||k.
   if(x||y){const d=hyp(x,y);return[x/d,y/d];}return[IN.mx,IN.my];}
 function toggleWbar(force){const el=$('wbar');const show=force!==undefined?force:el.style.display!=='flex';el.style.display=show?'flex':'none';if(!show)return;el.innerHTML='';el.dir=G.lang==='he'?'rtl':'ltr';
   for(const w of WORDER){if(w!=='fist'&&!(G.weapons[w]>0))continue;const b=document.createElement('button');b.className='wchip'+(w===G.weapon?' sel':'');
-    b.innerHTML=WICON[w]+'<span></span>';b.lastChild.textContent=L(WEAP[w])+(w==='fist'?'':'  '+G.weapons[w]);b.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();G.weapon=w;sfx.door();toggleWbar(false);});el.appendChild(b);}}
+    b.innerHTML=WICON[w]+'<span></span>';b.lastChild.textContent=L(WEAP[w])+(w==='fist'||WEAP[w].melee?'':'  '+G.weapons[w]);b.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();G.weapon=w;sfx.door();toggleWbar(false);});el.appendChild(b);}}
 
 // ---------- HUD / overlays ----------
 let toastT=0,bigT=0,areaT=0,feedT=0;
@@ -2489,7 +2812,7 @@ function buildShop(){const s=G.shop,P=G.player,md=G.shopMode,m=$('shop');m.inner
   const grid=document.createElement('div');grid.className='shopgrid';
   const item=(name,sub,price,fn,ic,dis)=>{const b=document.createElement('button');b.className='sitem'+((G.money<price||dis)?' dis':'');b.innerHTML=(ic||'')+'<b></b><span></span><i></i>';b.querySelector('b').textContent=name;b.querySelector('span').textContent=sub;b.querySelector('i').textContent=price?'$'+price:'';
     b.onclick=()=>{if(performance.now()-(G.panelT||0)<350)return;if(G.money<price||dis){sfx.no();return;}G.money-=price;fn();sfx.blip();buildShop();};grid.appendChild(b);};
-  if(md==='guns'){for(const w of WORDER.slice(1)){const W=WEAP[w];item(L(W),'+'+W.pack+(G.weapons[w]?'  ('+G.weapons[w]+')':''),owned('b_guns')?Math.round(W.price*0.75):W.price,()=>giveWeapon(w,W.pack),WICON[w]);}item(tr('armor'),Math.ceil(G.armor)+'/100',300,()=>{G.armor=100;},WICON.armor);}
+  if(md==='guns'){for(const w of WORDER.slice(1)){const W=WEAP[w];item(L(W),W.melee?(G.weapons[w]?tr('owned2'):''):'+'+W.pack+(G.weapons[w]?'  ('+G.weapons[w]+')':''),owned('b_guns')?Math.round(W.price*0.75):W.price,()=>giveWeapon(w,W.melee?1:W.pack),WICON[w],W.melee&&G.weapons[w]>0);}item(tr('armor'),Math.ceil(G.armor)+'/100',300,()=>{G.armor=100;},WICON.armor);}
   if(md==='clothes')for(const o of OUTFITS){const own=G.outfits.includes(o.id),on=G.outfit===o.id;item(L(o),on?tr('wearing'):own?tr('wear'):'',own?0:o.price,()=>{if(!own)G.outfits.push(o.id);wearOutfit(o.id);},'<span class="sw" style="background:'+o.shirt+'"></span>',on);}
   if(md==='food'){item(tr('snackI'),'+40',15,()=>{P.hp=Math.min(100,P.hp+40);},null,P.hp>=100);item(tr('medkit'),G.meds+'/3',80,()=>{G.meds++;},null,G.meds>=3);}
   propPanel(md,item,m,P);if(md==='fly')flyPanel(item,m);if(md==='mis')misPanel(item,m);if(grid.children.length)m.appendChild(grid);
@@ -2498,7 +2821,7 @@ function buildShop(){const s=G.shop,P=G.player,md=G.shopMode,m=$('shop');m.inner
   m.appendChild(btn(tr('close'),closeShop,'pri'));}
 
 // ---------- player ----------
-function updatePlayer(dt){const P=G.player;if(P.dead)return;const [mx,my]=readKeys(),mag=Math.min(1,hyp(mx,my)),k=IN.keys;
+function updatePlayer(dt){const P=G.player;if(P.dead)return;if(P.ride){rideUpdate(dt);return;}const [mx,my]=readKeys(),mag=Math.min(1,hyp(mx,my)),k=IN.keys;
   if(P.veh){const v=P.veh;P.x=v.x;P.y=v.y;G.nearLad=null;let fx=IN.x||k.KeyX;
     if(G.ctrl==='classic'){const kx=(k.KeyD||k.ArrowRight?1:0)-(k.KeyA||k.ArrowLeft?1:0),sx=kx||(Math.abs(IN.mx)>0.15?clamp(IN.mx*1.35,-1,1):0);
       const gas=IN.act||k.KeyW||k.ArrowUp||IN.my<-0.6,brk=IN.b||k.KeyS||k.ArrowDown||IN.my>0.65;
@@ -2532,7 +2855,7 @@ function updatePlayer(dt){const P=G.player;if(P.dead)return;const [mx,my]=readKe
     if(IN.weapP){const ws=WORDER.filter(w=>w==='fist'||(G.weapons[w]||0)>0);G.weapon=ws[(ws.indexOf(G.weapon)+1)%ws.length];sfx.door();}}}
   IN.enterP=false;IN.weapP=false;
   if(G.weapon!=='fist'&&!(G.weapons[G.weapon]>0))G.weapon='fist';}
-function attack(){const P=G.player,w=G.weapon,W=WEAP[w];
+function attackOld(){const P=G.player,w=G.weapon,W=WEAP[w];
   if(w==='fist'){G.fireCD=W.rate;G.punchT=0.16;let best=null,bd=36;for(const p of G.peds){if(p===P||p.dead||p.veh)continue;const d=hyp(p.x-P.x,p.y-P.y);
       if(d<bd&&Math.abs(angDiff(P.a,Math.atan2(p.y-P.y,p.x-P.x)))<1.1){bd=d;best=p;}}
     sfx.punch();if(best){G.combo=G.time-(G.lastPunch||0)<1.3?(G.combo||0)+1:1;G.lastPunch=G.time;const fin=G.combo%3===0;hurtPed(best,fin?13:8+rand()*3,P,'punch');const kb=fin?260:90;best.kvx=Math.cos(P.a)*kb;best.kvy=Math.sin(P.a)*kb;part('flash',best.x,best.y,0,0,0.08,7);if(!best.dead&&(fin||best.hp<14)){best.stun=1.7;G.shake=3;}}return;}
@@ -2542,7 +2865,7 @@ function attack(){const P=G.player,w=G.weapon,W=WEAP[w];
   else if(W.nade)fire(P,null,P.x,P.y,P.a,W.dmg,0.02,true,{kind:'nade',spd:400,life:0.85,quiet:1});
   else fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,!!W.expl);
   crime(1,false);}
-function autoAim(P){let best=null,bs=1e9;for(const p of G.peds){if(p===P||p.dead||p.veh)continue;const dx=p.x-P.x,dy=p.y-P.y,d=hyp(dx,dy);if(d>400)continue;
+function autoAimOld(P){let best=null,bs=1e9;for(const p of G.peds){if(p===P||p.dead||p.veh)continue;const dx=p.x-P.x,dy=p.y-P.y,d=hyp(dx,dy);if(d>400)continue;
   const da=Math.abs(angDiff(P.a,Math.atan2(dy,dx)));if(da>0.75)continue;let sc=d*(1+da*2);
   if(p.hostile||(p.type==='cop'&&G.wanted>0)||(p.type==='soldier'&&G.inBase))sc*=0.3;if(sc<bs&&los(P.x,P.y,p.x,p.y)){bs=sc;best=p;}}
   return best?Math.atan2(best.y-P.y,best.x-P.x):P.a;}
@@ -2597,7 +2920,7 @@ function updatePickups(dt){const P=G.player,px=P.x,py=P.y;
     if(ty==='health'){if(P.hp>=100)continue;P.hp=Math.min(100,P.hp+60);}
     else if(ty==='armor'){if(G.armor>=100)continue;G.armor=100;toast(tr('armor'),1.5);}
     else if(ty==='bribe'){if(G.wanted<=0)continue;clearWanted();toast(tr('bribe'));}
-    else if(WEAP[ty]){giveWeapon(ty,WEAP[ty].pack);toast(L(WEAP[ty])+' +'+WEAP[ty].pack,1.5);}
+    else if(WEAP[ty]){if(WEAP[ty].melee&&G.weapons[ty]>0)continue;giveWeapon(ty,WEAP[ty].melee?1:WEAP[ty].pack);toast(ty==='rocket'&&p.once?tr('gotBz'):ty==='minigun'?tr('gotMini'):L(WEAP[ty])+(WEAP[ty].melee?'':' +'+WEAP[ty].pack),2.5);}
     else if(ty==='cash'){G.money+=p.amt;if(p.amt>=100)toast('+$'+p.amt,1.5);}
     else if(ty==='chest'){G.money+=3000;toast(tr('chest'),4);sfx.pass();}
     else if(ty==='token'){G.tokens.push(p.tid);G.money+=250;toast(fmt(tr('token'),G.tokens.length,TOKENS.length));if(G.tokens.length===TOKENS.length){G.money+=5000;setTimeout(()=>toast(tr('alltokens'),5),2500);}saveGame();}
@@ -2616,7 +2939,7 @@ function worldTriggers(dt){const P=G.player,px=P.x,py=P.y;plusTaxi(dt);
     if(seen){G.unseen=0;G.lastSeen.x=px;G.lastSeen.y=py;G.seenVeh=P.veh?P.veh.id:0;G.seenOut=G.outfit;}
     else{if(G.seenNow)toast(tr('hide'),2.2);const sw=(P.veh?P.veh.id:0)!==G.seenVeh;G.unseen+=dt*(sw?2:1)*(G.outfit!==G.seenOut?2.2:1)*(1+0.3*ENV.dark);}
     G.seenNow=seen;
-    if(G.unseen>9+G.wanted*2.5){clearWanted();toast(tr('lost'));sfx.blip();}}
+    if(G.unseen>7+G.wanted*2){clearWanted();toast(tr('lost'));sfx.blip();}}
   else{G.seenNow=false;G.lastSeen=null;}}
 
 // ---------- death / arrest ----------
@@ -2665,7 +2988,7 @@ function resize(){G.dpr=Math.min(G.lowFx?1.25:2,devicePixelRatio||1);applyLayout
   const ms=Math.round(Math.min(130,Math.max(96,Math.min(G.vw,G.vh)/G.ui*0.28)));MC.style.width=MC.style.height=ms+'px';MC.width=MC.height=Math.round(ms*G.dpr*G.ui);document.getElementById('root').style.setProperty('--vw',G.vw+'px');document.documentElement.style.setProperty('--ms',ms+'px');}
 function updateCamera(dt){const P=G.player,c=G.cam;let tx=P.x,ty=P.y,z=1;
   if(P.veh){const v=P.veh;tx+=v.vx*0.35;ty+=v.vy*0.35;z=lerp(1,0.6,clamp(Math.abs(v.speed)/420,0,1));if(v.alt)z*=1-0.25*v.alt;}
-  else if(!P.dead){tx+=(P.mvx||0)*0.3;ty+=(P.mvy||0)*0.3;}
+  else if(!P.dead){tx+=(P.mvx||0)*0.3;ty+=(P.mvy||0)*0.3;if(P.ride&&P.ride.tr)z=0.7;}
   c.x=lerp(c.x,tx,1-Math.pow(0.02,dt));c.y=lerp(c.y,ty,1-Math.pow(0.02,dt));c.z=lerp(c.z,z,1-Math.pow(0.25,dt));
   c.s=Math.min(G.vw,G.vh)/500*c.z*(Math.max(G.vw,G.vh)>1100?1.1:1);if(G.shake>0)G.shake=Math.max(0,G.shake-dt*30);}
 function step(dt){G.time+=dt;
@@ -2685,7 +3008,7 @@ function step(dt){G.time+=dt;
   updateBullets(dt);updateParts(dt);updatePickups(dt);worldTriggers(dt);gpsTick(dt);lifeTick(dt);updateMission(dt);spawner(dt);plusEvents(dt);plusHeli(dt);plusAmbient(dt);cityUpdate(dt);if(G.state!=='play')return;
   {const grab=G.time-(G.bustBy||-9)<0.25&&!P.veh,sp=hyp(P.mvx||0,P.mvy||0);G.bust=clamp((G.bust||0)+(grab&&sp<70&&G.time-(G.lastPunch||-9)>0.7?dt/2.2:-dt*0.6),0,1);if(G.wanted===0)G.bust=0;if(G.bust>=1){G.bust=0;busted();}}
   if(G.boom){G.boom.t-=dt*1.8;if(G.boom.t<=0)G.boom=null;}
-  if(!P.dead&&P.hp<50&&G.time-(G.lastHurt||0)>6)P.hp=Math.min(50,P.hp+4*dt);
+  regenTick(dt);
   if(P.hp<P._lastHp)G.hurtFlash=Math.max(G.hurtFlash||0,0.6);P._lastHp=P.hp;}
 let last=0;
 function frame(now){const dt=Math.min(0.05,(now-last)/1000||0);last=now;

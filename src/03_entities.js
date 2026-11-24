@@ -95,7 +95,7 @@ function explodeVeh(v,src){v.dead=true;v.burn=7;v.col='#2b2b2b';
   const d=v.driver;v.driver=null;v.ai=null;
   if(d===G.player){G.player.veh=null;G.player.x=v.x;G.player.y=v.y;killPed(G.player,src,'boom');}
   explodeAt(v.x,v.y,src,v);if(v.t.armored)for(let k=0;k<6;k++)mkPickup('cash',v.x+rr(-50,50),v.y+rr(-50,50),{amt:ri(300,700)});}
-function explodeAt(x,y,src,skip){sfx.boom();G.shake=Math.max(G.shake||0,14);G.boom={x,y,t:1};
+function explodeAt(x,y,src,skip){sfx.boom();boomReact(x,y);G.shake=Math.max(G.shake||0,14);G.boom={x,y,t:1};
   for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-x,p.y-y)<520){p.st='flee';p.ft=6;p.fx=x;p.fy=y;}react(nearestCiv(x,y,520),'boom');post('boom');
   for(let i=0;i<26;i++)part('fire',x+rr(-18,18),y+rr(-18,18),rr(-140,140),rr(-140,140),rr(0.4,0.9),rr(8,16));
   for(let i=0;i<14;i++)part('smoke',x+rr(-20,20),y+rr(-20,20),rr(-40,40),rr(-40,40),rr(1,2),rr(12,22));
@@ -130,8 +130,7 @@ function fire(op,ov,x,y,ang,dmg,spread,expl,o){o=o||{};const a=ang+rr(-spread,sp
   if(o.kind==='flame')return;
   if(o.kind!=='nade')part('flash',x+Math.cos(a)*20,y+Math.sin(a)*20,0,0,0.06,expl?14:7);
   if(!o.quiet&&(op===G.player||hyp(x-G.player.x,y-G.player.y)<700))sfx.shot(expl);
-  if(!o.quiet){for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-x,p.y-y)<380){if(p.st==='call'||p.brawl>0)continue;if(p.id%4===1){p.st='cower';p.ft=4;}else{p.st='flee';p.ft=5;p.fx=x;p.fy=y;}}
-    if(op===G.player){const nc=nearestCiv(x,y,380);if(nc&&G.sayCD<=0)sfx.scream(dv(nc.x,nc.y),nc.voice||200);react(nc,'shots');}}}
+  if(!o.quiet)shotReact(x,y,op);}
 function updateBullets(dt){for(const b of G.bullets){const steps=Math.max(1,Math.ceil(hyp(b.vx,b.vy)*dt/10)),sdt=dt/steps;
   if(b.kind==='flame')part('fire',b.x+rr(-4,4),b.y+rr(-4,4),b.vx*0.1,b.vy*0.1,0.22,rr(5,10));
   for(let k=0;k<steps&&!b.dead;k++){b.x+=b.vx*sdt;b.y+=b.vy*sdt;const tt=tileAt(b.x,b.y);
@@ -139,15 +138,17 @@ function updateBullets(dt){for(const b of G.bullets){const steps=Math.max(1,Math
     if((tt===TL.BLD&&!(b.h&&bAt(b.x,b.y).ht<=b.h+0.2))||tt===TL.FENCE){b.dead=true;if(b.kind!=='flame')part('spark',b.x,b.y,rr(-50,50),rr(-50,50),0.2,2);if(b.expl)explodeAt(b.x,b.y,b.op);break;}
     for(const p of G.peds){if(p.dead||p.veh||p===b.op)continue;if((p.x-b.x)**2+(p.y-b.y)**2<130){hurtPed(p,b.dmg,b.op,'shot');if(b.kind==='flame')p.burn=3;b.dead=true;if(b.expl)explodeAt(b.x,b.y,b.op);break;}}
     if(b.dead)break;
+    if(bulletHitsPlayer(b)){b.dead=true;break;}
     for(const v of G.vehicles){if(v===b.ov||v.sunk||v.alt>0.25)continue;if(pointInVeh(v,b.x,b.y,2)){if(!b.expl&&b.kind!=='flame')addHole(v,b.x,b.y);damageVeh(v,b.dmg*(b.expl?4.5:0.45),b.op,b.expl?'boom':'shot');vehShot(v,b);b.dead=true;part('spark',b.x,b.y,rr(-60,60),rr(-60,60),0.25,2);
       if(b.expl)explodeAt(b.x,b.y,b.op,v);break;}}}
   b.life-=dt;if(b.life<=0){b.dead=true;if(b.expl)explodeAt(b.x,b.y,b.op);}}
+  for(const b of G.bullets)if(b.dead&&b.kind==='molo'&&!b.landed){b.landed=1;moloLand(b.x,b.y);}
   G.bullets=G.bullets.filter(b=>!b.dead);}
 
 function part(type,x,y,vx,vy,life,size){if(G.parts.length>450)return;G.parts.push({type,x,y,vx,vy,life,max:life,size});}
 function splash(x,y,n){for(let i=0;i<n;i++)part('splash',x+rr(-14,14),y+rr(-14,14),rr(-90,90),rr(-90,90),rr(0.4,0.8),rr(3,6));}
 function updateParts(dt){for(const p of G.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.94;p.vy*=0.94;p.life-=dt;
-  if(p.type==='smoke'||p.type==='wake'||p.type==='steam'||p.type==='dust')p.size+=dt*10;}
+  if(p.type==='smoke'||p.type==='wake'||p.type==='steam'||p.type==='dust'||p.type==='gas')p.size+=dt*10;}
   G.parts=G.parts.filter(p=>p.life>0);
   if(G.decals.length>600)G.decals.splice(0,G.decals.length-600);}
 

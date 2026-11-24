@@ -101,7 +101,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
   for(const p of G.pickups){if(p.taken||p.h||!inV(p.x,p.y,30))continue;drawPickup(p);}
   for(const p of G.peds)if(p.dead&&!p.veh&&inV(p.x,p.y,30))drawPed(p);
   for(const p of G.peds)if(!p.dead&&!p.veh&&inV(p.x,p.y,30))drawPed(p);
-  if(!P.veh&&G.state!=='title'&&!P.roof&&!P.climb)drawPlayer();
+  if(!P.veh&&G.state!=='title'&&!P.roof&&!P.climb&&!(P.ride&&P.ride.tr))drawPlayer();
   for(const v of G.vehicles){v.onScreen=inV(v.x,v.y,-20);if(inV(v.x,v.y,80)&&!(v.alt>0.25))drawVeh(v);}
   const bl=[];for(const b of BUILDINGS){const x0=b.x*T,y0=b.y*T,x1=x0+b.w*T,y1=y0+b.h*T;if(x1<vx0-380||x0>vx1+380||y1<vy0-380||y0>vy1+380)continue;
     b._d=hyp((x0+x1)/2-c.x,(y0+y1)/2-c.y);bl.push(b);}
@@ -114,7 +114,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
     g.fill();}
   for(const p of G.parts){if(p.type==='fire'||p.type==='spark'||p.type==='flash'||!inV(p.x,p.y,30))continue;const a=p.life/p.max;
     switch(p.type){case'smoke':g.fillStyle=`rgba(60,60,60,${a*0.45})`;break;case'blood':g.fillStyle=`rgba(150,0,0,${a})`;break;
-      case'splash':g.fillStyle=`rgba(230,245,255,${a*0.8})`;break;case'wake':g.fillStyle=`rgba(240,250,255,${a*0.35})`;break;case'steam':g.fillStyle=`rgba(232,236,240,${a*0.26})`;break;case'dust':g.fillStyle=`rgba(160,136,98,${a*0.4})`;break;default:g.fillStyle='#fff';}
+      case'splash':g.fillStyle=`rgba(230,245,255,${a*0.8})`;break;case'wake':g.fillStyle=`rgba(240,250,255,${a*0.35})`;break;case'steam':g.fillStyle=`rgba(232,236,240,${a*0.26})`;break;case'water':g.fillStyle=`rgba(150,210,255,${a*0.8})`;break;case'gas':g.fillStyle=`rgba(140,190,60,${a*0.38})`;break;case'dust':g.fillStyle=`rgba(160,136,98,${a*0.4})`;break;default:g.fillStyle='#fff';}
     g.beginPath();g.arc(p.x,p.y,p.size,0,TAU);g.fill();}
   const sway=ENV.wind*5;
   for(const t of TREES){if(!inV(t.x,t.y,90))continue;let [rx,ry]=projPt(t.x,t.y,t.palm?90:70);rx+=Math.sin(tt*1.7+t.x*0.01)*sway;ry+=Math.cos(tt*1.3+t.y*0.01)*sway*0.5;
@@ -144,6 +144,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
     g.strokeStyle=b.expl?'#ffb347':'#fff6c0';g.lineWidth=b.expl?5:2.5;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x-b.vx*0.02,b.y-b.vy*0.02);g.stroke();}
   g.globalCompositeOperation='source-over';g.globalAlpha=1;
   bl.sort((a,b)=>b._d-a._d);for(const b of bl)drawBld(b);
+  drawTrack(inV);trainGlow();
   for(const p of G.pickups)if(p.h&&!p.taken&&inV(p.x,p.y,90)&&!(P.inside&&bAt(p.x,p.y)===P.inside.b)){const f=CAMZ/(CAMZ-p.h*50),q=projPt(p.x,p.y,p.h*50);g.save();g.translate(q[0],q[1]);g.scale(f,f);g.translate(-p.x,-p.y);drawPickup(p);g.restore();}
   if(!P.veh&&G.state!=='title'&&(P.roof||P.climb))drawPlayer();
   if(P.inside)drawInsideTop(P.inside,G.view);else drawPropTop();
@@ -155,6 +156,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
   const ca2=ENV.cloud*(1-d)*0.2;if(ca2>0.01){g.globalAlpha=ca2;const span=3400,ox=tt*(14+ENV.wind*40),oy=tt*(5+ENV.wind*10);
     for(let k=0;k<7;k++){const sz=900+((k*271)%600);const x=c.x-span/2+(((k*983+ox-c.x)%span)+span)%span,y=c.y-span/2+(((k*1571+oy-c.y)%span)+span)%span;g.drawImage(GL.cloud,x-sz/2,y-sz/2,sz,sz*0.75);}g.globalAlpha=1;}
   for(const p of G.peds)if(p.sayT>0&&!p.dead&&inV(p.x,p.y,20))bubble(p.x,p.y-30,p.say);
+  {const P=G.player;if(P.sayT>0&&P.say&&!P.veh&&!P.inside&&!P.ride)bubble(P.x,P.y-32,P.say);}
   // ---- screen-space weather ----
   g.setTransform(dpr,0,0,dpr,0,0);
   const rn=P.inside?0:ENV.rain;if(rn>0.03){const n=(50+150*rn)|0,dx=-8-ENV.wind*26,dy=27;g.strokeStyle=`rgba(205,220,240,${0.22+0.25*rn})`;g.lineWidth=1.3;g.beginPath();
@@ -366,7 +368,7 @@ function drawMini(){const P=G.player,px=P.veh?P.veh.x:P.x,py=P.veh?P.veh.y:P.y;c
   mg.fillStyle='#1d4f75';mg.fillRect(0,0,S,S);mg.imageSmoothingEnabled=true;
   mg.drawImage(MINIMG,S/2-px*sc,S/2-py*sc,MW*T*sc,MH*T*sc);
   if(ENV.dark>0.05){mg.fillStyle=`rgba(6,10,36,${ENV.dark*0.45})`;mg.fillRect(0,0,S,S);}
-  gpsPath(mg,S/2-px*sc,S/2-py*sc,sc,4);
+  trackMini(mg,S/2-px*sc,S/2-py*sc,sc,2.2);gpsPath(mg,S/2-px*sc,S/2-py*sc,sc,4);
   if(G.wanted>0&&!G.seenNow&&G.lastSeen){const bx=S/2+(G.lastSeen.x-px)*sc,by=S/2+(G.lastSeen.y-py)*sc;mg.fillStyle='rgba(255,60,60,0.22)';mg.strokeStyle='rgba(255,90,90,0.8)';mg.lineWidth=2;mg.beginPath();mg.arc(bx,by,sightRange()*sc*0.8,0,TAU);mg.fill();mg.stroke();}
   const blip=(x,y,col,r,sq)=>{let bx=S/2+(x-px)*sc,by=S/2+(y-py)*sc;const dx=bx-S/2,dy=by-S/2,dd=hyp(dx,dy),R=S/2-10;if(dd>R){bx=S/2+dx/dd*R;by=S/2+dy/dd*R;}
     mg.fillStyle=col;mg.strokeStyle='#000';mg.lineWidth=2;mg.beginPath();if(sq)mg.rect(bx-r,by-r,r*2,r*2);else mg.arc(bx,by,r,0,TAU);mg.fill();mg.stroke();};

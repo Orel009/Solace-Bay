@@ -1,5 +1,5 @@
 // ---------- heat / wanted, shops, robberies, ped kinds, wildlife, feed ----------
-const SHOPS=[],GAS=[],TH=[0,1,4,10,20,34,52];
+const SHOPS=[],GAS=[],TH=[0,1,5,13,25,40,60];
 function starsFor(h){let s=0;for(let i=1;i<=6;i++)if(h>=TH[i])s=i;return s;}
 function setStars(n){G.heat=Math.max(G.heat||0,TH[n]);if(G.wanted<n){G.wanted=n;if(n>=3)post('stars');}G.unseen=0;}
 function addHeat(x){G.heat=(G.heat||0)+x;G.rep=Math.max(-50,(G.rep||0)-x*0.4);const s=starsFor(G.heat);if(s>G.wanted){G.wanted=s;if(s>=3)post('stars');}G.unseen=0;}

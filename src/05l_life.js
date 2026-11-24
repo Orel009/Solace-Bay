@@ -14,7 +14,7 @@ function spawner(dt){G.spawnT-=dt;if(G.spawnT>0)return;G.spawnT=0.25;const P=G.p
   let traffic=0,chasers={police:0,army:0},civs=0;
   for(const v of G.vehicles)if(!v.remove&&v.ai){if(v.ai.mode==='traffic')traffic++;else if(v.ai.mode==='chase'&&chasers[v.ai.faction]!=null)chasers[v.ai.faction]++;}
   for(const p of G.peds)if(!p.remove&&!p.dead&&p.type!=='soldier'&&p!==P&&hyp(p.x-cx,p.y-cy)<1500)civs++;
-  const night=ENV.dark,ar=areaAt(cx,cy),lively=ar==='strip'||ar==='neon'||ar==='glass'||ar==='downtown'||ar==='beach',rainK=1-0.25*ENV.rain,
+  const night=ENV.dark,ar=areaAt(cx,cy),lively=ar==='strip'||ar==='down'||ar==='glass'||ar==='beach'||ar==='vista',rainK=1-0.25*ENV.rain,
     nkCar=(1-0.2*night)*rainK,nkPed=(1-(lively?0.05:0.3)*night)*rainK,rural=ar==='mil'||ar==='air'||ar==='air2';
   const tc=Math.round((rural?10:24)*nkCar),pc=Math.round((rural?12:46)*nkPed);
   for(let k=0;k<2&&traffic<tc;k++,traffic++)spawnTraffic(cx,cy);
@@ -76,5 +76,5 @@ function curTarget(){const M=G.mission;if(M&&M.target)return M.target;if(!M&&G.f
 function drawLife(inV){drawStunts(inV);const J=G.pat;if(J&&J.st==='go'&&inV(J.x,J.y,60)){const pu=(Math.sin(G.time*5)+1)/2;g.fillStyle=`rgba(255,60,60,${0.25+pu*0.25})`;g.beginPath();g.arc(J.x,J.y,30+pu*6,0,TAU);g.fill();g.fillStyle='#f4f6f7';g.fillRect(J.x-10,J.y-3,20,6);g.fillRect(J.x-3,J.y-10,6,20);}}
 function drawSirens(){const on=Math.floor(G.time*8)%2;g.globalCompositeOperation='lighter';for(const v of G.vehicles){if(!v.siren||v.dead||!v.onScreen)continue;const ca=Math.cos(v.a),sa=Math.sin(v.a),f=v.t.l*0.18;
   glow(g,on?GL.red||'#ff3030':GL.blue||'#3d6bff',v.x+ca*f-sa*8,v.y+sa*f+ca*8,110,0.55);}g.globalAlpha=1;g.globalCompositeOperation='source-over';}
-function lifeTick(dt){medicWatch(dt);stuntTick(dt);medicJobTick(dt);
+function lifeTick(dt){trainsTick(dt);firesTick(dt);heliExtra(dt);roadblockTick(dt);emoteTick(dt);medicWatch(dt);fireWatch(dt);talkTick(dt);stuntTick(dt);medicJobTick(dt);
   if(ENV.dark>0.5&&rand()<dt*0.4){for(const p of G.peds)if(p.party&&!p.dead&&p.st==='chat'&&rand()<0.3&&onScreen(p.x,p.y,0)){say(p,'party',2.5);sfx.voice(p,0.6);break;}}}

@@ -63,6 +63,7 @@ html,body{margin:0;height:100%;background:#0b0b14;overflow:hidden;touch-action:n
 #pause h2{margin:0;font:900 30px Rubik,system-ui;color:#5fe0d0;letter-spacing:2px}
 .stats{font:600 14px Rubik,system-ui;opacity:.85;text-align:center}
 .port #wbar{right:calc(14px + env(safe-area-inset-right));bottom:calc(210px + env(safe-area-inset-bottom))}.port #obj{top:calc(150px + env(safe-area-inset-top));max-width:calc(var(--vw,100vw)*0.92)}.port #timer{top:calc(205px + env(safe-area-inset-top))}.port #toast{top:calc(250px + env(safe-area-inset-top))}.port #bPause{top:calc(150px + env(safe-area-inset-top));left:calc(14px + env(safe-area-inset-left));right:auto}
+#bF{display:none;width:46px;height:46px;right:calc(200px + env(safe-area-inset-right));bottom:calc(90px + env(safe-area-inset-bottom))}
 #bX{display:none;width:52px;height:52px;right:calc(196px + env(safe-area-inset-right));bottom:calc(26px + env(safe-area-inset-bottom))}
 #clock{position:absolute;top:calc(var(--ms,120px) + 12px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));width:var(--ms,120px);text-align:center;font:700 13px Rubik,system-ui;text-shadow:0 1px 3px #000;direction:ltr}
 #area{position:absolute;top:calc(112px + env(safe-area-inset-top));left:calc(12px + env(safe-area-inset-left));font:italic 900 24px Rubik,system-ui;color:#ffe9a8;text-shadow:0 2px 0 #000,0 0 10px rgba(0,0,0,.8);opacity:0;transition:opacity .6s;letter-spacing:.5px}
@@ -111,7 +112,7 @@ html,body{margin:0;height:100%;background:#0b0b14;overflow:hidden;touch-action:n
 </div>
 <div id="controls">
  <div id="stickZone"></div><div id="stickBase"><div id="stickKnob"></div></div>
- <div id="btns"><button class="cb" id="bAct"></button><button class="cb" id="bEnter"></button><button class="cb" id="bB"></button><button class="cb" id="bW"></button><button class="cb" id="bX"></button>
+ <div id="btns"><button class="cb" id="bAct"></button><button class="cb" id="bEnter"></button><button class="cb" id="bB"></button><button class="cb" id="bW"></button><button class="cb" id="bX"></button><button class="cb" id="bF"></button>
  <div id="wbar"></div><div id="tbar"></div><div id="ibar"></div></div>
 </div>
 <div id="dlg"><div class="box"><div class="who"></div><div class="txt"></div><div class="hint"></div></div></div>

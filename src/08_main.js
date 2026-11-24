@@ -1,5 +1,5 @@
 // ---------- player ----------
-function updatePlayer(dt){const P=G.player;if(P.dead)return;const [mx,my]=readKeys(),mag=Math.min(1,hyp(mx,my)),k=IN.keys;
+function updatePlayer(dt){const P=G.player;if(P.dead)return;if(P.ride){rideUpdate(dt);return;}const [mx,my]=readKeys(),mag=Math.min(1,hyp(mx,my)),k=IN.keys;
   if(P.veh){const v=P.veh;P.x=v.x;P.y=v.y;G.nearLad=null;let fx=IN.x||k.KeyX;
     if(G.ctrl==='classic'){const kx=(k.KeyD||k.ArrowRight?1:0)-(k.KeyA||k.ArrowLeft?1:0),sx=kx||(Math.abs(IN.mx)>0.15?clamp(IN.mx*1.35,-1,1):0);
       const gas=IN.act||k.KeyW||k.ArrowUp||IN.my<-0.6,brk=IN.b||k.KeyS||k.ArrowDown||IN.my>0.65;
@@ -33,7 +33,7 @@ function updatePlayer(dt){const P=G.player;if(P.dead)return;const [mx,my]=readKe
     if(IN.weapP){const ws=WORDER.filter(w=>w==='fist'||(G.weapons[w]||0)>0);G.weapon=ws[(ws.indexOf(G.weapon)+1)%ws.length];sfx.door();}}}
   IN.enterP=false;IN.weapP=false;
   if(G.weapon!=='fist'&&!(G.weapons[G.weapon]>0))G.weapon='fist';}
-function attack(){const P=G.player,w=G.weapon,W=WEAP[w];
+function attackOld(){const P=G.player,w=G.weapon,W=WEAP[w];
   if(w==='fist'){G.fireCD=W.rate;G.punchT=0.16;let best=null,bd=36;for(const p of G.peds){if(p===P||p.dead||p.veh)continue;const d=hyp(p.x-P.x,p.y-P.y);
       if(d<bd&&Math.abs(angDiff(P.a,Math.atan2(p.y-P.y,p.x-P.x)))<1.1){bd=d;best=p;}}
     sfx.punch();if(best){G.combo=G.time-(G.lastPunch||0)<1.3?(G.combo||0)+1:1;G.lastPunch=G.time;const fin=G.combo%3===0;hurtPed(best,fin?13:8+rand()*3,P,'punch');const kb=fin?260:90;best.kvx=Math.cos(P.a)*kb;best.kvy=Math.sin(P.a)*kb;part('flash',best.x,best.y,0,0,0.08,7);if(!best.dead&&(fin||best.hp<14)){best.stun=1.7;G.shake=3;}}return;}
@@ -43,7 +43,7 @@ function attack(){const P=G.player,w=G.weapon,W=WEAP[w];
   else if(W.nade)fire(P,null,P.x,P.y,P.a,W.dmg,0.02,true,{kind:'nade',spd:400,life:0.85,quiet:1});
   else fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,!!W.expl);
   crime(1,false);}
-function autoAim(P){let best=null,bs=1e9;for(const p of G.peds){if(p===P||p.dead||p.veh)continue;const dx=p.x-P.x,dy=p.y-P.y,d=hyp(dx,dy);if(d>400)continue;
+function autoAimOld(P){let best=null,bs=1e9;for(const p of G.peds){if(p===P||p.dead||p.veh)continue;const dx=p.x-P.x,dy=p.y-P.y,d=hyp(dx,dy);if(d>400)continue;
   const da=Math.abs(angDiff(P.a,Math.atan2(dy,dx)));if(da>0.75)continue;let sc=d*(1+da*2);
   if(p.hostile||(p.type==='cop'&&G.wanted>0)||(p.type==='soldier'&&G.inBase))sc*=0.3;if(sc<bs&&los(P.x,P.y,p.x,p.y)){bs=sc;best=p;}}
   return best?Math.atan2(best.y-P.y,best.x-P.x):P.a;}
@@ -98,7 +98,7 @@ function updatePickups(dt){const P=G.player,px=P.x,py=P.y;
     if(ty==='health'){if(P.hp>=100)continue;P.hp=Math.min(100,P.hp+60);}
     else if(ty==='armor'){if(G.armor>=100)continue;G.armor=100;toast(tr('armor'),1.5);}
     else if(ty==='bribe'){if(G.wanted<=0)continue;clearWanted();toast(tr('bribe'));}
-    else if(WEAP[ty]){giveWeapon(ty,WEAP[ty].pack);toast(L(WEAP[ty])+' +'+WEAP[ty].pack,1.5);}
+    else if(WEAP[ty]){if(WEAP[ty].melee&&G.weapons[ty]>0)continue;giveWeapon(ty,WEAP[ty].melee?1:WEAP[ty].pack);toast(ty==='rocket'&&p.once?tr('gotBz'):ty==='minigun'?tr('gotMini'):L(WEAP[ty])+(WEAP[ty].melee?'':' +'+WEAP[ty].pack),2.5);}
     else if(ty==='cash'){G.money+=p.amt;if(p.amt>=100)toast('+$'+p.amt,1.5);}
     else if(ty==='chest'){G.money+=3000;toast(tr('chest'),4);sfx.pass();}
     else if(ty==='token'){G.tokens.push(p.tid);G.money+=250;toast(fmt(tr('token'),G.tokens.length,TOKENS.length));if(G.tokens.length===TOKENS.length){G.money+=5000;setTimeout(()=>toast(tr('alltokens'),5),2500);}saveGame();}
@@ -117,7 +117,7 @@ function worldTriggers(dt){const P=G.player,px=P.x,py=P.y;plusTaxi(dt);
     if(seen){G.unseen=0;G.lastSeen.x=px;G.lastSeen.y=py;G.seenVeh=P.veh?P.veh.id:0;G.seenOut=G.outfit;}
     else{if(G.seenNow)toast(tr('hide'),2.2);const sw=(P.veh?P.veh.id:0)!==G.seenVeh;G.unseen+=dt*(sw?2:1)*(G.outfit!==G.seenOut?2.2:1)*(1+0.3*ENV.dark);}
     G.seenNow=seen;
-    if(G.unseen>9+G.wanted*2.5){clearWanted();toast(tr('lost'));sfx.blip();}}
+    if(G.unseen>7+G.wanted*2){clearWanted();toast(tr('lost'));sfx.blip();}}
   else{G.seenNow=false;G.lastSeen=null;}}
 
 // ---------- death / arrest ----------
@@ -166,7 +166,7 @@ function resize(){G.dpr=Math.min(G.lowFx?1.25:2,devicePixelRatio||1);applyLayout
   const ms=Math.round(Math.min(130,Math.max(96,Math.min(G.vw,G.vh)/G.ui*0.28)));MC.style.width=MC.style.height=ms+'px';MC.width=MC.height=Math.round(ms*G.dpr*G.ui);document.getElementById('root').style.setProperty('--vw',G.vw+'px');document.documentElement.style.setProperty('--ms',ms+'px');}
 function updateCamera(dt){const P=G.player,c=G.cam;let tx=P.x,ty=P.y,z=1;
   if(P.veh){const v=P.veh;tx+=v.vx*0.35;ty+=v.vy*0.35;z=lerp(1,0.6,clamp(Math.abs(v.speed)/420,0,1));if(v.alt)z*=1-0.25*v.alt;}
-  else if(!P.dead){tx+=(P.mvx||0)*0.3;ty+=(P.mvy||0)*0.3;}
+  else if(!P.dead){tx+=(P.mvx||0)*0.3;ty+=(P.mvy||0)*0.3;if(P.ride&&P.ride.tr)z=0.7;}
   c.x=lerp(c.x,tx,1-Math.pow(0.02,dt));c.y=lerp(c.y,ty,1-Math.pow(0.02,dt));c.z=lerp(c.z,z,1-Math.pow(0.25,dt));
   c.s=Math.min(G.vw,G.vh)/500*c.z*(Math.max(G.vw,G.vh)>1100?1.1:1);if(G.shake>0)G.shake=Math.max(0,G.shake-dt*30);}
 function step(dt){G.time+=dt;
@@ -186,7 +186,7 @@ function step(dt){G.time+=dt;
   updateBullets(dt);updateParts(dt);updatePickups(dt);worldTriggers(dt);gpsTick(dt);lifeTick(dt);updateMission(dt);spawner(dt);plusEvents(dt);plusHeli(dt);plusAmbient(dt);cityUpdate(dt);if(G.state!=='play')return;
   {const grab=G.time-(G.bustBy||-9)<0.25&&!P.veh,sp=hyp(P.mvx||0,P.mvy||0);G.bust=clamp((G.bust||0)+(grab&&sp<70&&G.time-(G.lastPunch||-9)>0.7?dt/2.2:-dt*0.6),0,1);if(G.wanted===0)G.bust=0;if(G.bust>=1){G.bust=0;busted();}}
   if(G.boom){G.boom.t-=dt*1.8;if(G.boom.t<=0)G.boom=null;}
-  if(!P.dead&&P.hp<50&&G.time-(G.lastHurt||0)>6)P.hp=Math.min(50,P.hp+4*dt);
+  regenTick(dt);
   if(P.hp<P._lastHp)G.hurtFlash=Math.max(G.hurtFlash||0,0.6);P._lastHp=P.hp;}
 let last=0;
 function frame(now){const dt=Math.min(0.05,(now-last)/1000||0);last=now;

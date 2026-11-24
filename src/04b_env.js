@@ -22,7 +22,7 @@ function clockStr(){const h=Math.floor(ENV.clock),m=Math.floor((ENV.clock-h)*6)*
 // traffic lights: returns [east-west, north-south]
 function lightState(i,j){const t=(G.time+((i*3+j*5)%14))%14;return[t<7?'r':t<12.5?'g':'y',t<5.5?'g':t<7?'y':'r'];}
 function sightRange(){return lerp(760,480,ENV.dark)*(1-0.3*ENV.fog-0.12*ENV.rain);}
-function copVisible(){if(G.heli&&G.heli.see)return true;const P=G.player,px=P.x,py=P.y,R=sightRange(),R2=R*R;
+function copVisible(){if(G.player.ride&&G.player.ride.tr)return false;if(G.heli&&G.heli.see)return true;const P=G.player,px=P.x,py=P.y,R=sightRange(),R2=R*R;
   for(const p of G.peds)if(p.type==='cop'&&!p.dead&&(p.x-px)**2+(p.y-py)**2<R2&&los(p.x,p.y,px,py))return true;
   for(const v of G.vehicles)if((v.t.police||v.t.army)&&!v.dead&&v.ai&&v.ai.mode==='chase'&&(v.x-px)**2+(v.y-py)**2<R2&&los(v.x,v.y,px,py))return true;
   for(const v of G.vehicles)if(v.t.police&&!v.dead&&v.driver==='cop'&&(v.x-px)**2+(v.y-py)**2<R2&&los(v.x,v.y,px,py))return true;

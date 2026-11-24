@@ -61,7 +61,7 @@ function roofFun(b,rx,ry,rw,rh,cx,cy,d){const k=b.seed%11,m=Math.min(rw,rh);
 function drawPropTop(){const P=G.player,c=G.cam,pu=(Math.sin(G.time*4)+1)/2;
   for(const u of USES){if(Math.abs(u.x-c.x)>1100||Math.abs(u.y-c.y)>800)continue;const col=u.col||'#8fd3ff';g.globalAlpha=0.3+pu*0.25;g.fillStyle=col;g.beginPath();g.arc(u.x,u.y,26+pu*5,0,TAU);g.fill();g.globalAlpha=1;g.strokeStyle=col;g.lineWidth=4;g.setLineDash([10,6]);g.lineDashOffset=-G.time*18;g.beginPath();g.arc(u.x,u.y,26,0,TAU);g.stroke();g.setLineDash([]);
     g.fillStyle='#0b1020';g.font='bold 24px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(u.ic||'!',u.x,u.y+1);}
-  if(P.veh)return;if(G.nearUse){const u=G.nearUse;bubble(u.x,u.y-44,typeof u.lb==='string'?tr(u.lb):L(u.lb));return;}
+  if(P.veh||P.ride)return;if(G.nearUse){const u=G.nearUse;bubble(u.x,u.y-44,u.station?fmt(tr('trBoard'),L(u.station.name),5):typeof u.lb==='string'?tr(u.lb):L(u.lb));return;}
   const b=G.nearProp;if(!b)return;const id=pid(b),own=owned(id),x=b.sx||b.x,y=(b.sy||b.y)-44;
   bubble(x,y,own?fmt(tr('propCollect'),propIncome(b).toLocaleString('en-US')):fmt(tr('propPrompt'),L(b.name),b.price.toLocaleString('en-US')));}
 G.gps=store.get('sb_gps',true);

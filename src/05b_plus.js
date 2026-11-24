@@ -7,7 +7,6 @@ const REACT={bump:[R2('היי! תיזהר!','Hey! Watch it!'),R2('מה הבעי�
  call:[R2('הלו, משטרה? ראיתי הכול!','Hello, police? I saw everything!')],mug:[R2('קח! רק אל תפגע בי!',"Take it! Just don't hurt me!")],fight:[R2('אתה רוצה מכות?','You want a fight?'),R2('בוא הנה!','Come here!')],
  thanks:[R2('תודה! הצלת אותי!','Thank you! You saved me!')],crash:[R2('הרסת לי את האוטו!','You wrecked my car!')],vendor:[R2('נקניקייה חמה, 20 דולר!','Hot dogs, 20 bucks!')],snack:[R2('בתיאבון!','Enjoy!')],
  full:[R2('אתה נראה שבע, חבר.','You look full, pal.')],fare:[R2('תודה, נהג.','Thanks, driver.')],help:[R2('הצילו!','Help!')],rain:[R2('איזה מבול...','What a downpour...')],cop:[R2('עצור! משטרה!','Freeze! Police!'),R2('ידיים למעלה!','Hands up!')]};
-function say(p,key,dur){if(!p)return;p.say=L(pick(REACT[key]));p.sayT=dur||2.2;}
 function react(p,key){if(!p||G.sayCD>0)return;G.sayCD=0.9;say(p,key);if(p.kind==='dog')sfx.bark(dv(p.x,p.y));else sfx.voice(p,dv(p.x,p.y));}
 function nearestCiv(x,y,r){let b=null,bd=r;for(const p of G.peds){if(p.type!=='civ'||p.dead)continue;const d=hyp(p.x-x,p.y-y);if(d<bd){bd=d;b=p;}}return b;}
 function bAt(x,y){return BUILDINGS[BMAP[Math.floor(y/T)*MW+Math.floor(x/T)]];}
@@ -67,8 +66,12 @@ function drawDamage(v){const t=v.t,Lh=t.l/2,Wh=t.w/2,dm=1-v.hp/t.hp,car=!t.boat&
   g.restore();}
 
 // ---------- ped behaviours ----------
-function plusBrawl(p,dt){const P=G.player;if(P.dead||P.veh||P.roof||P.climb){p.brawl=0;return false;}p.brawl-=dt;const d=hyp(P.x-p.x,P.y-p.y);p.a=Math.atan2(P.y-p.y,P.x-p.x);
-  if(d>23)walkDir(p,128,dt);else{p.walk=0;if(p.cool<=0&&!(P.jump>0)){p.cool=0.85;hurtPed(P,7,p,'punch');sfx.punch();P.kvx=Math.cos(p.a)*130;P.kvy=Math.sin(p.a)*130;G.hurtFlash=0.4;}}return true;}
+function plusBrawl(p,dt){const P=G.player;if(P.dead||P.veh||P.roof||P.climb){p.brawl=0;return false;}p.brawl-=dt;const d=hyp(P.x-p.x,P.y-p.y);p.a=Math.atan2(P.y-p.y,P.x-p.x);if(p.hitT>0)p.hitT-=dt;
+  const W=WEAP[G.weapon]||{};if(G.weapon!=='fist'&&!W.melee&&d<320){gunReact(p);return true;}
+  if(p.dodge>0){p.dodge-=dt;const s=p.id%2?1:-1;movePed(p,-Math.sin(p.a)*s*140*dt,Math.cos(p.a)*s*140*dt);return true;}
+  if(d>23)walkDir(p,128,dt);else{p.walk=0;if(G.punchT>0.15&&rand()<dt*3){p.dodge=0.25;return true;}
+    if(p.cool<=0&&!(P.jump>0)){p.bc=(p.bc||0)+1;const K=KINDS[p.kind]||{},kick=p.bc%3===0,dmg=(kick?11:6)*(K.tough?1.3:1);p.cool=kick?1.1:rr(0.55,0.85);p.hitK=kick?'kick':p.bc%2?'jab':'cross';p.hitT=0.22;
+      hurtPed(P,dmg,p,'punch');sfx.punch();const kb=kick?220:110;P.kvx=Math.cos(p.a)*kb;P.kvy=Math.sin(p.a)*kb;G.hurtFlash=0.4;if(kick)G.shake=Math.max(G.shake||0,3);if(p.sayT<=0&&rand()<0.3)say(p,'fight');}}return true;}
 function plusPrey(p,dt){const q=p.prey;if(!q||q.dead||q.remove){p.prey=null;return false;}const d=hyp(q.x-p.x,q.y-p.y);p.a=Math.atan2(q.y-p.y,q.x-p.x);
   if(d>22)walkDir(p,118,dt);else if(p.cool<=0){p.cool=1;hurtPed(q,6,p,'punch');sfx.punch();}q.st='flee';q.ft=2;q.fx=p.x;q.fy=p.y;if(q.sayT<=0&&rand()<dt)say(q,'help');return true;}
 function plusWar(p,dt){p.wt=(p.wt||0)-dt;if(p.wt<=0){p.wt=0.7;let b=null,bd=330;for(const o of G.peds){if(!o.war||o.dead||o.faction===p.faction)continue;const d=hyp(o.x-p.x,o.y-p.y);if(d<bd){bd=d;b=o;}}p.tg=b;}
@@ -76,7 +79,7 @@ function plusWar(p,dt){p.wt=(p.wt||0)-dt;if(p.wt<=0){p.wt=0.7;let b=null,bd=330;
   if(p.cool<=0&&los(p.x,p.y,o.x,o.y)){p.cool=rr(0.7,1.3);fire(p,null,p.x,p.y,p.a,10,0.16);}return true;}
 function plusWitness(){if(G.callCD>0)return;const P=G.player;if(P.roof)return;let best=null,bd=340;
   for(const p of G.peds){if(p.type!=='civ'||p.kind==='dog'||p.dead||p.stun>0||p.st==='call'||p.brawl>0)continue;const d=hyp(p.x-P.x,p.y-P.y);if(d<bd&&d>70&&los(p.x,p.y,P.x,P.y)){bd=d;best=p;}}
-  if(best){best.st='call';best.callT=4.5;best.fx=P.x;best.fy=P.y;G.callCD=10;say(best,'call',4.5);}}
+  if(best){best.st='call';best.callT=4.5;best.fx=P.x;best.fy=P.y;G.callCD=15;say(best,'call',4.5);}}
 function findSpot(rmin,rmax){const P=G.player;for(let k=0;k<30;k++){const a=rr(0,TAU),r=rr(rmin,rmax),x=P.x+Math.cos(a)*r,y=P.y+Math.sin(a)*r,t=tileAt(x,y);if((t===TL.WALK||t===TL.CONC)&&!onScreen(x,y,60))return{x,y};}return null;}
 function plusEvents(dt){const P=G.player;if(G.sayCD>0)G.sayCD-=dt;if(G.callCD>0)G.callCD-=dt;
   const ev=G.ev;if(ev){if(ev.v.dead||ev.v.remove||hyp(ev.v.x-P.x,ev.v.y-P.y)>1900)G.ev=null;
@@ -97,7 +100,7 @@ function plusTaxi(dt){const P=G.player,v=P.veh;if(G.fareCD>0)G.fareCD-=dt;
   else{G.fare.t-=dt;if(hyp(v.x-G.fare.x,v.y-G.fare.y)<95&&Math.abs(v.speed)<70){const pay=G.fare.pay+(G.fare.t>0?Math.round(G.fare.pay*0.5):0);G.money+=pay;toast(fmt(tr('farePaid'),pay));sfx.pass();G.rep=Math.min(50,G.rep+2);post('taxi');
       const p=mkPed('civ',v.x-Math.sin(v.a)*30,v.y+Math.cos(v.a)*30);say(p,'fare');G.fare=null;G.fareCD=2.5;}}}
 function plusHeli(dt){const P=G.player;if(G.heliCD>0)G.heliCD-=dt;let h=G.heli;
-  if(!h){if(G.wanted>=3&&!(G.heliCD>0)&&!P.dead){const a=rr(0,TAU);G.heli={x:P.x+Math.cos(a)*1100,y:P.y+Math.sin(a)*1100,a:0,vx:0,vy:0,see:false,ph:0};toast(tr('heli'));}return;}
+  if(!h){if(G.wanted>=3&&!(G.heliCD>0)&&!P.dead){const a=rr(0,TAU);G.heli={x:P.x+Math.cos(a)*1100,y:P.y+Math.sin(a)*1100,a:0,vx:0,vy:0,see:false,ph:0,hp:280};toast(tr('heli'));}return;}
   const leave=G.wanted<3||P.dead;let tx,ty;
   if(leave){tx=h.x+(h.x-P.x)*2+1;ty=h.y+(h.y-P.y)*2+1;if(hyp(h.x-P.x,h.y-P.y)>1500){G.heli=null;return;}}
   else if(G.seenNow||h.see){tx=P.x;ty=P.y;}else{const ls=G.lastSeen||P;h.ph+=dt*0.7;tx=ls.x+Math.cos(h.ph)*270;ty=ls.y+Math.sin(h.ph*1.3)*270;}

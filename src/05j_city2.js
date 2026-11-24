@@ -108,7 +108,7 @@ function flyPanel(item,m){const d=document.createElement('div');d.className='sta
   for(const k in AIRP){if(k===G.flyFrom)continue;const A=AIRP[k];item('✈ '+L(A.n),tr('flySub'),owned('b_air')?0:300,()=>{setTimeout(()=>{closeShop();const P=G.player,q=A.p();P.x=q.x;P.y=q.y+70;P.mvx=P.mvy=0;G.cam.x=P.x;G.cam.y=P.y;ENV.clock=(ENV.clock+1.2)%24;calcLight();G.area=null;toast(fmt(tr('flew'),L(A.n)),4);sfx.pass();saveGame();},0);},null);}}
 function propsUpdate(dt){const P=G.player;G.playT=(G.playT||0)+dt;G.nearProp=null;G.nearUse=null;
   if(P.veh&&P.veh.hot){P.veh.hot=0;P.veh.persist=false;setStars(2);toast(tr('hotCar'),3.5);P.veh.alarm=8;}
-  if(P.veh||P.inside||P.roof||P.climb)return;for(const u of USES){const d=hyp(P.x-u.x,P.y-u.y);if(d<(u.r||50))G.nearUse=u;}
+  if(P.veh||P.inside||P.roof||P.climb||P.ride)return;for(const u of USES){const d=hyp(P.x-u.x,P.y-u.y);if(d<(u.r||50))G.nearUse=u;}
   if(G.wanted>0)return;let bd=46;for(const b of PROPS){const d=hyp(P.x-b.x,P.y-b.y);if(d<bd){bd=d;G.nearProp=b;}}
   for(const s of SHOPS)if(s.k==='home'&&!owned(s.pid)){const d=hyp(P.x-s.sx,P.y-s.sy);if(d<bd){bd=d;G.nearProp=s;}}}
 function drawPropTop(){const P=G.player,c=G.cam,pu=(Math.sin(G.time*4)+1)/2;
