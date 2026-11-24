@@ -71,5 +71,5 @@ function updateAudio(){if(!AU.ctx)return;if(!AU.up)audioUp();const P=G.player,x=
       if(ENV.rain>0.25)AU.critT=3;else if(d>0.55){AU.critT=rr(1.1,2.6);aCricket(q*(0.6+(AU.nearG||0)));}else if((AU.nearW||0)>0.12&&rand()<0.45){AU.critT=rr(3,8);aGull(q);}else{AU.critT=rr(1.6,5);if((AU.nearG||0)>0.04||rand()<0.35)aBird(q);}
       if(rand()<0.07){const h=pick([[392,494],[330,415],[466,587]]);for(const f of h)aT(f,0.35,'sawtooth',0.012,{lp:900,rev:0.8});}else if(rand()<0.04)for(let i=0;i<2;i++)aT(330,0.09,'sawtooth',0.02,{to:180,lp:700,bp:1,q:2,at:i*0.17,rev:0.8});}}
   st(AU.heliG.gain,G.heli&&play?clamp(1-hyp(G.heli.x-P.x,G.heli.y-P.y)/1400,0,1)*0.5*(0.5+0.5*Math.abs(Math.sin(G.time*19))):0,0.02);
-  let near=1e9;if(G.wanted>0)for(const o of G.vehicles)if(o.ai&&o.ai.mode==='chase'&&o.ai.faction==='police')near=Math.min(near,hyp(o.x-P.x,o.y-P.y));
+  let near=1e9;for(const o of G.vehicles)if(o.siren&&!o.dead)near=Math.min(near,o===v?160:hyp(o.x-P.x,o.y-P.y));if(G.wanted>0)for(const o of G.vehicles)if(o.ai&&o.ai.mode==='chase'&&o.ai.faction==='police')near=Math.min(near,hyp(o.x-P.x,o.y-P.y));
   if(near<1200&&play){st(AU.srG.gain,0.03*Math.pow(1-near/1200,1.3),0.1);const ph=near<330?G.time*13:G.time*2.7;AU.sr.frequency.setTargetAtTime(980+340*Math.sin(ph),t,0.02);}else st(AU.srG.gain,0,0.1);}

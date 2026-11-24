@@ -12,6 +12,7 @@ function updatePlayer(dt){const P=G.player;if(P.dead)return;const [mx,my]=readKe
       v.hb=brake?1:0;if(brake&&mag<0.15)v.thr=v.speed>15?-1:0;}
     if(!v.t.boat&&!v.t.tank){v.fuel=Math.max(0,v.fuel-Math.abs(v.thr)*dt/260);if(v.fuel<=0){v.thr=0;if(!v.dry){v.dry=1;toast(tr('nofuel'),4);}}}
     if(fx&&G.fireCD<=0){if(v.t.tank){G.fireCD=1.1;fire(P,v,v.x,v.y,v.a,120,0.01,true);G.shake=6;crime(1,false);}
+      else if(v.t.amb||v.t.fire||v.t.police){G.fireCD=0.5;v.siren=!v.siren;toast(tr(v.siren?'sirenOn':'sirenOff'),1.2);sfx.blip();}
       else{G.fireCD=0.6;sfx.horn(v,1);react(nearestCiv(v.x,v.y,170),'horn');for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-v.x,p.y-v.y)<160){p.st='flee';p.ft=2;p.fx=v.x;p.fy=v.y;}}}
     if(IN.enterP)exitVehicle();
   }else if(G.down>0){G.down-=dt;G.skidNow=false;P.walk=0;P.mvx=P.mvy=0;if(P.kvx||P.kvy){pMove(P,P.kvx*dt,P.kvy*dt);P.kvx*=0.9;P.kvy*=0.9;if(Math.abs(P.kvx)+Math.abs(P.kvy)<5){P.kvx=0;P.kvy=0;}}
@@ -175,14 +176,14 @@ function step(dt){G.time+=dt;
   if(G.player.dead){G.state='dead';G.deadT=3;G.deadKind=G.deadKind||'wasted';return;}
   updateEnv(dt);G.fireCD-=dt;G.bustCar=0;updatePlayer(dt);
   const P=G.player;
-  for(const v of G.vehicles){if(v.driver&&v.driver!==P&&v.ai){if(v.ai.mode==='traffic')aiTraffic(v,dt);else aiChase(v,dt);}
+  for(const v of G.vehicles){if(v.driver&&v.driver!==P&&v.ai){if(v.ai.mode==='traffic')aiTraffic(v,dt);else if(v.ai.mode!=='medic')aiChase(v,dt);}
     else if(!v.driver){v.thr=0;v.str=0;}
     if(v.burn>0)v.burn-=dt;if(v.door>0)v.door-=dt;
     if(v.fuse>0&&!v.dead&&!v.sunk)fuseTick(v,dt);if(v.alarm>0)alarmTick(v,dt);
     const moving=Math.abs(v.vx)+Math.abs(v.vy)>0.5||v.thr!==0||v.sink;if(moving&&!v.sunk&&(hyp(v.x-P.x,v.y-P.y)<2600||(v.ai&&v.persist)))vehPhys(v,dt);}
   vehCollide();vehPedCollide();
   for(const p of G.peds)aiPed(p,dt);
-  updateBullets(dt);updateParts(dt);updatePickups(dt);worldTriggers(dt);gpsTick(dt);updateMission(dt);spawner(dt);plusEvents(dt);plusHeli(dt);plusAmbient(dt);cityUpdate(dt);if(G.state!=='play')return;
+  updateBullets(dt);updateParts(dt);updatePickups(dt);worldTriggers(dt);gpsTick(dt);lifeTick(dt);updateMission(dt);spawner(dt);plusEvents(dt);plusHeli(dt);plusAmbient(dt);cityUpdate(dt);if(G.state!=='play')return;
   {const grab=G.time-(G.bustBy||-9)<0.25&&!P.veh,sp=hyp(P.mvx||0,P.mvy||0);G.bust=clamp((G.bust||0)+(grab&&sp<70&&G.time-(G.lastPunch||-9)>0.7?dt/2.2:-dt*0.6),0,1);if(G.wanted===0)G.bust=0;if(G.bust>=1){G.bust=0;busted();}}
   if(G.boom){G.boom.t-=dt*1.8;if(G.boom.t<=0)G.boom=null;}
   if(!P.dead&&P.hp<50&&G.time-(G.lastHurt||0)>6)P.hp=Math.min(50,P.hp+4*dt);

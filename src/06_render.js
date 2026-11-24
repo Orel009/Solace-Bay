@@ -96,7 +96,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
     for(let k=0;k<3;k++){g.fillStyle=cols[k][0]===st?cols[k][2]:cols[k][1];g.beginPath();g.arc(-8+k*8,0,3.3,0,TAU);g.fill();}g.restore();});
   for(const l of LADS)if(inV(l.gx,l.gy,30)){const pu=(Math.sin(tt*5)+1)/2,nr=G.nearLad===l;g.fillStyle=`rgba(255,210,63,${0.22+pu*0.2})`;g.beginPath();g.arc(l.gx,l.gy,nr?27:20+pu*4,0,TAU);g.fill();g.strokeStyle='#ffd23f';g.lineWidth=3;g.stroke();
     g.save();g.translate(l.gx,l.gy);g.rotate(Math.atan2(l.ry-l.gy,l.rx-l.gx)+Math.PI/2);g.strokeStyle='#1b1d22';g.lineWidth=3;g.beginPath();g.moveTo(-5,-10);g.lineTo(-5,10);g.moveTo(5,-10);g.lineTo(5,10);for(let k=-7;k<=7;k+=4.6){g.moveTo(-5,k);g.lineTo(5,k);}g.stroke();g.restore();}
-  drawCityGround(inV);drawProps(inV);gpsWorld();
+  drawCityGround(inV);drawProps(inV);drawLife(inV);gpsWorld();
   drawMarkers(inV);
   for(const p of G.pickups){if(p.taken||p.h||!inV(p.x,p.y,30))continue;drawPickup(p);}
   for(const p of G.peds)if(p.dead&&!p.veh&&inV(p.x,p.y,30))drawPed(p);
@@ -124,7 +124,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
       g.fillStyle='#6b4f2a';g.beginPath();g.arc(rx,ry,5,0,TAU);g.fill();}
     else{g.fillStyle='#28602a';g.beginPath();g.arc(rx,ry,t.r,0,TAU);g.fill();g.fillStyle='#34772f';g.beginPath();g.arc(rx-t.r*0.18,ry-t.r*0.2,t.r*0.74,0,TAU);g.fill();
       g.fillStyle='#4a9438';g.beginPath();g.arc(rx-t.r*0.3,ry-t.r*0.34,t.r*0.4,0,TAU);g.fill();}}
-  drawLighting(lamps,inV,bl);
+  drawLighting(lamps,inV,bl);drawSirens();
   // ---- emissive pass ----
   setW();g.globalCompositeOperation='lighter';
   if(d>0.05)for(const l of lamps)glow(g,GL.warm,l.lx,l.ly,l.big?44:28,d);
@@ -306,7 +306,7 @@ function paintVeh(q,t,body,dead){const Lh=t.l/2,Wh=t.w/2,glass=dead?'#1a1a1a':'#
   if(!dead){const hy=boxy?Wh-9.5:Wh*(1-nz)-6.6,ty=boxy?Wh-9.5:Wh*(1-rz)-6.4;q.fillStyle='#fff3b8';rrect(q,Lh-4.2,-hy-6,3.8,6,1.6);q.fill();rrect(q,Lh-4.2,hy,3.8,6,1.6);q.fill();q.fillStyle='#8f1d1d';rrect(q,-Lh+0.3,-ty-6,3,6,1.4);q.fill();rrect(q,-Lh+0.3,ty,3,6,1.4);q.fill();}}
 function drawVeh(v){const t=v.t,Lh=t.l/2,Wh=t.w/2,P=G.player;if(t.plane){drawPlane(v);return;}
   if(!v.sink){g.save();g.translate(v.x+4+ENV.sun.ox*5,v.y+5);g.rotate(v.a);g.fillStyle='rgba(0,0,0,0.3)';rrect(g,-Lh,-Wh,t.l,t.w,7);g.fill();g.restore();}
-  g.save();g.translate(v.x,v.y);g.rotate(v.a);if(v.sink)g.globalAlpha=Math.max(0.1,1-v.sink/1.3);else if(t.boat&&tileAt(v.x,v.y)===TL.BRIDGE)g.globalAlpha=0.3;
+  g.save();g.translate(v.x,v.y);g.rotate(v.a);if(v.airT>0){const k=Math.sin(Math.PI*(1-v.airT/v.airMax));g.scale(1+k*0.38,1+k*0.38);}if(v.sink)g.globalAlpha=Math.max(0.1,1-v.sink/1.3);else if(t.boat&&tileAt(v.x,v.y)===TL.BRIDGE)g.globalAlpha=0.3;
   if(!t.boat&&!t.tank)drawWheelsDyn(v,t,Lh,Wh);
   g.drawImage(vehSprite(v),-Lh-VPAD,-Wh-VPAD,t.l+VPAD*2,t.w+VPAD*2);
   if(!v.dead){drawDamage(v);

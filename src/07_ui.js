@@ -149,7 +149,7 @@ function hideDialog(){$('dlg').style.display='none';}
 function applyLang(){document.documentElement.lang=G.lang;const rtl=G.lang==='he';['obj','toast','big','pause','menu','shop','feed','area','timer'].forEach(id=>$(id).dir=rtl?'rtl':'ltr');
   for(const k in hudCache)delete hudCache[k];buildMenu();if(G.dialog)renderDialog();if(G.state==='pause')buildPause();
   if(G.player&&G.state!=='title'){G.obj='';updateMission(0);}}
-function btn(txt,fn,cls){const b=document.createElement('button');b.className='mbtn'+(cls?' '+cls:'');b.textContent=txt;b.onclick=e=>{AU.init();sfx.door();fn(e);};return b;}
+function btn(txt,fn,cls){const b=document.createElement('button');b.className='mbtn'+(cls?' '+cls:'');b.textContent=txt;b.onclick=e=>{if(performance.now()-(G.panelT||0)<350)return;AU.init();sfx.door();fn(e);};return b;}
 function optRow(rebuild){const row=document.createElement('div');row.className='row';
   row.appendChild(btn(tr('lang'),()=>{G.lang=G.lang==='he'?'en':'he';store.set('sb_lang',G.lang);applyLang();}));
   row.appendChild(btn(tr('sound')+': '+tr(G.sound?'on':'off'),()=>{G.sound=!G.sound;store.set('sb_sound',G.sound);AU.setVol();rebuild();}));
@@ -162,22 +162,22 @@ function buildMenu(){const m=$('menu');m.innerHTML='';const has=!!store.get('sb_
     const r=document.createElement('div');r.className='row';r.appendChild(btn(tr('yes'),()=>startGame(true),'pri'));r.appendChild(btn(tr('no'),buildMenu));m.appendChild(r);},has?'':'pri'));
   m.appendChild(optRow(buildMenu));
   if(innerHeight>innerWidth)m.appendChild(btn(tr(G.rot?'rotOff':'rotOn'),()=>{G.rot=!G.rot;store.set('sb_rot',G.rot);resize();buildMenu();}));}
-function openPause(){G.state='pause';toggleWbar(false);buildPause();$('pause').style.display='flex';}
+function openPause(){G.panelT=performance.now();G.state='pause';toggleWbar(false);buildPause();$('pause').style.display='flex';}
 function closePause(){$('pause').style.display='none';G.state='play';}
 function buildPause(){const m=$('pause');m.innerHTML='';const h=document.createElement('h2');h.textContent=tr('title');m.appendChild(h);
   const st=document.createElement('div');st.className='stats';st.textContent=`${tr('missions')}: ${G.done.length}/${MISSIONS.length}  ·  ${tr('tokens')}: ${G.tokens.length}/${TOKENS.length}  ·  ${tr('money')}: $${G.money}  ·  ${tr('rep')}: ${Math.round(G.rep)}`;m.appendChild(st);
   m.appendChild(btn(tr('resume'),closePause,'pri'));
-  m.appendChild(btn(tr('map'),openMap));if(innerHeight>innerWidth)m.appendChild(btn(tr(G.rot?'rotOff':'rotOn'),()=>{G.rot=!G.rot;store.set('sb_rot',G.rot);resize();buildPause();}));
+  m.appendChild(btn(tr('misT'),()=>{closePause();openMis();}));m.appendChild(btn(tr('map'),openMap));if(innerHeight>innerWidth)m.appendChild(btn(tr(G.rot?'rotOff':'rotOn'),()=>{G.rot=!G.rot;store.set('sb_rot',G.rot);resize();buildPause();}));
   m.appendChild(optRow(buildPause));
   const hp=document.createElement('p');hp.className='help';hp.textContent=tr('help');m.appendChild(hp);
   const row=document.createElement('div');row.className='row';row.appendChild(btn(tr('save'),()=>{saveGame();toast(tr('saved'));}));row.appendChild(btn(tr('menu'),()=>{saveGame();location.reload();}));m.appendChild(row);}
-function openShop(s,mode){G.state='shop';G.shop=s;G.shopMode=mode;G.slot=null;G.talk=null;buildTalk();toggleWbar(false);$('ibar').style.display='none';buildShop();$('shop').style.display='flex';}
+function openShop(s,mode){G.panelT=performance.now();G.state='shop';G.shop=s;G.shopMode=mode;G.slot=null;G.talk=null;buildTalk();toggleWbar(false);$('ibar').style.display='none';buildShop();$('shop').style.display='flex';}
 function closeShop(){$('shop').style.display='none';G.state='play';G.shop=null;saveGame();G.ibKey='';buildInsideBar();}
 function buildShop(){const s=G.shop,P=G.player,md=G.shopMode,m=$('shop');m.innerHTML='';m.dir=G.lang==='he'?'rtl':'ltr';const h=document.createElement('h2');h.textContent=L(s.name);h.style.color=s.col;m.appendChild(h);
   const st=document.createElement('div');st.className='stats';st.textContent=tr('money')+': $'+G.money.toLocaleString('en-US');m.appendChild(st);
   const grid=document.createElement('div');grid.className='shopgrid';
   const item=(name,sub,price,fn,ic,dis)=>{const b=document.createElement('button');b.className='sitem'+((G.money<price||dis)?' dis':'');b.innerHTML=(ic||'')+'<b></b><span></span><i></i>';b.querySelector('b').textContent=name;b.querySelector('span').textContent=sub;b.querySelector('i').textContent=price?'$'+price:'';
-    b.onclick=()=>{if(G.money<price||dis){sfx.no();return;}G.money-=price;fn();sfx.blip();buildShop();};grid.appendChild(b);};
+    b.onclick=()=>{if(performance.now()-(G.panelT||0)<350)return;if(G.money<price||dis){sfx.no();return;}G.money-=price;fn();sfx.blip();buildShop();};grid.appendChild(b);};
   if(md==='guns'){for(const w of WORDER.slice(1)){const W=WEAP[w];item(L(W),'+'+W.pack+(G.weapons[w]?'  ('+G.weapons[w]+')':''),owned('b_guns')?Math.round(W.price*0.75):W.price,()=>giveWeapon(w,W.pack),WICON[w]);}item(tr('armor'),Math.ceil(G.armor)+'/100',300,()=>{G.armor=100;},WICON.armor);}
   if(md==='clothes')for(const o of OUTFITS){const own=G.outfits.includes(o.id),on=G.outfit===o.id;item(L(o),on?tr('wearing'):own?tr('wear'):'',own?0:o.price,()=>{if(!own)G.outfits.push(o.id);wearOutfit(o.id);},'<span class="sw" style="background:'+o.shirt+'"></span>',on);}
   if(md==='food'){item(tr('snackI'),'+40',15,()=>{P.hp=Math.min(100,P.hp+40);},null,P.hp>=100);item(tr('medkit'),G.meds+'/3',80,()=>{G.meds++;},null,G.meds>=3);}

@@ -140,7 +140,7 @@ function genWorld(){
     {type:'armor',x:POI.cops.x-90,y:POI.cops.y},{type:'armor',x:112*T,y:120*T},{type:'bribe',x:8.5*T,y:100*T},{type:'bribe',x:111*T,y:30*T},{type:'bribe',x:55.5*T,y:9.4*T});
   const ct=POI.court;WPICKS.push({type:'rocket',x:ct.x-70,y:ct.y+40},{type:'armor',x:ct.x+70,y:ct.y+40},{type:'cash',x:ct.x,y:ct.y-50,amt:800,once:'court'},{type:'chest',x:25.3*T,y:162.5*T,once:'wreck'},{type:'cash',x:157.5*T,y:79.5*T,amt:500,once:'lh'});
   TOKENS.push({id:TOKENS.length,x:ct.x,y:ct.y+60},{id:TOKENS.length+1,x:157.4*T,y:82.6*T});
-  genCity2();genProps();genProps2();genFun();genLadders();
+  genCity2();genProps();genProps2();genFun();genStunts();genLadders();
 }
 function sprayBlock(x0,y0,x1,y1){fillT(x0,y0,x1,y0+2,TL.CONC);addBld(x0,y0+3,x1,y1,1.4,'#8e5ea2',{logo:'✦',logoC:'#f9e79f'});const sp={x:(x0+x1+1)/2*T,y:(y0+1.5)*T};SPRAYS.push(sp);return sp;}
 function splitLots(x0,y0,x1,y1,dep,out,R){const w=x1-x0+1,h=y1-y0+1;

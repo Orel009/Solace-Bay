@@ -15,6 +15,7 @@ An original top-down open-world crime game for the mobile browser, inspired by t
 - A missions panel with GPS routing along the roads, shown on the minimap, the full map and the street.
 - Day/night cycle, weather, dynamic lighting, layered synthesized audio (engines, voices, ambience, reverb).
 - A six-star wanted system built on "heat": witnesses, line of sight, police profile (outfit and vehicle), helicopter.
+- Busier streets day and night (night-life crowds, chatting groups), ambulances that come and revive the injured, 14 stunt ramps with cash bonuses, paramedic shifts and sirens in emergency vehicles.
 - Reactive pedestrians and drivers (shoot at a car and the driver floors it or bails out), knockdowns instead of instant deaths, climbable rooftops, hidden tokens, joke spots around the map.
 
 ## Controls

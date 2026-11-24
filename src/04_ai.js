@@ -93,7 +93,7 @@ function spawnChaser(faction,type,col,ringMin,ringMax){const P=G.player;const no
   return null;}
 
 // ---------- peds ----------
-function aiPed(p,dt){if(p.dead||p.veh)return;
+function aiPed(p,dt){if(p.dead||p.veh||p.medicP)return;
   if(p.burn>0){p.burn-=dt;hurtPed(p,16*dt,null,'burn');if(rand()<0.5)part('fire',p.x+rr(-5,5),p.y+rr(-5,5),0,-20,0.4,rr(4,7));if(p.dead)return;}
   if(p.kvx||p.kvy){movePed(p,p.kvx*dt,p.kvy*dt);p.kvx*=0.88;p.kvy*=0.88;if(Math.abs(p.kvx)+Math.abs(p.kvy)<5){p.kvx=0;p.kvy=0;}}
   if(p.swim){if(!p.inWater)p.inWater=0;p.inWater+=dt;if(p.inWater>14)hurtPed(p,8*dt,null,'drown');}else p.inWater=0;
