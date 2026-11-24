@@ -3,7 +3,7 @@ const WE=7,BR=[4,8],ROOFC=['#b5533c','#8d4a3a','#6d7b8a','#a8643f','#5f6f7a'];
 TL.BRIDGE=10;
 VT.plane={he:'מטוס קל',en:'Light Plane',l:92,w:30,max:560,acc:250,grip:9,turn:1.5,hp:160,cols:['#f4f6f7'],plane:1,mass:1.2};
 Object.assign(PAL,{crown:['#f3ece0','#e8dccb','#f7f3ea','#e6e0d4','#efe3d0'],strip:['#2a1f3d','#3b1f2e','#1f2a44','#402a1a','#2d2d38'],east:['#9a6b52','#7d7f86','#8c7a5c','#6f7b72','#a0876a']});
-Object.assign(AREAS,{crown:{he:'קראון הייטס',en:'Crown Heights'},strip:{he:'לאקי סטריפ',en:'Lucky Strip'},east:{he:'איסטגייט',en:'Eastgate'},air:{he:'נמל התעופה סולס',en:'Solace Intl Airport'}});
+Object.assign(AREAS,{crown:{he:'רמת הכתר',en:'Crown Heights'},strip:{he:'שדרת המזל',en:'Lucky Strip'},east:{he:'שער המזרח',en:'Eastgate'},air:{he:'נמל התעופה סולס',en:'Solace Intl Airport'}});
 function eastLand(x,y){return x>=169+Math.round(1.4*Math.sin(y*0.17))&&x<=227+Math.round(1.5*Math.sin(y*0.23+1))&&y>=5+Math.round(1.3*Math.sin(x*0.21))&&y<=143;}
 function villa(a,b,c,e,R,rp){fillT(a,b,c,e,TL.GRASS);const w=c-a+1,h=e-b+1,rc=rp(ROOFC);let bb;
   if(w<2||h<2)bb=addBld(a,b,c,e,0.9+R()*0.4,rp(PAL.crown),{house:1});
@@ -40,6 +40,7 @@ function drawPlane(v){const alt=v.alt||0,sc=1+alt*0.55;g.fillStyle=`rgba(0,0,10,
 
 // ---------- extra decor ----------
 function drawDecor2(dc){const tt=G.time;switch(dc.t){
+  case'helipad':g.fillStyle='#3a3d44';g.beginPath();g.arc(dc.x,dc.y,74,0,TAU);g.fill();g.strokeStyle='#ffe14d';g.lineWidth=5;g.beginPath();g.arc(dc.x,dc.y,66,0,TAU);g.stroke();g.fillStyle='#f4f6f7';g.fillRect(dc.x-22,dc.y-26,9,52);g.fillRect(dc.x+13,dc.y-26,9,52);g.fillRect(dc.x-22,dc.y-5,44,10);return true;
   case'runway':g.fillStyle='rgba(255,255,255,0.85)';for(let x=dc.x+90;x<dc.x+dc.w-90;x+=150)g.fillRect(x,dc.y+dc.h/2-4,80,8);
     for(let k=0;k<6;k++){g.fillRect(dc.x+16,dc.y+24+k*46,50,22);g.fillRect(dc.x+dc.w-66,dc.y+24+k*46,50,22);}
     g.strokeStyle='rgba(255,230,120,0.7)';g.lineWidth=3;g.strokeRect(dc.x+4,dc.y+4,dc.w-8,dc.h-8);return true;

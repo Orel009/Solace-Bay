@@ -17,7 +17,7 @@ function addLadder(b,side,pos){const x0=b.x*T,y0=b.y*T,x1=(b.x+b.w)*T,y1=(b.y+b.
   else if(side===1)l={gx:x1+15,gy:pos,rx:x1-17,ry:pos,wx:x1,wy:pos};else l={gx:x0-15,gy:pos,rx:x0+17,ry:pos,wx:x0,wy:pos};
   l.b=b;l.side=side;LADS.push(l);(b.lads||(b.lads=[])).push(l);}
 function genLadders(){const ok=t=>t===TL.WALK||t===TL.CONC||t===TL.GRASS||t===TL.LOT||t===TL.SAND;
-  for(const b of BUILDINGS){if(b.cont||b.army||b.hangar||b.court||b.lh||b.lads||b.shops||b.ht>2.8)continue;if(b.seed%3&&!b.lad)continue;
+  for(const b of BUILDINGS){if(b.cont||b.army||b.hangar||b.court||b.lh||b.lads||(b.shops&&!b.lad)||b.ht>2.8)continue;if(b.seed%3&&!b.lad)continue;
     const tries=[[2,b.x+(b.w>>1),b.y+b.h],[0,b.x+(b.w>>1),b.y-1],[1,b.x+b.w,b.y+(b.h>>1)],[3,b.x-1,b.y+(b.h>>1)]];
     for(const [s,tx,ty] of tries)if(ok(tget(tx,ty))){addLadder(b,s,(s%2===0?tx:ty)*T+T/2);break;}}
   const c=POI.court;addLadder(c.bs,2,c.x);addLadder(c.bs,0,c.x);
@@ -55,7 +55,7 @@ function addDentDir(v,dx,dy,sev){if(sev<=0||v.t.tank||!(v.onScreen||v.driver===G
   if(sev>40){if(lx>Lh*0.5)v.hlB=(v.hlB||0)|(ly<0?1:2);if(lx<-Lh*0.5)v.tlB=(v.tlB||0)|(ly<0?1:2);}
   if(sev>130&&!v.pull)v.pull=rr(-0.14,0.14);}
 function addHole(v,wx,wy){const ca=Math.cos(v.a),sa=Math.sin(v.a),dx=wx-v.x,dy=wy-v.y,hs=v.holes||(v.holes=[]);hs.push({x:dx*ca+dy*sa,y:-dx*sa+dy*ca});if(hs.length>14)hs.shift();}
-function repairVeh(v){v.hp=v.t.hp;v.dents=null;v.holes=null;v.hlB=0;v.tlB=0;v.pull=0;}
+function repairVeh(v){v.hp=v.t.hp;v.fuse=0;v.dents=null;v.holes=null;v.hlB=0;v.tlB=0;v.pull=0;}
 function drawDamage(v){const t=v.t,Lh=t.l/2,Wh=t.w/2,dm=1-v.hp/t.hp,car=!t.boat&&!t.bike&&!t.tank;if(!v.dents&&!v.holes&&dm<0.45)return;
   g.save();rrect(g,-Lh,-Wh,t.l,t.w,7);g.clip();
   if(v.dents)for(const dn of v.dents){g.fillStyle='rgba(0,0,0,0.42)';g.beginPath();for(let k=0;k<7;k++){const a=k*TAU/7,r=dn.r*(0.65+((dn.s*(k+1)*7.3)%1)*0.6);g.lineTo(dn.x+Math.cos(a)*r,dn.y+Math.sin(a)*r);}g.closePath();g.fill();
@@ -107,7 +107,7 @@ function plusHeli(dt){const P=G.player;if(G.heliCD>0)G.heliCD-=dt;let h=G.heli;
 function heliHit(b){const h=G.heli;if(!h||!b.expl||b.op!==G.player||hyp(b.x-h.x,b.y-h.y)>48)return false;explodeAt(h.x,h.y,G.player);G.heli=null;G.heliCD=50;toast(tr('heliDown'));G.money+=500;addHeat(4);post('heli');return true;}
 function plusAmbient(dt){if(rand()<dt*3&&G.view){const v=G.view,x=rr(v[0],v[2]),y=rr(v[1],v[3]),tx=Math.floor(x/T),ty=Math.floor(y/T);
   if(tget(tx,ty)===TL.ROAD&&TSH[ty*MW+tx]>0.93)for(let k=0;k<3;k++)part('steam',tx*T+32+rr(-6,6),ty*T+32+rr(-6,6),rr(-8,8)-ENV.wind*20,rr(-26,-12),rr(1.6,2.6),rr(6,10));}}
-function vendorTalk(p){const P=G.player;if(P.hp>=100){say(p,'full');return;}if(G.money<20){say(p,'vendor');return;}G.money-=20;P.hp=Math.min(100,P.hp+45);say(p,'snack');sfx.blip();toast(tr('snack'),1.6);}
+function vendorTalk(p){const P=G.player;if(P.hp>=100){say(p,'full');return;}const fr=owned('b_dogs');if(!fr&&G.money<20){say(p,'vendor');return;}if(!fr)G.money-=20;P.hp=Math.min(100,P.hp+45);say(p,'snack');sfx.blip();toast(tr('snack'),1.6);}
 
 // ---------- weapon icons ----------
 const WSV=s=>`<svg class="wic" viewBox="0 0 48 24" fill="currentColor">${s}</svg>`;

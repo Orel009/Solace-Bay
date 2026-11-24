@@ -14,6 +14,8 @@ function updatePlayer(dt){const P=G.player;if(P.dead)return;const [mx,my]=readKe
     if(fx&&G.fireCD<=0){if(v.t.tank){G.fireCD=1.1;fire(P,v,v.x,v.y,v.a,120,0.01,true);G.shake=6;crime(1,false);}
       else{G.fireCD=0.6;sfx.horn(v,1);react(nearestCiv(v.x,v.y,170),'horn');for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-v.x,p.y-v.y)<160){p.st='flee';p.ft=2;p.fx=v.x;p.fy=v.y;}}}
     if(IN.enterP)exitVehicle();
+  }else if(G.down>0){G.down-=dt;G.skidNow=false;P.walk=0;P.mvx=P.mvy=0;if(P.kvx||P.kvy){pMove(P,P.kvx*dt,P.kvy*dt);P.kvx*=0.9;P.kvy*=0.9;if(Math.abs(P.kvx)+Math.abs(P.kvy)<5){P.kvx=0;P.kvy=0;}}
+    P.swim=!P.roof&&!P.inside&&tileAt(P.x,P.y)===TL.WATER;if(P.swim)G.down=0;
   }else{G.skidNow=false;const act=IN.act||k.Space,sprint=IN.b||k.ShiftLeft||k.ShiftRight;let ts=0;
     if(!plusFoot(P,dt,(IN.x||k.KeyC)&&!P.inside)){const air=P.jump>0;
     if(mag>0.12){P.a+=angDiff(P.a,Math.atan2(my,mx))*Math.min(1,dt*16);ts=P.swim?85*mag:lerp(70,165,clamp((mag-0.12)/0.7,0,1))*(sprint?1.32:1);}
@@ -26,7 +28,7 @@ function updatePlayer(dt){const P=G.player;if(P.dead)return;const [mx,my]=readKe
     if(P.swim){if(!P.wasSwim){splash(P.x,P.y,10);sfx.splash();}G.stamina=Math.max(0,G.stamina-dt);if(G.stamina<=0){hurtPed(P,14*dt,null,'drown');G.hurtFlash=0.4;}}
     else G.stamina=Math.min(G.maxStam,G.stamina+dt*3);P.wasSwim=P.swim;
     if(act&&G.fireCD<=0&&!P.swim){if(P.inside)insideAttack();else attack();}
-    if(IN.enterP){if(P.inside)insideUse();else if(P.roof)tryLadder();else if(G.nearLad&&tryLadder()){}else if(!tryEnter()&&!tryLadder())talkNear();}
+    if(IN.enterP){if(P.inside)insideUse();else if(P.roof)tryLadder();else if(G.nearUse)G.nearUse.fn();else if(G.nearProp)openProp(G.nearProp);else if(G.nearLad&&tryLadder()){}else if(!tryEnter()&&!tryLadder())talkNear();}
     if(IN.weapP){const ws=WORDER.filter(w=>w==='fist'||(G.weapons[w]||0)>0);G.weapon=ws[(ws.indexOf(G.weapon)+1)%ws.length];sfx.door();}}}
   IN.enterP=false;IN.weapP=false;
   if(G.weapon!=='fist'&&!(G.weapons[G.weapon]>0))G.weapon='fist';}
@@ -76,7 +78,7 @@ function vehCollide(){const V=G.vehicles,P=G.player;
       const nx=ex/d,ny=ey/d,pen=rs-d,ma=a.t.mass||1,mb=b.t.mass||1,tot=ma+mb;
       a.x-=nx*pen*mb/tot;a.y-=ny*pen*mb/tot;b.x+=nx*pen*ma/tot;b.y+=ny*pen*ma/tot;
       const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){const imp=-1.3*rv/(1/ma+1/mb);a.vx-=imp*nx/ma;a.vy-=imp*ny/ma;b.vx+=imp*nx/mb;b.vy+=imp*ny/mb;
-        const dmg=Math.max(0,-rv-70)*0.11;if(dmg>0){damageVeh(a,dmg*mb/tot*2,b.driver===P?P:null);damageVeh(b,dmg*ma/tot*2,a.driver===P?P:null);addDentDir(a,nx,ny,-rv-50);addDentDir(b,-nx,-ny,-rv-50);
+        const dmg=Math.max(0,-rv-90)*0.08;if(dmg>0){damageVeh(a,dmg*mb/tot*2,b.driver===P?P:null,'hit');damageVeh(b,dmg*ma/tot*2,a.driver===P?P:null,'hit');if(-rv>240){if(a.t.bike&&a.driver===P)throwRider(a,-rv);else if(b.t.bike&&b.driver===P)throwRider(b,-rv);}addDentDir(a,nx,ny,-rv-50);addDentDir(b,-nx,-ny,-rv-50);
           if(a.driver===P||b.driver===P){sfx.crash(-rv);if(-rv>150)part('spark',p[0]+nx*p[2],p[1]+ny*p[2],rr(-80,80),rr(-80,80),0.3,3);
             const o=a.driver===P?b:a;if(o.t.police)crime(1,true);if(o.ai&&o.ai.mode==='traffic'&&!o.dead&&-rv>120&&rand()<0.35&&o.driver==='civ'){o.driver=null;o.ai=null;o.thr=0;o.hb=1;const q=mkPed('civ',o.x-Math.sin(o.a)*(o.t.w*0.5+14),o.y+Math.cos(o.a)*(o.t.w*0.5+14));q.brawl=8;say(q,'crash');}}}}}}}}
 function vehPedCollide(){const P=G.player,list=G.peds.concat(P.veh?[]:[P]);for(const v of G.vehicles){if(v.sunk||v.alt>0.25)continue;const sp=hyp(v.vx,v.vy);if(sp<1&&v.parked)continue;
@@ -84,7 +86,9 @@ function vehPedCollide(){const P=G.player,list=G.peds.concat(P.veh?[]:[P]);for(c
     const dx=p.x-v.x,dy=p.y-v.y,rr2=v.t.l*0.6+12;if(dx*dx+dy*dy>rr2*rr2)continue;const ca=Math.cos(v.a),sa=Math.sin(v.a),lx=dx*ca+dy*sa,ly=-dx*sa+dy*ca,hl=v.t.l/2+8,hw=v.t.w/2+8;
     if(Math.abs(lx)>hl||Math.abs(ly)>hw)continue;const ox=hl-Math.abs(lx),oy=hw-Math.abs(ly);
     if(ox<oy){const s=Math.sign(lx)||1;p.x+=ca*s*ox;p.y+=sa*s*ox;}else{const s=Math.sign(ly)||1;p.x+=-sa*s*oy;p.y+=ca*s*oy;}
-    if(sp>75){const src=v.driver===P?P:null;p.kvx=v.vx*0.7;p.kvy=v.vy*0.7;if(p===P)G.hurtFlash=1;hurtPed(p,(sp-55)*0.32,src,'car');if(p.dead&&v.onScreen)AU.hit(0.15,0.3,400);}
+    if(sp>75){const src=v.driver===P?P:null;
+      if(p===P){if(G.time>(P.hitInv||0)){P.hitInv=G.time+1.6;G.hurtFlash=1;knockDown(0.9+sp/500,v.vx*0.75,v.vy*0.75);hurtPed(P,clamp((sp-60)*0.13,5,48),null,'car');sfx.punch();G.shake=Math.max(G.shake||0,6);}}
+      else{p.kvx=v.vx*0.7;p.kvy=v.vy*0.7;hurtPed(p,(sp-55)*0.32,src,'car');if(p.dead){if(v.onScreen)AU.hit(0.15,0.3,400);}else p.stun=Math.max(p.stun||0,1.4);}}
     else if(sp>25&&v.driver===P&&p.type==='civ'){react(p,'car');if(p.st!=='flee'&&p.st!=='call'){p.st='flee';p.ft=1.5;p.fx=v.x;p.fy=v.y;}}}}}
 function updatePickups(dt){const P=G.player,px=P.x,py=P.y;
   for(const p of G.pickups){if(p.taken){p.resp-=dt;if(p.resp<=0&&p.respawn&&!onScreen(p.x,p.y,40))p.taken=false;continue;}
@@ -103,10 +107,6 @@ function updatePickups(dt){const P=G.player,px=P.x,py=P.y;
 function worldTriggers(dt){const P=G.player,px=P.x,py=P.y;plusTaxi(dt);
   const inBase=px>RESTRICT.x0&&px<RESTRICT.x1&&py>RESTRICT.y0&&py<RESTRICT.y1;
   if(inBase&&!G.inBase){toast(tr('restricted'));setStars(2);}G.inBase=inBase;
-  if(P.veh&&G.wanted>0&&!P.veh.t.boat&&hyp(px-POI.spray.x,py-POI.spray.y)<70&&!G.sprayCD){G.sprayCD=4;
-    if(G.money>=200){G.money-=200;clearWanted();P.veh.col=pick(['#c0392b','#2e86c1','#27ae60','#8e44ad','#f39c12','#ecf0f1','#1c1c1c']);repairVeh(P.veh);toast(tr('spray'));sfx.blip();}else toast(tr('nomoney'));}
-  if(G.sprayCD){G.sprayCD-=dt;if(G.sprayCD<=0)G.sprayCD=0;}
-  if(!P.veh&&hyp(px-POI.safe.x,py-POI.safe.y)<26){if(!G.atSafe){G.atSafe=1;if(G.wanted===0){saveGame();toast(tr('safe'));}}}else G.atSafe=0;
   if(hyp(px-POI.secret.x,py-POI.secret.y)<110&&!G.seen.secret){G.seen.secret=1;toast(tr('secret'),6);sfx.pass();}
   if(hyp(px-POI.duck.x,py-POI.duck.y)<120){if(!G.duckT||G.time-G.duckT>8){G.duckT=G.time;toast('🦆 '+tr('duck'),2);AU.tone(500,0.15,'square',0.12,0.6);}}
   const ar=areaAt(px,py);if(ar&&ar!==G.area){G.area=ar;showArea(ar);}
@@ -120,10 +120,10 @@ function worldTriggers(dt){const P=G.player,px=P.x,py=P.y;plusTaxi(dt);
   else{G.seenNow=false;G.lastSeen=null;}}
 
 // ---------- death / arrest ----------
-function wasted(){if(G.state!=='play'&&G.state!=='dialog')return;G.player.dead=true;if(G.mission)failMission('f_dead');G.state='dead';G.deadT=3.4;G.deadKind='wasted';bigMsg(tr('wasted'),'#ff3b3b');sfx.fail();}
+function wasted(){if(G.state==='dead'||G.state==='title')return;for(const id of ['shop','mapview','pause','dlg'])$(id).style.display='none';G.dialog=null;G.shop=null;G.down=0;G.player.dead=true;if(G.mission)failMission('f_dead');G.state='dead';G.deadT=3.4;G.deadKind='wasted';bigMsg(tr('wasted'),'#ff3b3b');sfx.fail();}
 function busted(){if(G.state!=='play')return;G.player.dead=true;if(G.player.veh){G.player.veh.driver=null;G.player.veh=null;}if(G.mission)failMission('f_dead');G.state='dead';G.deadT=3.4;G.deadKind='busted';bigMsg(tr('busted'),'#5aa0ff');sfx.fail();}
 function respawn(){const P=G.player,b=G.deadKind==='busted';const pos=b?POI.cops:POI.hosp;
-  if(P.veh){P.veh.driver=null;P.veh=null;}P.dead=false;P.hp=100;P.roof=null;P.jump=0;P.climb=null;P.inside=null;G.rob=null;for(const s of SHOPS){for(const c of s.cust||[])c.remove=true;s.cust=[];}G.bust=0;G.heli=null;G.fare=null;G.stagger=0;P.x=pos.x;P.y=pos.y;P.a=-Math.PI/2;P.swim=false;P.kvx=P.kvy=0;G.stamina=G.maxStam;
+  if(P.veh){P.veh.driver=null;P.veh=null;}P.dead=false;P.hp=100;G.down=0;P.hitInv=0;P.roof=null;P.jump=0;P.climb=null;P.inside=null;G.rob=null;for(const s of SHOPS){for(const c of s.cust||[])c.remove=true;s.cust=[];}G.bust=0;G.heli=null;G.fare=null;G.stagger=0;P.x=pos.x;P.y=pos.y;P.a=-Math.PI/2;P.swim=false;P.kvx=P.kvy=0;G.stamina=G.maxStam;
   G.money=Math.max(0,G.money-(b?150:100));if(b){G.weapons={fist:1};G.weapon='fist';}
   G.wanted=0;G.heat=0;G.unseen=0;G.armor=0;G.lastSeen=null;G.talk=null;
   for(const p of G.peds){p.hostile=false;if(p.type==='cop'||p.type==='gang')p.remove=true;}
@@ -131,7 +131,7 @@ function respawn(){const P=G.player,b=G.deadKind==='busted';const pos=b?POI.cops
   G.peds=G.peds.filter(p=>!p.remove);G.vehicles=G.vehicles.filter(v=>!v.remove);G.bullets=[];G.state='play';G.cam.x=P.x;G.cam.y=P.y;saveGame();}
 
 // ---------- save ----------
-function saveGame(){if(!G.player)return;store.set('sb_save',{v:1,money:G.money,done:G.done,tokens:G.tokens,weapons:G.weapons,armor:G.armor,clock:ENV.clock,got:G.got,outfit:G.outfit,outfits:G.outfits,meds:G.meds,rep:G.rep,way:G.way,duck:G.duckHorn});}
+function saveGame(){if(!G.player)return;store.set('sb_save',{v:1,money:G.money,done:G.done,tokens:G.tokens,weapons:G.weapons,armor:G.armor,clock:ENV.clock,got:G.got,outfit:G.outfit,outfits:G.outfits,meds:G.meds,rep:G.rep,way:G.way,duck:G.duckHorn,owned:G.owned,playT:G.playT,home:G.home});}
 
 // ---------- setup ----------
 function populateStatic(){
@@ -143,20 +143,21 @@ function populateStatic(){
   for(const s of POI.guards){const p=mkPed('soldier',s.x,s.y);p.persist=true;p.st='guard';p.a=Math.PI;}
   for(const t of TOKENS)if(!G.tokens.includes(t.id))mkPickup('token',t.x,t.y,{tid:t.id,h:t.h});
   for(const q of POI.planes){const pl=mkVeh('plane',q.x,q.y,q.a);pl.persist=true;pl.parked=true;pl.fuel=1;}
-  for(const s of SHOPS){roomInit(s);const q=rw(s,s.clerk.u,s.clerk.v);s.clerkP=mkPed('npc',q[0],q[1],{persist:true,clerk:1,a:s.out>0?Math.PI/2:-Math.PI/2});setKind(s.clerkP,'casual');s.clerkP.shirt=CLERKC[s.k];s.clerkP.hat=null;s.cust=[];}
+  for(const s of SHOPS){roomInit(s);s.bag=null;s.cust=[];if(!s.clerk){s.clerkP=null;continue;}const q=rw(s,s.clerk.u,s.clerk.v);s.clerkP=mkPed('npc',q[0],q[1],{persist:true,clerk:1,a:s.out>0?Math.PI/2:-Math.PI/2});setKind(s.clerkP,'casual');s.clerkP.shirt=CLERKC[s.k];s.clerkP.hat=null;s.cust=[];}
   for(const sm of SIDE)if(sm.look&&!G.done.includes(sm.id)){const gp=mkPed('npc',sm.start.x+30,sm.start.y-6,{persist:true,a:Math.PI});setKind(gp,sm.look);if(sm.id==='s5'){gp.shirt='#1f3a93';gp.hat='#14256b';}}
   for(const v of POI.vendors)mkPed('npc',v.x+34,v.y,{vendor:1,persist:true,shirt:'#f4f4f4',a:Math.PI/2});
+  populateCity2();
   for(const w of WPICKS){if(w.once&&G.got.includes(w.once))continue;mkPickup(w.type,w.x,w.y,{respawn:!w.once,h:w.h,amt:w.amt,once:w.once});}}
 function startGame(fresh){AU.init();if(fresh)store.del('sb_save');const sv=store.get('sb_save',null);
   G.vehicles=[];G.peds=[];G.pickups=[];G.bullets=[];G.parts=[];G.decals=[];G.mission=null;G.wanted=0;G.seen={};
-  G.money=sv?sv.money:0;G.done=sv?sv.done:[];G.tokens=sv?sv.tokens:[];G.weapons=sv?sv.weapons:{fist:1};G.weapon='fist';G.armor=sv&&sv.armor||0;G.got=sv&&sv.got||[];G.outfit=sv&&sv.outfit||'std';G.outfits=sv&&sv.outfits||['std'];G.meds=sv&&sv.meds||0;G.rep=sv&&sv.rep||0;G.heat=0;G.talk=null;G.shop=null;G.inShop=null;cityInit();G.way=sv&&sv.way||null;G.duckHorn=sv&&sv.duck||0;G.stats={falls:0,sunk:0,robs:0};G.rob=null;G.spot=null;G.nearLad=null;G.heli=null;G.fare=null;G.ev=null;G.bust=0;G.lastSeen=null;G.area=null;ENV.clock=sv&&sv.clock!=null?sv.clock:8;setWeather('clear',true);calcLight();
-  const start=sv&&G.done.length?POI.safe:POI.start;
+  G.money=sv?sv.money:0;G.done=sv?sv.done:[];G.tokens=sv?sv.tokens:[];G.weapons=sv?sv.weapons:{fist:1};G.weapon='fist';G.armor=sv&&sv.armor||0;G.got=sv&&sv.got||[];G.outfit=sv&&sv.outfit||'std';G.outfits=sv&&sv.outfits||['std'];G.meds=sv&&sv.meds||0;G.rep=sv&&sv.rep||0;G.heat=0;G.talk=null;G.shop=null;G.inShop=null;cityInit();G.way=sv&&sv.way||null;G.duckHorn=sv&&sv.duck||0;G.stats={falls:0,sunk:0,robs:0};G.rob=null;G.spot=null;G.nearLad=null;G.owned=sv&&sv.owned||{home0:0};G.playT=sv&&sv.playT||0;G.home=sv&&sv.home||'home0';G.atProp=null;G.sprayCD=0;G.ibKey='';$('ibar').style.display='none';G.heli=null;G.fare=null;G.ev=null;G.bust=0;G.lastSeen=null;G.area=null;ENV.clock=sv&&sv.clock!=null?sv.clock:8;setWeather('clear',true);calcLight();
+  const hs=SHOPS.find(s=>s.k==='home'&&s.pid===G.home)||SHOPS.find(s=>s.pid==='home0'),start={x:hs.sx,y:hs.sy+hs.out*14};
   G.player=mkPed('player',start.x,start.y);G.peds.pop();G.player.hp=100;G.player.a=-Math.PI/2;
   populateStatic();G.cam.x=G.player.x;G.cam.y=G.player.y;G.stamina=G.maxStam;
   $('menu').style.display='none';$('hud').style.display='block';$('controls').style.display='block';$('bPause').style.display='block';
   try{if(document.documentElement.requestFullscreen&&matchMedia('(pointer:coarse)').matches)document.documentElement.requestFullscreen().catch(()=>{});}catch(e){}
   G.state='play';G.obj=null;
-  if(!sv||!G.done.length){if(!sv){showDialog(INTRO,()=>{toast(tr('help'),10);});}}
+  if(!sv||!G.done.length){if(!sv){showDialog(INTRO,()=>{toast(tr('homeHint'),8);setTimeout(()=>{if(G.state==='play'&&!G.mission)toast(tr('help'),10);},8600);});}}
   saveGame();}
 
 // ---------- loop ----------
@@ -171,16 +172,17 @@ function step(dt){G.time+=dt;
   if(G.state==='dialog'){updateDialog(dt);return;}
   if(G.state==='dead'){G.deadT-=dt;for(const v of G.vehicles)if(v.driver&&v.ai){if(v.ai.mode==='traffic')aiTraffic(v,dt);}for(const v of G.vehicles)if(!v.sunk)vehPhys(v,dt);updateParts(dt);if(G.deadT<=0)respawn();return;}
   if(G.state!=='play')return;
+  if(G.player.dead){G.state='dead';G.deadT=3;G.deadKind=G.deadKind||'wasted';return;}
   updateEnv(dt);G.fireCD-=dt;G.bustCar=0;updatePlayer(dt);
   const P=G.player;
   for(const v of G.vehicles){if(v.driver&&v.driver!==P&&v.ai){if(v.ai.mode==='traffic')aiTraffic(v,dt);else aiChase(v,dt);}
     else if(!v.driver){v.thr=0;v.str=0;}
     if(v.burn>0)v.burn-=dt;if(v.door>0)v.door-=dt;
-    if(!v.dead&&!v.sunk&&v.hp<v.t.hp*0.15&&!v.t.tank){v.hp-=dt*5;if(v.hp<=0)explodeVeh(v,null);}
+    if(v.fuse>0&&!v.dead&&!v.sunk)fuseTick(v,dt);if(v.alarm>0)alarmTick(v,dt);
     const moving=Math.abs(v.vx)+Math.abs(v.vy)>0.5||v.thr!==0||v.sink;if(moving&&!v.sunk&&(hyp(v.x-P.x,v.y-P.y)<2600||(v.ai&&v.persist)))vehPhys(v,dt);}
   vehCollide();vehPedCollide();
   for(const p of G.peds)aiPed(p,dt);
-  updateBullets(dt);updateParts(dt);updatePickups(dt);worldTriggers(dt);updateMission(dt);spawner(dt);plusEvents(dt);plusHeli(dt);plusAmbient(dt);cityUpdate(dt);if(G.state!=='play')return;
+  updateBullets(dt);updateParts(dt);updatePickups(dt);worldTriggers(dt);gpsTick(dt);updateMission(dt);spawner(dt);plusEvents(dt);plusHeli(dt);plusAmbient(dt);cityUpdate(dt);if(G.state!=='play')return;
   {const grab=G.time-(G.bustBy||-9)<0.25&&!P.veh,sp=hyp(P.mvx||0,P.mvy||0);G.bust=clamp((G.bust||0)+(grab&&sp<70&&G.time-(G.lastPunch||-9)>0.7?dt/2.2:-dt*0.6),0,1);if(G.wanted===0)G.bust=0;if(G.bust>=1){G.bust=0;busted();}}
   if(G.boom){G.boom.t-=dt*1.8;if(G.boom.t<=0)G.boom=null;}
   if(!P.dead&&P.hp<50&&G.time-(G.lastHurt||0)>6)P.hp=Math.min(50,P.hp+4*dt);
@@ -191,7 +193,7 @@ function frame(now){const dt=Math.min(0.05,(now-last)/1000||0);last=now;
   else{G.ft=lerp(G.ft||0.016,dt,0.03);if(G.state==='play'&&!G.lowFx&&G.ft>0.028&&G.time>10){G.lowFx=1;resize();}
     step(dt);if(G.state==='map')drawMap();if(G.state!=='pause'||true)updateCamera(dt);updateHUD(dt);updateAudio();}
   render();requestAnimationFrame(frame);}
-function init(){genWorld();buildMinimap();buildMissions();buildMissions2();resize();addEventListener('resize',resize);setupInput();
+function init(){genWorld();buildMinimap();buildMissions();buildMissions2();buildMissions3();resize();addEventListener('resize',resize);setupInput();
   G.player=mkPed('player',POI.start.x,POI.start.y);G.peds=[];
   applyLang();$('menu').style.display='flex';requestAnimationFrame(frame);
   window.__G=G;}

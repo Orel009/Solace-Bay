@@ -27,5 +27,5 @@ function copVisible(){if(G.heli&&G.heli.see)return true;const P=G.player,px=P.x,
   for(const v of G.vehicles)if((v.t.police||v.t.army)&&!v.dead&&v.ai&&v.ai.mode==='chase'&&(v.x-px)**2+(v.y-py)**2<R2&&los(v.x,v.y,px,py))return true;
   for(const v of G.vehicles)if(v.t.police&&!v.dead&&v.driver==='cop'&&(v.x-px)**2+(v.y-py)**2<R2&&los(v.x,v.y,px,py))return true;
   return false;}
-const AREAS={down:{he:'ניאון הייטס',en:'Neon Heights'},res:{he:'אולד אורצ׳רד',en:'Old Orchard'},harb:{he:'סולטמרקט',en:'Saltmarket'},beach:{he:'מרינה מייל',en:'Marina Mile'},fort:{he:'פורט קולר',en:'Fort Collar'}};
-function areaAt(x,y){const tx=x/T,ty=y/T;if(tx>=124&&tx<=160&&ty>=12&&ty<=54)return'fort';if(tx>=168&&tx<=252&&ty>=4&&ty<=194)return district(tx,ty);if(tx<4||ty<4||tx>118||ty>146)return null;return district(tx,ty);}
+const AREAS={down:{he:'גבעות הניאון',en:'Neon Heights'},res:{he:'הפרדס הישן',en:'Old Orchard'},harb:{he:'שוק המלח',en:'Saltmarket'},beach:{he:'טיילת המרינה',en:'Marina Mile'},fort:{he:'מבצר קולר',en:'Fort Collar'}};
+function areaAt(x,y){const tx=x/T,ty=y/T;if(tx>=124&&tx<=160&&ty>=12&&ty<=54)return'fort';if(tx>=258&&tx<=350&&ty>=4&&ty<=194)return district(tx,ty);if(tx>=168&&tx<=252&&ty>=4&&ty<=194)return district(tx,ty);if(tx<4||ty<4||tx>118||ty>146)return null;return district(tx,ty);}

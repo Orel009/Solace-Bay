@@ -6,14 +6,16 @@ An original top-down open-world crime game for the mobile browser, inspired by t
 
 ## What is in the game
 
-- A large coastal city: downtown, suburbs, harbor, beach, a military island, and an east district across two bridges with villas, a casino strip, a pier with a ferris wheel and an airport.
-- Two story chapters (8 missions) plus 6 comedy side missions, with Hebrew and English subtitles.
-- 16 vehicle types, including boats, a tank and a flyable light plane; fuel, damage, radio stations.
-- Day/night cycle, weather, dynamic lighting.
+- Three connected areas: the Solace Bay mainland (downtown, suburbs, harbor, beach, military island), the east district (villas, casino strip, pier, airport) and the second city, **Meridian** (Glass Quarter, Sunset Vista, The Forge, its own airport), linked by bridges.
+- Two story chapters (8 missions) plus 8 comedy side missions, with Hebrew and English subtitles.
+- 28 vehicle types, including boats, a jet ski, a tank, a flyable light plane and helicopter, ambulances, fire trucks and cash trucks; each district has its own traffic mix and special cars. Steering, spinning wheels, fuel, visible damage, car fires with an escape window, radio stations.
+- Flights between the two airports from the ticket desks.
+- Homes to buy and save in (starting at Ray's place), businesses that earn income, and five spray/repair garages that clear your wanted level.
+- Walk-in shops (guns, clothing, convenience stores, mall, bank, casino) with clear buy and rob buttons.
+- A missions panel with GPS routing along the roads, shown on the minimap, the full map and the street.
+- Day/night cycle, weather, dynamic lighting, layered synthesized audio (engines, voices, ambience, reverb).
 - A six-star wanted system built on "heat": witnesses, line of sight, police profile (outfit and vehicle), helicopter.
-- Shops you walk into (guns, clothing, convenience stores, mall, bank, casino) and can rob.
-- Climbable rooftops, jumping, hidden tokens and secret places.
-- Reactive pedestrians of several kinds, wildlife, taxi fares, random street events.
+- Reactive pedestrians and drivers (shoot at a car and the driver floors it or bails out), knockdowns instead of instant deaths, climbable rooftops, hidden tokens, joke spots around the map.
 
 ## Controls
 
@@ -21,17 +23,18 @@ An original top-down open-world crime game for the mobile browser, inspired by t
 |---|---|---|
 | Left joystick | WASD / arrows | Move, steer |
 | Attack button | Space | Punch / shoot (gas pedal in classic driving) |
-| Car button | E | Enter/exit vehicle, climb ladder, talk, use |
+| Car button | E | Enter/exit vehicle, climb ladder, talk, use, buy |
 | Run button | Shift | Sprint (brake/reverse in a vehicle) |
 | Jump button | C | Jump (horn in a vehicle: X) |
 | Weapon button | Q | Choose weapon (handbrake in a vehicle) |
-| Minimap | M | Open the full map and set a waypoint |
+| Minimap | M | Open the full map (drag to pan, tap to set a waypoint) |
+| List button | — | Missions panel and GPS navigation |
 
 On a phone held upright, the menu offers "Rotate screen to landscape".
 
 ## Project layout
 
-- `src/` — game source, split into ordered files (`01_core.js` … `08_main.js`) and `shell.html`.
+- `src/` — game source, split into ordered files (`01_core.js` … `09_audio.js`) and `shell.html`.
 - `build.py` — concatenates the sources into a single self-contained `index.html`.
 
 ```bash

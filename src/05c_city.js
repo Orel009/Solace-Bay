@@ -32,13 +32,13 @@ function kindFor(tx,ty){const d=district(tx,ty),r=rand();
   return r<0.42?'casual':r<0.56?'elder':r<0.68?'jogger':r<0.78?'dog':r<0.88?'biz':'punk';}
 Object.assign(REACT,{insult:[R2('לך מפה, ליצן.','Get lost, clown.'),R2('מי אתה בכלל?','Who even are you?')],psycho:[R2('זה המשוגע מהחדשות!',"It's that psycho from the news!")],
  hello:[R2('היי, מה נשמע?','Hey, how are you?'),R2('שלום שלום!','Well hello!'),R2('יום טוב!','Have a good one!')],hero:[R2('אתה הבחור שעוזר לאנשים, נכון?',"You're the guy who helps people, right?"),R2('כל הכבוד לך!','Respect!')],
- dog:[R2('הב! הב!','Woof! Woof!')],chat:[R2('שמעת מה קרה בנמל?','Did you hear what happened at the harbor?'),R2('המחירים פה מטורפים.','Prices here are insane.'),R2('הבוס שלי משגע אותי.','My boss is driving me nuts.'),
+ dog:[R2('האו! האו!','Woof! Woof!')],chat:[R2('שמעת מה קרה בנמל?','Did you hear what happened at the harbor?'),R2('המחירים פה מטורפים.','Prices here are insane.'),R2('הבוס שלי משגע אותי.','My boss is driving me nuts.'),
   R2('איזה חום היום.','So hot today.'),R2('אומרים שהקדושים והגאות שוב רבים.','They say the Saints and the Tide are at it again.'),R2('כן, בטח.','Yeah, sure.'),R2('לא יכול להיות!','No way!'),R2('חחח, נכון.','Haha, true.'),
   R2('ראית את המסוק אתמול?','Did you see the chopper last night?'),R2('אני צריך חופשה.','I need a vacation.'),R2('מה אתה אומר!','You don\'t say!')]});
 const FEED={rob:[R2('@bayfeed: שוד מזוין בחנות. החשוד נמלט.','@bayfeed: Armed robbery at a store. Suspect fled.'),R2('@dana_sb: מישהו הרגע שדד את הקופה מולי?!','@dana_sb: Did someone just rob the register in front of me?!')],
  bank:[R2('@solace_news: שוד בנק במרכז העיר! המשטרה בכוננות.','@solace_news: Bank heist downtown! Police on high alert.')],stars:[R2('@scanner_sb: מרדף משטרתי פעיל. התרחקו מהאזור.','@scanner_sb: Active police pursuit. Stay clear.')],
  heli:[R2('@solace_news: מסוק משטרתי הופל. כן, קראתם נכון.','@solace_news: Police chopper shot down. Yes, you read that right.')],gator:[R2('@marina_mike: תנין נשך מישהו בחוף. אל תשחו!','@marina_mike: Gator bit someone at the beach. Do not swim!')],
- boom:[R2('@bayfeed: דיווחים על פיצוץ. מה קורה בעיר הזאת?','@bayfeed: Explosion reported. What is going on in this city?')],taxi:[R2('@cab_reviews: נהג מונית חמש כוכבים. הגענו בחיים.','@cab_reviews: Five-star cabbie. We arrived alive.')],
+ boom:[R2('@bayfeed: דיווחים על פיצוץ. מה קורה בעיר הזאת?','@bayfeed: Explosion reported. What is going on in this city?')],taxi:[R2('@cab_reviews: נהג מונית של חמישה כוכבים. הגענו בחיים.','@cab_reviews: Five-star cabbie. We arrived alive.')],
  hero:[R2('@good_news_sb: אזרח אלמוני עצר שודד ברחוב.','@good_news_sb: Unknown citizen stopped a street mugger.')],fall:[R2('@parkour_sb: מישהו קפץ מגג ונשאר בחיים?','@parkour_sb: Someone jumped off a roof and lived?')]};
 function post(k){if((G.feedCD||0)>G.time)return;G.feedCD=G.time+9;const f=pick(FEED[k]);if(f&&typeof showFeed==='function')showFeed(L(f));}
 
@@ -57,13 +57,14 @@ function cityUpdate(dt){const P=G.player,px=P.x,py=P.y;
   // shops: sliding doors, entering
   insideUpdate(dt);if(G.way&&hyp(px-G.way.x,py-G.way.y)<110){G.way=null;sfx.blip();}
   G.ambT=(G.ambT===undefined?45:G.ambT)-dt;if(G.ambT<=0){G.ambT=rr(60,100);post('amb');}
-  for(const s of SHOPS){const d=hyp(px-s.sx,py-s.sy),locked=G.wanted>0||s.cd>G.time,can=!P.veh&&!P.roof&&!P.climb&&!P.inside;
+  propsUpdate(dt);sprayUpdate(dt);
+  for(const s of SHOPS){const d=hyp(px-s.sx,py-s.sy),hm=s.k==='home',sale=hm&&!owned(s.pid),locked=hm?sale||(G.wanted>0&&G.seenNow):G.wanted>0||s.cd>G.time,can=!P.veh&&!P.roof&&!P.climb&&!P.inside;
     s.open=appr(s.open,can&&d<70&&!locked?1:0,dt*3.2);
     if(G.inShop===s){if(d>46)G.inShop=null;continue;}
-    if(can&&Math.abs(px-s.x)<15&&Math.abs(py-(s.wy+s.out*10))<7){if(locked){if(!s.told||G.time-s.told>4){s.told=G.time;toast(tr(s.cd>G.time?'closedRob':'locked'));}}else if(s.open>0.85){enterRoom(s);return;}}}
+    if(can&&Math.abs(px-s.x)<15&&Math.abs(py-(s.wy+s.out*10))<7){if(locked){if(!s.told||G.time-s.told>4){s.told=G.time;if(!sale)toast(tr(hm?'homeSeen':s.cd>G.time?'closedRob':'locked'));}}else if(s.open>0.85){enterRoom(s);return;}}}
   // gas stations
   const v=P.veh;if(v&&!v.t.boat&&!v.t.tank&&Math.abs(v.speed)<25)for(const gs of GAS){if(hyp(v.x-gs.x,v.y-gs.y)>55)continue;const need=v.fuel<0.995||v.hp<v.t.hp-1||v.dents;
-    if(need&&G.money>0){v.fuel=Math.min(1,v.fuel+dt*0.3);v.hp=Math.min(v.t.hp,v.hp+dt*v.t.hp*0.2);v.dry=0;G.gasAcc=(G.gasAcc||0)+dt*14;if(G.gasAcc>=1){G.gasAcc-=1;G.money--;}
+    if(need&&(G.money>0||owned('b_gas'))){v.fuel=Math.min(1,v.fuel+dt*0.3);v.hp=Math.min(v.t.hp,v.hp+dt*v.t.hp*0.2);v.dry=0;G.gasAcc=(G.gasAcc||0)+dt*14;if(G.gasAcc>=1){G.gasAcc-=1;if(!owned('b_gas'))G.money--;}
       if(v.hp>=v.t.hp-1&&v.dents){repairVeh(v);sfx.blip();}if(!gs.told||G.time-gs.told>6){gs.told=G.time;toast(tr('fueling'),2.5);}}}
   // alligators
   for(const ga of G.gators){if(ga.dead)continue;ga.cool-=dt;ga.ph+=dt;const d=hyp(px-ga.x,py-ga.y),hunt=P.swim&&!P.veh&&!P.dead&&d<270;let tx,ty,sp;
@@ -95,6 +96,9 @@ function drawAwning(s,h){const hw=44,a1=projPt(s.x-hw,s.wy,34),a2=projPt(s.x+hw,
   g.fillStyle='rgba(255,255,255,0.8)';for(let k=0;k<4;k++){const u0=(k*2+0.5)/8,u1=(k*2+1.5)/8;g.beginPath();g.moveTo(lerp(a1[0],a2[0],u0),lerp(a1[1],a2[1],u0));g.lineTo(lerp(a1[0],a2[0],u1),lerp(a1[1],a2[1],u1));g.lineTo(lerp(b1[0],b2[0],u1),lerp(b1[1],b2[1],u1));g.lineTo(lerp(b1[0],b2[0],u0),lerp(b1[1],b2[1],u0));g.closePath();g.fill();}
   g.strokeStyle='rgba(0,0,0,0.35)';g.lineWidth=1.5;g.beginPath();g.moveTo(a1[0],a1[1]);g.lineTo(a2[0],a2[1]);g.lineTo(b2[0],b2[1]);g.lineTo(b1[0],b1[1]);g.closePath();g.stroke();
   if(ENV.dark>0.02){g.fillStyle=`rgba(8,12,34,${ENV.dark*0.4})`;g.fill();}}
+function drawDog(p){const wg=Math.sin(G.time*14+p.id)*4,sw=p.walk>0?Math.sin(p.walk*0.3)*3:0;g.fillStyle='rgba(0,0,0,0.5)';g.fillRect(-6+sw,-5,3,3);g.fillRect(-6-sw,2,3,3);g.fillRect(4-sw,-5,3,3);g.fillRect(4+sw,2,3,3);
+  g.strokeStyle=p.shirt;g.lineWidth=2.4;g.beginPath();g.moveTo(-8,0);g.lineTo(-14,wg);g.stroke();g.fillStyle=p.shirt;g.beginPath();g.ellipse(0,0,9,4.6,0,0,TAU);g.fill();g.beginPath();g.arc(9.5,0,4.2,0,TAU);g.fill();
+  g.fillStyle='rgba(0,0,0,0.45)';g.fillRect(7,-5,3,2.5);g.fillRect(7,2.5,3,2.5);g.fillStyle='#111';g.fillRect(13,-1,2,2);}
 function drawDog(p){const wg=Math.sin(G.time*14+p.id)*4,sw=p.walk>0?Math.sin(p.walk*0.3)*3:0;g.fillStyle='rgba(0,0,0,0.5)';g.fillRect(-6+sw,-5,3,3);g.fillRect(-6-sw,2,3,3);g.fillRect(4-sw,-5,3,3);g.fillRect(4+sw,2,3,3);
   g.strokeStyle=p.shirt;g.lineWidth=2.4;g.beginPath();g.moveTo(-8,0);g.lineTo(-14,wg);g.stroke();g.fillStyle=p.shirt;g.beginPath();g.ellipse(0,0,9,4.6,0,0,TAU);g.fill();g.beginPath();g.arc(9.5,0,4.2,0,TAU);g.fill();
   g.fillStyle='rgba(0,0,0,0.45)';g.fillRect(7,-5,3,2.5);g.fillRect(7,2.5,3,2.5);g.fillStyle='#111';g.fillRect(13,-1,2,2);}

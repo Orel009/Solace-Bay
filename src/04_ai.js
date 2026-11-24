@@ -25,10 +25,11 @@ function aiTraffic(v,dt){const ai=v.ai;if(!ai.wps.length){trafficFromHere(v);ret
   const want=Math.atan2(wp.y-v.y,wp.x-v.x),diff=angDiff(v.a,want);
   if(ai.rev>0){ai.rev-=dt;v.thr=-0.7;v.str=-Math.sign(diff);v.hb=0;return;}
   v.str=clamp(diff*2.6,-1,1);
-  const target=Math.abs(diff)>0.35?100:ai.cruise;
+  const pan=ai.panic>0;if(pan){ai.panic-=dt;if(v.onScreen&&(ai.hornT=(ai.hornT||0)-dt)<=0){ai.hornT=rr(0.8,2);sfx.horn(v,dv(v.x,v.y));}}
+  const target=pan?(Math.abs(diff)>0.35?190:Math.min(v.t.max*0.92,440)):Math.abs(diff)>0.35?100:ai.cruise;
   const blk=lookAhead(v);let red=false;
   if(ai.wps.length===1){const dd=hyp(wp.x-v.x,wp.y-v.y);if(dd<125&&dd>10){const st=lightState(ai.node[0],ai.node[1])[ai.d%2];red=st==='r'||(st==='y'&&dd>60);}}
-  if(red){v.thr=v.speed>8?-1:0;ai.blocked=0;ai.stuck=0;}
+  if(red&&!pan){v.thr=v.speed>8?-1:0;ai.blocked=0;ai.stuck=0;}
   else if(blk){v.thr=v.speed>8?-1:0;ai.blocked+=dt;if(blk===G.player||blk===G.player.veh){if(ai.blocked>1.1&&(ai.hornT=(ai.hornT||0)-dt)<=0&&v.onScreen){ai.hornT=rr(1.2,2.8);sfx.horn(v,dv(v.x,v.y));}}}
   else{ai.blocked=0;v.thr=v.speed<target?1:(v.speed>target+40?-0.4:0);}
   v.hb=0;
@@ -146,7 +147,7 @@ const CHAT=[{he:'יום יפה, נכון?',en:'Nice day, huh?'},{he:'ראית א
  {he:'מאמא סולט? לא אמרתי לך כלום.',en:"Mama Salt? I didn't tell you anything."},{he:'ראית את הברווז הענק בפארק?',en:'Have you seen the giant duck in the park?'},
  {he:'שמעתי שיש מכונית זהב איפשהו בצפון-מערב.',en:'I heard there is a golden car somewhere up north-west.'},{he:'תיזהר מהמוניות. נוהגים כמו משוגעים.',en:'Watch out for the cabs. They drive like maniacs.'},
  {he:'אני מאחר לעבודה!',en:"I'm late for work!"},{he:'מה אתה מסתכל?',en:'What are you looking at?'},
- {he:'יש מוסך צביעה במרכז העיר. שווה כל דולר.',en:"There's a spray shop in midtown. Worth every dollar."},{he:'אומרים שיש אי קטן ונסתר במזרח.',en:'They say there is a tiny hidden island out east.'},
+ {he:'יש מוסכי צביעה בכל העיר. שווים כל דולר.',en:"There's a spray shop in midtown. Worth every dollar."},{he:'אומרים שיש אי קטן ונסתר במזרח.',en:'They say there is a tiny hidden island out east.'},
  {he:'הים קר היום. אל תשחה רחוק.',en:"Water's cold today. Don't swim too far."},{he:'סליחה, אתה יודע איפה התחנה?',en:'Excuse me, do you know where the station is?'}];
 const CHAT_SAINTS=[{he:'וקס רואה הכול, אחי.',en:'Vex sees everything, man.'},{he:'האורות של העיר שלנו.',en:'The city lights are ours.'},{he:'תמשיך ללכת.',en:'Keep walking.'}];
 const CHAT_TIDE=[{he:'הנמל שייך לגאות.',en:'The harbor belongs to the Tide.'},{he:'מאמא לא אוהבת זרים.',en:"Mama doesn't like strangers."},{he:'ריח של מלח, אה?',en:'Smell that salt, huh?'}];

@@ -4,10 +4,11 @@ const l=(who,he,en)=>({who,he,en});
 const INTRO=[
  l('ray','סולס ביי. שמש, ים, וחוב שאני לא יכול להחזיר.','Solace Bay. Sun, sea, and a debt I can\'t pay back.'),
  l('ray','בחור במעבורת אמר שקוויקדרופ שליחויות מחפשים נהגים. בלי שאלות.','A guy on the ferry said QuickDrop Couriers needs drivers. No questions asked.'),
- l('ray','המשרד שלהם ממש פה בנמל. נתחיל משם.','Their office is right here at the harbor. Let\'s start there.')];
+ l('ray','שכרתי חדר קטן בנמל, הדלת עם הסוכך הירוק. שם ישנים, שומרים ומחליפים בגדים.','I rented a small room at the harbor, the door with the green awning. Sleep, save and change clothes there.'),
+ l('ray','המשרד שלהם ממש פה ליד. נתחיל משם.','Their office is right next door. Let\'s start there.')];
 let MISSIONS=[];
 function buildMissions(){MISSIONS=[
-{id:'m1',name:{he:'יום ראשון',en:'First Shift'},giver:'benny',col:'#ffcf5a',ic:'B',start:POI.office,
+{id:'m1',name:{he:'משמרת ראשונה',en:'First Shift'},giver:'benny',col:'#ffcf5a',ic:'B',start:POI.office,
  hint:{he:'לך לקוויקדרופ שליחויות (הסמן הצהוב)',en:'Go to QuickDrop Couriers (yellow marker)'},
  steps:[
  {t:'talk',lines:[
@@ -19,8 +20,8 @@ function buildMissions(){MISSIONS=[
  {t:'getveh',key:'van',type:'van',at:'van',col:'#f4d03f',obj:{he:'היכנס לוואן של קוויקדרופ',en:'Get in the QuickDrop van'}},
  {t:'goto',at:'club',inVeh:'van',r:85,timer:120,stop:1,obj:{he:'מסור את החבילה ב"חדר הסגול"',en:'Deliver the package to the Violet Room'}},
  {t:'talk',lines:[
-  l('dice','קוויקדרופ? הבחורים של בני תמיד מאחרים. אתה הקדמת. אני לא אוהב הקדמות.','QuickDrop? Benny\'s boys are always late. You\'re early. I don\'t like early.'),
-  l('ray','שאסתובב עוד סיבוב?','Want me to go around the block?'),
+  l('dice','קוויקדרופ? הבחורים של בני תמיד מאחרים. אתה הקדמת. אני לא אוהב הפתעות.','QuickDrop? Benny\'s boys are always late. You\'re early. I don\'t like early.'),
+  l('ray','אז שאעשה עוד סיבוב?','Want me to go around the block?'),
   l('dice','מצחיק. וקס אוהב מצחיקים. הנה, קח את זה — הרחובות פה נושכים.','Funny. Vex likes funny. Here, take this — the streets here bite back.'),
   l('dice','תחזור כשתרצה כסף אמיתי.','Come back when you want real money.')]},
  {t:'reward',money:500,weapon:['pistol',36]}]},
@@ -48,7 +49,7 @@ function buildMissions(){MISSIONS=[
   l('salt','אז. השליח שגונב מכוניות בשביל ילדי הניאון.','So. The courier who steals cars for the neon boys.'),
   l('ray','זו הייתה עבודה.','It was a job.'),
   l('salt','הכול עבודה, מתוק. עכשיו תעשה אחת בשבילי, ונהיה תיקו.','Everything\'s a job, sweetheart. Now you do one for me, and we\'re even.'),
-  l('salt','שלושה ארגזים נפלו מסירה אתמול בלילה. קח את הסירה המהירה שלי ותשלה אותם לפני משמר החופים.','Three crates went overboard last night. Take my speedboat and fish them out before the coast guard does.'),
+  l('salt','שלושה ארגזים נפלו מסירה אתמול בלילה. קח את הסירה המהירה שלי ותמשה אותם מהמים לפני שמשמר החופים יגיע.','Three crates went overboard last night. Take my speedboat and fish them out before the coast guard does.'),
   l('salt','אחד נסחף ליד האי הצבאי. אל תחטוף כדור. אתה יותר שימושי חי.','One drifted near the army island. Don\'t get shot. You\'re more useful alive.')]},
  {t:'getveh',key:'boat',type:'speedboat',at:'speedboat',col:'#ecf0f1',obj:{he:'קח את הסירה המהירה ליד הרציף',en:'Take the speedboat by the pier'}},
  {t:'collect',timer:210},
