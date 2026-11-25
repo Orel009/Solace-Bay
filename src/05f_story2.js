@@ -97,7 +97,7 @@ function stepStart(M,s){M.rings=null;M.target=null;switch(s.t){
   case'lose':setObj(tr('lose'));break;
   case'cond':if(s.init)s.init(M);setObj(L(s.obj));break;
   case'kill':{const p0=POI[s.at];M.tg=[];for(let k=0;k<s.n;k++){let x,y,n=0;do{const a=rr(0,TAU),r=rr(30,s.rad||130);x=p0.x+Math.cos(a)*r;y=p0.y+Math.sin(a)*r;}while(++n<25&&!walkable(tileAt(x,y)));
-      M.tg.push(mkPed(s.ptype||'soldier',x,y,{faction:s.faction,hostile:true,persist:true,mission:true}));}break;}
+      const q=mkPed(s.ptype||'soldier',x,y,{faction:s.faction,hostile:true,persist:true,mission:true});if(s.hp)q.hp=s.hp;if(s.boss){q.boss=1;q.shirt='#f4f6f7';q.hat=null;q.wpn='pistol';}if(s.faction==='vale'&&!s.boss){q.shirt='#16161d';q.wpn=pick(['pistol','smg','pistol']);}M.tg.push(q);}break;}
   case'destroy':{M.tg=[];const pts=typeof s.pts==='function'?s.pts():s.pts;for(const q of pts){const v=mkVeh(s.type,q[0]*T,q[1]*T,q[2]||0,s.col);v.persist=true;v.fuel=1;if(s.hp)v.hp=s.hp;M.tg.push(v);M.ents.push(v);
       if(s.move){v.driver='soldier';trafficFromHere(v);v.ai.cruise=s.move;}}break;}
   case'pick':{const pts=typeof s.pts==='function'?s.pts():s.pts;M.pts=pts.map(q=>({x:q[0],y:q[1],roof:q[2]||0,done:false}));break;}

@@ -72,4 +72,5 @@ function drawGun(wp){const R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h);},D
    case'molotov':g.fillStyle='#2e7d32';rrect(g,-2,-2.6,8,5.2,2);g.fill();R(6,-1.2,3.5,2.4,'#1b5e20');g.fillStyle=`rgba(255,${130+Math.floor(80*Math.sin(G.time*25))},30,0.95)`;g.beginPath();g.arc(10.5,0,2.4+Math.sin(G.time*31),0,TAU);g.fill();break;
    case'bat':g.fillStyle='#a1785a';g.beginPath();g.moveTo(-1,-1.2);g.lineTo(20,-2.6);g.quadraticCurveTo(23,0,20,2.6);g.lineTo(-1,1.2);g.closePath();g.fill();R(-3,-1.3,3,2.6,'#3e2a1a');break;
    case'knife':R(-2,-1.2,5,2.4,'#2b2b33');g.fillStyle='#d5dae0';g.beginPath();g.moveTo(3,-1.4);g.lineTo(11,-0.4);g.lineTo(3,1.4);g.closePath();g.fill();break;
+   case'ray':g.fillStyle='#9aa4ad';g.beginPath();g.ellipse(4,0,6,3.6,0,0,TAU);g.fill();R(8,-1.2,9,2.4,'#7dff8a');g.fillStyle='#b8ffbf';g.beginPath();g.arc(18,0,2.4,0,TAU);g.fill();break;
    default:R(0,-1.5,10,3,D);}}

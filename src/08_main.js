@@ -13,7 +13,7 @@ function updatePlayer(dt){const P=G.player;if(P.dead)return;if(P.ride){rideUpdat
     if(!v.t.boat&&!v.t.tank){v.fuel=Math.max(0,v.fuel-Math.abs(v.thr)*dt/260);if(v.fuel<=0){v.thr=0;if(!v.dry){v.dry=1;toast(tr('nofuel'),4);}}}
     if(fx&&G.fireCD<=0){if(v.t.tank){G.fireCD=1.1;fire(P,v,v.x,v.y,v.a,120,0.01,true);G.shake=6;crime(1,false);}
       else if(v.t.amb||v.t.fire||v.t.police){G.fireCD=0.5;v.siren=!v.siren;toast(tr(v.siren?'sirenOn':'sirenOff'),1.2);sfx.blip();}
-      else{G.fireCD=0.6;sfx.horn(v,1);react(nearestCiv(v.x,v.y,170),'horn');for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-v.x,p.y-v.y)<160){p.st='flee';p.ft=2;p.fx=v.x;p.fy=v.y;}}}
+      else{G.fireCD=0.6;sfx.horn(v,1);duckHonk();react(nearestCiv(v.x,v.y,170),'horn');for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-v.x,p.y-v.y)<160){p.st='flee';p.ft=2;p.fx=v.x;p.fy=v.y;}}}
     if(IN.enterP)exitVehicle();
   }else if(G.down>0){G.down-=dt;G.skidNow=false;P.walk=0;P.mvx=P.mvy=0;if(P.kvx||P.kvy){pMove(P,P.kvx*dt,P.kvy*dt);P.kvx*=0.9;P.kvy*=0.9;if(Math.abs(P.kvx)+Math.abs(P.kvy)<5){P.kvx=0;P.kvy=0;}}
     P.swim=!P.roof&&!P.inside&&tileAt(P.x,P.y)===TL.WATER;if(P.swim)G.down=0;
@@ -72,8 +72,9 @@ function talkNear(){const P=G.player;let best=null,bd=62;for(const p of G.peds){
 
 // ---------- world interactions ----------
 function vehCollide(){const V=G.vehicles,P=G.player;
-  const act=V.map(v=>!v.sunk&&(Math.abs(v.vx)+Math.abs(v.vy)>1||v.thr!==0)&&Math.abs(v.x-P.x)<2600&&Math.abs(v.y-P.y)<2600);
-  for(let i=0;i<V.length;i++){const a=V[i];if(a.sunk)continue;for(let j=i+1;j<V.length;j++){const b=V[j];if(b.sunk||!!a.t.boat!==!!b.t.boat||(!act[i]&&!act[j])||a.alt>0.25||b.alt>0.25)continue;
+  const C=[];for(const v of V){if(v.sunk||v.alt>0.25||Math.abs(v.x-P.x)>2700||Math.abs(v.y-P.y)>2700)continue;v._act=(Math.abs(v.vx)+Math.abs(v.vy)>1||v.thr!==0);C.push(v);}
+  C.sort((p,q)=>p.x-q.x);
+  for(let i=0;i<C.length;i++){const a=C[i];for(let j=i+1;j<C.length;j++){const b=C[j];if(b.x-a.x>140)break;if(!!a.t.boat!==!!b.t.boat||(!a._act&&!b._act))continue;
     const dx=b.x-a.x,dy=b.y-a.y,rad=(a.t.l+b.t.l)*0.5;if(dx*dx+dy*dy>rad*rad)continue;
     for(const p of vehCircles(a))for(const q of vehCircles(b)){const ex=q[0]-p[0],ey=q[1]-p[1],d=hyp(ex,ey),rs=p[2]+q[2];if(d>=rs||d<0.01)continue;
       const nx=ex/d,ny=ey/d,pen=rs-d,ma=a.t.mass||1,mb=b.t.mass||1,tot=ma+mb;
@@ -147,7 +148,7 @@ function populateStatic(){
   for(const s of SHOPS){roomInit(s);s.bag=null;s.cust=[];if(!s.clerk){s.clerkP=null;continue;}const q=rw(s,s.clerk.u,s.clerk.v);s.clerkP=mkPed('npc',q[0],q[1],{persist:true,clerk:1,a:s.out>0?Math.PI/2:-Math.PI/2});setKind(s.clerkP,'casual');s.clerkP.shirt=CLERKC[s.k];s.clerkP.hat=null;s.cust=[];}
   for(const sm of SIDE)if(sm.look&&!G.done.includes(sm.id)){const gp=mkPed('npc',sm.start.x+30,sm.start.y-6,{persist:true,a:Math.PI});setKind(gp,sm.look);if(sm.id==='s5'){gp.shirt='#1f3a93';gp.hat='#14256b';}}
   for(const v of POI.vendors)mkPed('npc',v.x+34,v.y,{vendor:1,persist:true,shirt:'#f4f4f4',a:Math.PI/2});
-  populateCity2();
+  populateCity2();spawnPerformers();{const cs=(t,x,y,a,c)=>{const v=mkVeh(t,x,y,a||0,c);v.parked=true;return v;};cs('cart',POI.golf.x-300,POI.golf.y-420,0);cs('limo',POI.coralHotel.x+180,POI.coralHotel.y+40,0);cs('suv',POI.vale.x-260,POI.vale.y,0,'#16161d');cs('jetski',POI.coralPier.x+60,POI.coralPier.y+70,0);}
   for(const w of WPICKS){if(w.once&&G.got.includes(w.once))continue;mkPickup(w.type,w.x,w.y,{respawn:!w.once,h:w.h,amt:w.amt,once:w.once});}}
 function startGame(fresh){AU.init();if(fresh)store.del('sb_save');const sv=store.get('sb_save',null);
   G.vehicles=[];G.peds=[];G.pickups=[];G.bullets=[];G.parts=[];G.decals=[];G.mission=null;G.wanted=0;G.seen={};
@@ -162,8 +163,6 @@ function startGame(fresh){AU.init();if(fresh)store.del('sb_save');const sv=store
   saveGame();}
 
 // ---------- loop ----------
-function resize(){G.dpr=Math.min(G.lowFx?1.25:2,devicePixelRatio||1);applyLayout();CV.width=G.vw*G.dpr;CV.height=G.vh*G.dpr;CV.style.width=G.vw+'px';CV.style.height=G.vh+'px';
-  const ms=Math.round(Math.min(130,Math.max(96,Math.min(G.vw,G.vh)/G.ui*0.28)));MC.style.width=MC.style.height=ms+'px';MC.width=MC.height=Math.round(ms*G.dpr*G.ui);document.getElementById('root').style.setProperty('--vw',G.vw+'px');document.documentElement.style.setProperty('--ms',ms+'px');}
 function updateCamera(dt){const P=G.player,c=G.cam;let tx=P.x,ty=P.y,z=1;
   if(P.veh){const v=P.veh;tx+=v.vx*0.35;ty+=v.vy*0.35;z=lerp(1,0.6,clamp(Math.abs(v.speed)/420,0,1));if(v.alt)z*=1-0.25*v.alt;}
   else if(!P.dead){tx+=(P.mvx||0)*0.3;ty+=(P.mvy||0)*0.3;if(P.ride&&P.ride.tr)z=0.7;}
@@ -188,13 +187,7 @@ function step(dt){G.time+=dt;
   if(G.boom){G.boom.t-=dt*1.8;if(G.boom.t<=0)G.boom=null;}
   regenTick(dt);
   if(P.hp<P._lastHp)G.hurtFlash=Math.max(G.hurtFlash||0,0.6);P._lastHp=P.hp;}
-let last=0;
-function frame(now){const dt=Math.min(0.05,(now-last)/1000||0);last=now;
-  if(G.state==='title'){G.time+=dt;G.cam.x=60*T+Math.sin(G.time*0.05)*1800;G.cam.y=70*T+Math.cos(G.time*0.04)*1500;G.cam.s=Math.min(G.vw,G.vh)/560*0.75;ENV.clock=19.4;calcLight();}
-  else{G.ft=lerp(G.ft||0.016,dt,0.03);if(G.state==='play'&&!G.lowFx&&G.ft>0.028&&G.time>10){G.lowFx=1;resize();}
-    step(dt);if(G.state==='map')drawMap();if(G.state!=='pause'||true)updateCamera(dt);updateHUD(dt);updateAudio();}
-  render();requestAnimationFrame(frame);}
-function init(){genWorld();buildMinimap();buildMissions();buildMissions2();buildMissions3();resize();addEventListener('resize',resize);setupInput();
+function init(){genWorld();buildMinimap();buildMissions();buildMissions2();buildMissions3();buildMissions4();buildMissions5();resize();addEventListener('resize',resize);setupInput();
   G.player=mkPed('player',POI.start.x,POI.start.y);G.peds=[];
   applyLang();$('menu').style.display='flex';requestAnimationFrame(frame);
   window.__G=G;}

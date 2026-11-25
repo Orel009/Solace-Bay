@@ -36,11 +36,13 @@ function aiTraffic(v,dt){const ai=v.ai;if(!ai.wps.length){trafficFromHere(v);ret
   if(Math.abs(v.speed)<6&&!blk&&v.thr>0)ai.stuck+=dt;else ai.stuck=0;
   if(ai.stuck>1.5){ai.stuck=0;ai.rev=0.9;}
   if(ai.blocked>14&&!v.onScreen)v.remove=true;}
-function lookAhead(v){const ca=Math.cos(v.a),sa=Math.sin(v.a),reach=55+Math.max(0,v.speed)*0.55;
+function lookAhead(v){const P0=G.player;if(Math.abs(v.x-P0.x)+Math.abs(v.y-P0.y)>1700){if((v._laT=(v._laT||0)-1)>0)return v._la&&!v._la.dead?v._la:null;v._laT=4;return v._la=lookAhead2(v);}return lookAhead2(v);}
+function lookAhead2(v){const ca=Math.cos(v.a),sa=Math.sin(v.a),reach=55+Math.max(0,v.speed)*0.55;
   const test=(o,hw)=>{const dx=o.x-v.x,dy=o.y-v.y;const al=dx*ca+dy*sa;if(al<v.t.l*0.4||al>reach+v.t.l*0.5)return false;return Math.abs(-dx*sa+dy*ca)<hw;};
-  for(const o of G.vehicles)if(o!==v&&!o.sunk&&!o.t.boat&&test(o,26))return o;
+  for(const o of G.vehicles)if(o!==v&&!o.sunk&&!o.t.boat&&Math.abs(o.x-v.x)<420&&Math.abs(o.y-v.y)<420&&test(o,26))return o;
   const P=G.player;if(!P.veh&&!P.dead&&test(P,22))return P;
-  for(const p of G.peds)if(!p.dead&&!p.veh&&p!==P&&test(p,18))return p;
+  for(const p of G.peds)if(!p.dead&&!p.veh&&p!==P&&Math.abs(p.x-v.x)<420&&Math.abs(p.y-v.y)<420&&test(p,18))return p;
+  if(G.ducks)for(const d of G.ducks)if(!d.dead&&!d.fly&&d.road&&Math.abs(d.x-v.x)<200&&Math.abs(d.y-v.y)<200&&test(d,24))return d;
   return null;}
 
 // ---------- chasing (police / gangs) ----------
@@ -48,8 +50,11 @@ function nextNodeToward(x,y,tx,ty){const [i,j]=nearestNode(x,y);const np=nodePos
   if(hyp(np.x-x,np.y-y)>150)return np;let best=null,bd=1e9;
   for(let d=0;d<4;d++){if(!validDir(i,j,d))continue;const p=nodePos(i+DIRS[d][0],j+DIRS[d][1]);const dd=hyp(p.x-tx,p.y-ty);if(dd<bd){bd=dd;best=p;}}
   return best||np;}
-function chaseDrive(v,tx,ty,dt){const ai=v.ai,d=hyp(tx-v.x,ty-v.y);let gx,gy;
-  if(ai.mode==='chase'&&!v.mission&&d>650&&d<1600&&G.seenNow&&!onScreen(v.x,v.y,200)&&!v.t.boat){if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<60)ai.wp=nextNodeToward(v.x,v.y,tx,ty);const dx=ai.wp.x-v.x,dy=ai.wp.y-v.y,dd=hyp(dx,dy)||1,sp=Math.max(v.t.max*0.82,370);
+function copCap(v,d){const P=G.player,ai=v.ai;if(!ai||v.mission||(ai.faction!=='police'&&ai.faction!=='army')||!P.veh||P.veh.t.boat||P.veh.t.fly)return v.t.max;const pm=P.veh.t.max;
+  return d<650?clamp(pm*0.88,250,v.t.max):Math.min(v.t.max,Math.max(pm*1.02,320));}
+function chaseDrive(v,tx,ty,dt){const r=chaseDrive0(v,tx,ty,dt);const P=G.player,d=P.veh?hyp(P.veh.x-v.x,P.veh.y-v.y):9999,cap=copCap(v,d);if(cap<v.t.max&&v.speed>cap){v.thr=v.speed>cap+50?-0.4:0;}return r;}
+function chaseDrive0(v,tx,ty,dt){const ai=v.ai,d=hyp(tx-v.x,ty-v.y);let gx,gy;
+  if(ai.mode==='chase'&&!v.mission&&d>900&&d<1600&&G.seenNow&&!onScreen(v.x,v.y,200)&&!v.t.boat){if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<60)ai.wp=nextNodeToward(v.x,v.y,tx,ty);const dx=ai.wp.x-v.x,dy=ai.wp.y-v.y,dd=hyp(dx,dy)||1,sp=Math.min(v.t.max*0.72,copCap(v,d)*0.9);
     v.a=Math.atan2(dy,dx);v.vx=dx/dd*sp;v.vy=dy/dd*sp;v.speed=sp;v.thr=1;v.str=0;v.hb=0;ai.stuck=0;ai.rev=0;return d;}
   if(d<420&&los(v.x,v.y,tx,ty)){gx=tx;gy=ty;ai.wp=null;}
   else{if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<80)ai.wp=nextNodeToward(v.x,v.y,tx,ty);gx=ai.wp.x;gy=ai.wp.y;}

@@ -39,7 +39,7 @@ function drawPlane(v){const alt=v.alt||0,sc=1+alt*0.55;g.fillStyle=`rgba(0,0,10,
   if(v.burn>0&&rand()<0.5)part(rand()<0.5?'fire':'smoke',v.x+rr(-10,10),v.y+rr(-10,10),rr(-20,20),rr(-20,20),0.8,rr(6,12));}
 
 // ---------- extra decor ----------
-function drawDecor2(dc){const tt=G.time;switch(dc.t){
+function drawDecor2(dc){const tt=G.time;if(dc.t==='golf'){drawGolf(dc);return true;}if(dc.t==='devroom')return true;switch(dc.t){
   case'helipad':g.fillStyle='#3a3d44';g.beginPath();g.arc(dc.x,dc.y,74,0,TAU);g.fill();g.strokeStyle='#ffe14d';g.lineWidth=5;g.beginPath();g.arc(dc.x,dc.y,66,0,TAU);g.stroke();g.fillStyle='#f4f6f7';g.fillRect(dc.x-22,dc.y-26,9,52);g.fillRect(dc.x+13,dc.y-26,9,52);g.fillRect(dc.x-22,dc.y-5,44,10);return true;
   case'runway':g.fillStyle='rgba(255,255,255,0.85)';for(let x=dc.x+90;x<dc.x+dc.w-90;x+=150)g.fillRect(x,dc.y+dc.h/2-4,80,8);
     for(let k=0;k<6;k++){g.fillRect(dc.x+16,dc.y+24+k*46,50,22);g.fillRect(dc.x+dc.w-66,dc.y+24+k*46,50,22);}

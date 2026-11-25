@@ -28,4 +28,4 @@ function copVisible(){if(G.player.ride&&G.player.ride.tr)return false;if(G.heli&
   for(const v of G.vehicles)if(v.t.police&&!v.dead&&v.driver==='cop'&&(v.x-px)**2+(v.y-py)**2<R2&&los(v.x,v.y,px,py))return true;
   return false;}
 const AREAS={down:{he:'גבעות הניאון',en:'Neon Heights'},res:{he:'הפרדס הישן',en:'Old Orchard'},harb:{he:'שוק המלח',en:'Saltmarket'},beach:{he:'טיילת המרינה',en:'Marina Mile'},fort:{he:'מבצר קולר',en:'Fort Collar'}};
-function areaAt(x,y){const tx=x/T,ty=y/T;if(tx>=124&&tx<=160&&ty>=12&&ty<=54)return'fort';if(tx>=258&&tx<=350&&ty>=4&&ty<=194)return district(tx,ty);if(tx>=168&&tx<=252&&ty>=4&&ty<=194)return district(tx,ty);if(tx<4||ty<4||tx>118||ty>146)return null;return district(tx,ty);}
+function areaAt(x,y){const tx=x/T,ty=y/T;if(tx>=124&&tx<=160&&ty>=12&&ty<=54)return'fort';if(tx>=258&&tx<=350&&ty>=4&&ty<=194)return district(tx,ty);if(tx>=168&&tx<=252&&ty>=4&&ty<=194)return district(tx,ty);if(tx>=14&&tx<=112&&ty>=150&&ty<=198)return'coral';if(tx<4||ty<4||tx>118||ty>146)return null;return district(tx,ty);}

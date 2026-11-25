@@ -63,6 +63,7 @@ html,body{margin:0;height:100%;background:#0b0b14;overflow:hidden;touch-action:n
 #pause h2{margin:0;font:900 30px Rubik,system-ui;color:#5fe0d0;letter-spacing:2px}
 .stats{font:600 14px Rubik,system-ui;opacity:.85;text-align:center}
 .port #wbar{right:calc(14px + env(safe-area-inset-right));bottom:calc(210px + env(safe-area-inset-bottom))}.port #obj{top:calc(150px + env(safe-area-inset-top));max-width:calc(var(--vw,100vw)*0.92)}.port #timer{top:calc(205px + env(safe-area-inset-top))}.port #toast{top:calc(250px + env(safe-area-inset-top))}.port #bPause{top:calc(150px + env(safe-area-inset-top));left:calc(14px + env(safe-area-inset-left));right:auto}
+#obj.story{border-color:rgba(255,210,63,.75)}#obj.side{border-color:rgba(197,155,255,.8)}.otag{display:inline-block;font-size:.72em;font-weight:900;padding:1px 7px;border-radius:7px;margin-inline-end:7px;vertical-align:1px}.otag.story{background:#ffd23f;color:#16161d}.otag.side{background:#c59bff;color:#16161d}
 #bF{display:none;width:46px;height:46px;right:calc(200px + env(safe-area-inset-right));bottom:calc(90px + env(safe-area-inset-bottom))}
 #bX{display:none;width:52px;height:52px;right:calc(196px + env(safe-area-inset-right));bottom:calc(26px + env(safe-area-inset-bottom))}
 #clock{position:absolute;top:calc(var(--ms,120px) + 12px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));width:var(--ms,120px);text-align:center;font:700 13px Rubik,system-ui;text-shadow:0 1px 3px #000;direction:ltr}
@@ -243,7 +244,7 @@ const PAL={down:['#5d6b7a','#6c7785','#4f5866','#7a8090','#56606e','#65707e','#4
  harb:['#8a6e52','#7b7f86','#946a4e','#6e7a70','#857563'],
  beach:['#e8d9c0','#f0e6d2','#d9e4ea','#f2d7c4','#cfe0d0','#e6cfd8'],
  army:['#5b6340','#666b4a','#4e5536']};
-function district(x,y){if(x>=258)return y>=146?'air2':y<48?'glass':y<100?'vista':'forge';if(x>=168)return y>=146?'air':y<48?'crown':y<86?'strip':'east';if(y>=112&&x<104)return'harb';if(x>=76)return'beach';if(y<60)return'down';return'res';}
+function district(x,y){if(x<120&&y>=150)return'coral';if(x>=258)return y>=146?'air2':y<48?'glass':y<100?'vista':'forge';if(x>=168)return y>=146?'air':y<48?'crown':y<86?'strip':'east';if(y>=112&&x<104)return'harb';if(x>=76)return'beach';if(y<60)return'down';return'res';}
 let SOFF=0;
 function addBld(x0,y0,x1,y1,ht,col,o){const id=BUILDINGS.length;
   const b=Object.assign({seed:(Math.imul(id+7+SOFF,2654435761)>>>0),x:x0,y:y0,w:x1-x0+1,h:y1-y0+1,ht,col,roof:shade(col,0.16),rim:shade(col,-0.15),s1:shade(col,-0.28),s2:shade(col,-0.45)},o||{});
@@ -370,7 +371,7 @@ function genWorld(){
     {type:'armor',x:POI.cops.x-90,y:POI.cops.y},{type:'armor',x:112*T,y:120*T},{type:'bribe',x:8.5*T,y:100*T},{type:'bribe',x:111*T,y:30*T},{type:'bribe',x:55.5*T,y:9.4*T});
   const ct=POI.court;WPICKS.push({type:'magnum',x:ct.x-70,y:ct.y+40},{type:'armor',x:ct.x+70,y:ct.y+40},{type:'cash',x:ct.x,y:ct.y-50,amt:800,once:'court'},{type:'chest',x:25.3*T,y:162.5*T,once:'wreck'},{type:'cash',x:157.5*T,y:79.5*T,amt:500,once:'lh'});
   TOKENS.push({id:TOKENS.length,x:ct.x,y:ct.y+60},{id:TOKENS.length+1,x:157.4*T,y:82.6*T});
-  genCity2();genProps();genProps2();genFun();genStunts();genHealth();genTrack();genWeapons();genLadders();
+  genCity2();genCoral();genProps();genProps2();genFun();genStunts();genHealth();genTrack();genWeapons();genPerformers();genSecrets();genLadders();genStreet();genDucks();
 }
 function sprayBlock(x0,y0,x1,y1){fillT(x0,y0,x1,y0+2,TL.CONC);addBld(x0,y0+3,x1,y1,1.4,'#8e5ea2',{logo:'✦',logoC:'#f9e79f'});const sp={x:(x0+x1+1)/2*T,y:(y0+1.5)*T};SPRAYS.push(sp);return sp;}
 function splitLots(x0,y0,x1,y1,dep,out,R){const w=x1-x0+1,h=y1-y0+1;
@@ -521,7 +522,7 @@ function fire(op,ov,x,y,ang,dmg,spread,expl,o){o=o||{};const a=ang+rr(-spread,sp
 function updateBullets(dt){for(const b of G.bullets){const steps=Math.max(1,Math.ceil(hyp(b.vx,b.vy)*dt/10)),sdt=dt/steps;
   if(b.kind==='flame')part('fire',b.x+rr(-4,4),b.y+rr(-4,4),b.vx*0.1,b.vy*0.1,0.22,rr(5,10));
   for(let k=0;k<steps&&!b.dead;k++){b.x+=b.vx*sdt;b.y+=b.vy*sdt;const tt=tileAt(b.x,b.y);
-    if(heliHit(b)||gatorHit(b)){b.dead=true;break;}
+    if(heliHit(b)||gatorHit(b)||duckHit(b)){b.dead=true;break;}
     if((tt===TL.BLD&&!(b.h&&bAt(b.x,b.y).ht<=b.h+0.2))||tt===TL.FENCE){b.dead=true;if(b.kind!=='flame')part('spark',b.x,b.y,rr(-50,50),rr(-50,50),0.2,2);if(b.expl)explodeAt(b.x,b.y,b.op);break;}
     for(const p of G.peds){if(p.dead||p.veh||p===b.op)continue;if((p.x-b.x)**2+(p.y-b.y)**2<130){hurtPed(p,b.dmg,b.op,'shot');if(b.kind==='flame')p.burn=3;b.dead=true;if(b.expl)explodeAt(b.x,b.y,b.op);break;}}
     if(b.dead)break;
@@ -580,11 +581,13 @@ function aiTraffic(v,dt){const ai=v.ai;if(!ai.wps.length){trafficFromHere(v);ret
   if(Math.abs(v.speed)<6&&!blk&&v.thr>0)ai.stuck+=dt;else ai.stuck=0;
   if(ai.stuck>1.5){ai.stuck=0;ai.rev=0.9;}
   if(ai.blocked>14&&!v.onScreen)v.remove=true;}
-function lookAhead(v){const ca=Math.cos(v.a),sa=Math.sin(v.a),reach=55+Math.max(0,v.speed)*0.55;
+function lookAhead(v){const P0=G.player;if(Math.abs(v.x-P0.x)+Math.abs(v.y-P0.y)>1700){if((v._laT=(v._laT||0)-1)>0)return v._la&&!v._la.dead?v._la:null;v._laT=4;return v._la=lookAhead2(v);}return lookAhead2(v);}
+function lookAhead2(v){const ca=Math.cos(v.a),sa=Math.sin(v.a),reach=55+Math.max(0,v.speed)*0.55;
   const test=(o,hw)=>{const dx=o.x-v.x,dy=o.y-v.y;const al=dx*ca+dy*sa;if(al<v.t.l*0.4||al>reach+v.t.l*0.5)return false;return Math.abs(-dx*sa+dy*ca)<hw;};
-  for(const o of G.vehicles)if(o!==v&&!o.sunk&&!o.t.boat&&test(o,26))return o;
+  for(const o of G.vehicles)if(o!==v&&!o.sunk&&!o.t.boat&&Math.abs(o.x-v.x)<420&&Math.abs(o.y-v.y)<420&&test(o,26))return o;
   const P=G.player;if(!P.veh&&!P.dead&&test(P,22))return P;
-  for(const p of G.peds)if(!p.dead&&!p.veh&&p!==P&&test(p,18))return p;
+  for(const p of G.peds)if(!p.dead&&!p.veh&&p!==P&&Math.abs(p.x-v.x)<420&&Math.abs(p.y-v.y)<420&&test(p,18))return p;
+  if(G.ducks)for(const d of G.ducks)if(!d.dead&&!d.fly&&d.road&&Math.abs(d.x-v.x)<200&&Math.abs(d.y-v.y)<200&&test(d,24))return d;
   return null;}
 
 // ---------- chasing (police / gangs) ----------
@@ -592,8 +595,11 @@ function nextNodeToward(x,y,tx,ty){const [i,j]=nearestNode(x,y);const np=nodePos
   if(hyp(np.x-x,np.y-y)>150)return np;let best=null,bd=1e9;
   for(let d=0;d<4;d++){if(!validDir(i,j,d))continue;const p=nodePos(i+DIRS[d][0],j+DIRS[d][1]);const dd=hyp(p.x-tx,p.y-ty);if(dd<bd){bd=dd;best=p;}}
   return best||np;}
-function chaseDrive(v,tx,ty,dt){const ai=v.ai,d=hyp(tx-v.x,ty-v.y);let gx,gy;
-  if(ai.mode==='chase'&&!v.mission&&d>650&&d<1600&&G.seenNow&&!onScreen(v.x,v.y,200)&&!v.t.boat){if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<60)ai.wp=nextNodeToward(v.x,v.y,tx,ty);const dx=ai.wp.x-v.x,dy=ai.wp.y-v.y,dd=hyp(dx,dy)||1,sp=Math.max(v.t.max*0.82,370);
+function copCap(v,d){const P=G.player,ai=v.ai;if(!ai||v.mission||(ai.faction!=='police'&&ai.faction!=='army')||!P.veh||P.veh.t.boat||P.veh.t.fly)return v.t.max;const pm=P.veh.t.max;
+  return d<650?clamp(pm*0.88,250,v.t.max):Math.min(v.t.max,Math.max(pm*1.02,320));}
+function chaseDrive(v,tx,ty,dt){const r=chaseDrive0(v,tx,ty,dt);const P=G.player,d=P.veh?hyp(P.veh.x-v.x,P.veh.y-v.y):9999,cap=copCap(v,d);if(cap<v.t.max&&v.speed>cap){v.thr=v.speed>cap+50?-0.4:0;}return r;}
+function chaseDrive0(v,tx,ty,dt){const ai=v.ai,d=hyp(tx-v.x,ty-v.y);let gx,gy;
+  if(ai.mode==='chase'&&!v.mission&&d>900&&d<1600&&G.seenNow&&!onScreen(v.x,v.y,200)&&!v.t.boat){if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<60)ai.wp=nextNodeToward(v.x,v.y,tx,ty);const dx=ai.wp.x-v.x,dy=ai.wp.y-v.y,dd=hyp(dx,dy)||1,sp=Math.min(v.t.max*0.72,copCap(v,d)*0.9);
     v.a=Math.atan2(dy,dx);v.vx=dx/dd*sp;v.vy=dy/dd*sp;v.speed=sp;v.thr=1;v.str=0;v.hb=0;ai.stuck=0;ai.rev=0;return d;}
   if(d<420&&los(v.x,v.y,tx,ty)){gx=tx;gy=ty;ai.wp=null;}
   else{if(!ai.wp||hyp(ai.wp.x-v.x,ai.wp.y-v.y)<80)ai.wp=nextNodeToward(v.x,v.y,tx,ty);gx=ai.wp.x;gy=ai.wp.y;}
@@ -761,7 +767,7 @@ function copVisible(){if(G.player.ride&&G.player.ride.tr)return false;if(G.heli&
   for(const v of G.vehicles)if(v.t.police&&!v.dead&&v.driver==='cop'&&(v.x-px)**2+(v.y-py)**2<R2&&los(v.x,v.y,px,py))return true;
   return false;}
 const AREAS={down:{he:'גבעות הניאון',en:'Neon Heights'},res:{he:'הפרדס הישן',en:'Old Orchard'},harb:{he:'שוק המלח',en:'Saltmarket'},beach:{he:'טיילת המרינה',en:'Marina Mile'},fort:{he:'מבצר קולר',en:'Fort Collar'}};
-function areaAt(x,y){const tx=x/T,ty=y/T;if(tx>=124&&tx<=160&&ty>=12&&ty<=54)return'fort';if(tx>=258&&tx<=350&&ty>=4&&ty<=194)return district(tx,ty);if(tx>=168&&tx<=252&&ty>=4&&ty<=194)return district(tx,ty);if(tx<4||ty<4||tx>118||ty>146)return null;return district(tx,ty);}
+function areaAt(x,y){const tx=x/T,ty=y/T;if(tx>=124&&tx<=160&&ty>=12&&ty<=54)return'fort';if(tx>=258&&tx<=350&&ty>=4&&ty<=194)return district(tx,ty);if(tx>=168&&tx<=252&&ty>=4&&ty<=194)return district(tx,ty);if(tx>=14&&tx<=112&&ty>=150&&ty<=198)return'coral';if(tx<4||ty<4||tx>118||ty>146)return null;return district(tx,ty);}
 
 const SPK={ray:{he:'ריי',en:'Ray',c:'#7fc8ff',p:210},benny:{he:'בני',en:'Benny',c:'#ffcf5a',p:140},dice:{he:'דייס',en:'Dice',c:'#ff7ad9',p:260},
   vex:{he:'וקס',en:'Vex',c:'#c59bff',p:110},salt:{he:'מאמא סולט',en:'Mama Salt',c:'#5fe0d0',p:300}};
@@ -843,6 +849,7 @@ function nextStep(){const M=G.mission;if(!M)return;M.step++;const s=M.m.steps[M.
   default:stepStart(M,s);}}
 function updateMission(dt){const M=G.mission;
   if(!M){const nm=nextMission();const P=G.player;
+    if(G.misLock){if(hyp(P.x-G.misLock.x,P.y-G.misLock.y)>80)G.misLock=null;else return;}
     if(nm&&!P.veh&&!P.dead&&hyp(P.x-nm.start.x,P.y-nm.start.y)<36){startMission(nm);return;}
     if(!P.veh&&!P.dead)for(const sm of sideAvail())if(hyp(P.x-sm.start.x,P.y-sm.start.y)<36){startMission(sm);return;}
     setObj(G.fare?tr('fareObj'):nm?L(nm.hint):tr('free'));return;}
@@ -1179,7 +1186,7 @@ function drawPlane(v){const alt=v.alt||0,sc=1+alt*0.55;g.fillStyle=`rgba(0,0,10,
   if(v.burn>0&&rand()<0.5)part(rand()<0.5?'fire':'smoke',v.x+rr(-10,10),v.y+rr(-10,10),rr(-20,20),rr(-20,20),0.8,rr(6,12));}
 
 // ---------- extra decor ----------
-function drawDecor2(dc){const tt=G.time;switch(dc.t){
+function drawDecor2(dc){const tt=G.time;if(dc.t==='golf'){drawGolf(dc);return true;}if(dc.t==='devroom')return true;switch(dc.t){
   case'helipad':g.fillStyle='#3a3d44';g.beginPath();g.arc(dc.x,dc.y,74,0,TAU);g.fill();g.strokeStyle='#ffe14d';g.lineWidth=5;g.beginPath();g.arc(dc.x,dc.y,66,0,TAU);g.stroke();g.fillStyle='#f4f6f7';g.fillRect(dc.x-22,dc.y-26,9,52);g.fillRect(dc.x+13,dc.y-26,9,52);g.fillRect(dc.x-22,dc.y-5,44,10);return true;
   case'runway':g.fillStyle='rgba(255,255,255,0.85)';for(let x=dc.x+90;x<dc.x+dc.w-90;x+=150)g.fillRect(x,dc.y+dc.h/2-4,80,8);
     for(let k=0;k<6;k++){g.fillRect(dc.x+16,dc.y+24+k*46,50,22);g.fillRect(dc.x+dc.w-66,dc.y+24+k*46,50,22);}
@@ -1419,7 +1426,7 @@ function stepStart(M,s){M.rings=null;M.target=null;switch(s.t){
   case'lose':setObj(tr('lose'));break;
   case'cond':if(s.init)s.init(M);setObj(L(s.obj));break;
   case'kill':{const p0=POI[s.at];M.tg=[];for(let k=0;k<s.n;k++){let x,y,n=0;do{const a=rr(0,TAU),r=rr(30,s.rad||130);x=p0.x+Math.cos(a)*r;y=p0.y+Math.sin(a)*r;}while(++n<25&&!walkable(tileAt(x,y)));
-      M.tg.push(mkPed(s.ptype||'soldier',x,y,{faction:s.faction,hostile:true,persist:true,mission:true}));}break;}
+      const q=mkPed(s.ptype||'soldier',x,y,{faction:s.faction,hostile:true,persist:true,mission:true});if(s.hp)q.hp=s.hp;if(s.boss){q.boss=1;q.shirt='#f4f6f7';q.hat=null;q.wpn='pistol';}if(s.faction==='vale'&&!s.boss){q.shirt='#16161d';q.wpn=pick(['pistol','smg','pistol']);}M.tg.push(q);}break;}
   case'destroy':{M.tg=[];const pts=typeof s.pts==='function'?s.pts():s.pts;for(const q of pts){const v=mkVeh(s.type,q[0]*T,q[1]*T,q[2]||0,s.col);v.persist=true;v.fuel=1;if(s.hp)v.hp=s.hp;M.tg.push(v);M.ents.push(v);
       if(s.move){v.driver='soldier';trafficFromHere(v);v.ai.cruise=s.move;}}break;}
   case'pick':{const pts=typeof s.pts==='function'?s.pts():s.pts;M.pts=pts.map(q=>({x:q[0],y:q[1],roof:q[2]||0,done:false}));break;}
@@ -1561,7 +1568,7 @@ Object.assign(STR.he,{carFire:'הרכב עולה באש — צא ממנו מהר
 Object.assign(STR.en,{carFire:'The car is on fire — get out now!',thrown:'You were thrown off the bike!',alarmOn:'Car alarm triggered'});
 function damageVeh(v,d,src,how){if(v.dead||d<=0)return;const mx=v.t.hp;
   if(how==='hit'){if(G.time<(v.hitT||0))return;v.hitT=G.time+0.3;d=Math.min(d,mx*0.2);}
-  if(src===G.player&&v.t.police)crime(1,true);
+  if(src===G.player&&v.t.police&&G.time>(v.crimeT||0)){v.crimeT=G.time+3;crime(1,true);}
   if(how==='boom'){v.hp-=d;if(v.hp<=0){v.hp=0;explodeVeh(v,src);}return;}
   v.hp=Math.max(1,v.hp-d);if(v.hp<=mx*0.12&&!v.t.tank&&!v.fuse)startFuse(v,src);}
 function startFuse(v,src){v.fuse=v.driver===G.player?8:5.5;v.fuseSrc=src||null;
@@ -1659,6 +1666,7 @@ function drawGun(wp){const R=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h);},D
    case'molotov':g.fillStyle='#2e7d32';rrect(g,-2,-2.6,8,5.2,2);g.fill();R(6,-1.2,3.5,2.4,'#1b5e20');g.fillStyle=`rgba(255,${130+Math.floor(80*Math.sin(G.time*25))},30,0.95)`;g.beginPath();g.arc(10.5,0,2.4+Math.sin(G.time*31),0,TAU);g.fill();break;
    case'bat':g.fillStyle='#a1785a';g.beginPath();g.moveTo(-1,-1.2);g.lineTo(20,-2.6);g.quadraticCurveTo(23,0,20,2.6);g.lineTo(-1,1.2);g.closePath();g.fill();R(-3,-1.3,3,2.6,'#3e2a1a');break;
    case'knife':R(-2,-1.2,5,2.4,'#2b2b33');g.fillStyle='#d5dae0';g.beginPath();g.moveTo(3,-1.4);g.lineTo(11,-0.4);g.lineTo(3,1.4);g.closePath();g.fill();break;
+   case'ray':g.fillStyle='#9aa4ad';g.beginPath();g.ellipse(4,0,6,3.6,0,0,TAU);g.fill();R(8,-1.2,9,2.4,'#7dff8a');g.fillStyle='#b8ffbf';g.beginPath();g.arc(18,0,2.4,0,TAU);g.fill();break;
    default:R(0,-1.5,10,3,D);}}
 
 // ---------- Meridian: second city, second airport, flights, new vehicles ----------
@@ -1897,9 +1905,9 @@ function spawner(dt){G.spawnT-=dt;if(G.spawnT>0)return;G.spawnT=0.25;const P=G.p
   const tc=Math.round((rural?10:24)*nkCar),pc=Math.round((rural?12:46)*nkPed);
   for(let k=0;k<2&&traffic<tc;k++,traffic++)spawnTraffic(cx,cy);
   for(let k=0;k<3&&civs<pc;k++,civs++){if(rand()<0.22&&civs<pc-3){if(spawnGroup(cx,cy,night>0.5&&lively))civs+=2;}else spawnCiv(cx,cy);}
-  const wantCars=[0,1,2,3,3,4,4][G.wanted],wantArmy=G.wanted>=6?3:G.wanted>=5?2:0;
-  if(chasers.police<wantCars&&!P.dead)spawnChaser('police','police',null,850,1500);
-  if(chasers.army<wantArmy&&!P.dead)spawnChaser('army','army',null,900,1500);
+  const wantCars=[0,1,1,2,2,3,4][G.wanted],wantArmy=G.wanted>=6?2:G.wanted>=5?1:0;
+  if(chasers.police<wantCars&&!P.dead&&!(G.chaseCD>0)){spawnChaser('police','police',null,950,1500);G.chaseCD=G.wanted>=4?4:7;}
+  if(chasers.army<wantArmy&&!P.dead&&!(G.chaseCD>0)){spawnChaser('army','army',null,950,1500);G.chaseCD=6;}
   G.vehicles=G.vehicles.filter(v=>!v.remove);G.peds=G.peds.filter(p=>!p.remove);}
 function spawnTraffic(cx,cy){const rn=ringNodes(cx,cy,620,1500);for(let k=0;k<10&&rn.length;k++){const [i,j]=pick(rn),np=nodePos(i,j);
   const ds=[0,1,2,3].filter(dd=>validDir(i,j,dd));if(!ds.length)continue;const dd=pick(ds);
@@ -1951,15 +1959,19 @@ function medicJobTick(dt){const P=G.player,v=P.veh;if(G.patCD>0)G.patCD-=dt;
   const J=G.pat;if(J.st==='go'){if(hyp(v.x-J.x,v.y-J.y)<100&&Math.abs(v.speed)<70){J.st='back';J.t=hyp(POI.hosp.x-v.x,POI.hosp.y-v.y)/140+15;J.pay=Math.round(hyp(POI.hosp.x-v.x,POI.hosp.y-v.y)/12)+150;J.x=POI.hosp.x;J.y=POI.hosp.y+40;toast(tr('medPick'),3.5);sfx.door();}}
   else{J.t-=dt;if(J.t<=0){toast(tr('medLost'),3);sfx.fail();G.pat=null;G.patCD=4;return;}if(hyp(v.x-J.x,v.y-J.y)<120&&Math.abs(v.speed)<80){G.money+=J.pay;toast(fmt(tr('medPaid'),J.pay),3);sfx.pass();G.rep=Math.min(50,G.rep+2);G.pat=null;G.patCD=3;}}}
 function curTarget(){const M=G.mission;if(M&&M.target)return M.target;if(!M&&G.fare)return G.fare;if(!M&&G.pat)return G.pat;if(!M){const nm=nextMission();if(nm)return nm.start;}return null;}
-function drawLife(inV){drawStunts(inV);const J=G.pat;if(J&&J.st==='go'&&inV(J.x,J.y,60)){const pu=(Math.sin(G.time*5)+1)/2;g.fillStyle=`rgba(255,60,60,${0.25+pu*0.25})`;g.beginPath();g.arc(J.x,J.y,30+pu*6,0,TAU);g.fill();g.fillStyle='#f4f6f7';g.fillRect(J.x-10,J.y-3,20,6);g.fillRect(J.x-3,J.y-10,6,20);}}
+function drawLife(inV){drawStunts(inV);drawDucks(inV);drawSecrets(inV);for(const p of G.peds)if(p.perf&&!p.dead&&inV(p.x,p.y,60))drawPerfExtra(p);const J=G.pat;if(J&&J.st==='go'&&inV(J.x,J.y,60)){const pu=(Math.sin(G.time*5)+1)/2;g.fillStyle=`rgba(255,60,60,${0.25+pu*0.25})`;g.beginPath();g.arc(J.x,J.y,30+pu*6,0,TAU);g.fill();g.fillStyle='#f4f6f7';g.fillRect(J.x-10,J.y-3,20,6);g.fillRect(J.x-3,J.y-10,6,20);}}
 function drawSirens(){const on=Math.floor(G.time*8)%2;g.globalCompositeOperation='lighter';for(const v of G.vehicles){if(!v.siren||v.dead||!v.onScreen)continue;const ca=Math.cos(v.a),sa=Math.sin(v.a),f=v.t.l*0.18;
   glow(g,on?GL.red||'#ff3030':GL.blue||'#3d6bff',v.x+ca*f-sa*8,v.y+sa*f+ca*8,110,0.55);}g.globalAlpha=1;g.globalCompositeOperation='source-over';}
-function lifeTick(dt){trainsTick(dt);firesTick(dt);heliExtra(dt);roadblockTick(dt);emoteTick(dt);medicWatch(dt);fireWatch(dt);talkTick(dt);stuntTick(dt);medicJobTick(dt);
+function lifeTick(dt){policeCD(dt);ducksTick(dt);perfTick(dt);secretsTick(dt);trainsTick(dt);firesTick(dt);heliExtra(dt);roadblockTick(dt);emoteTick(dt);medicWatch(dt);fireWatch(dt);talkTick(dt);stuntTick(dt);medicJobTick(dt);
   if(ENV.dark>0.5&&rand()<dt*0.4){for(const p of G.peds)if(p.party&&!p.dead&&p.st==='chat'&&rand()<0.3&&onScreen(p.x,p.y,0)){say(p,'party',2.5);sfx.voice(p,0.6);break;}}}
 
 // ---------- v6: two-way conversations, context, no-repeat lines ----------
 const CONVS=[{"t": [], "l": [{"he": "ראית את המחירים של הדירות פה?", "en": "Seen the apartment prices around here?"}, {"he": "ראיתי. אני גר באוטו עכשיו.", "en": "I have. I live in my car now."}, {"he": "איזה אוטו?", "en": "Which car?"}, {"he": "זה שגנבו לי אתמול.", "en": "The one that got stolen yesterday."}]}, {"t": [], "l": [{"he": "אתה בא למסיבה ביום שישי?", "en": "Coming to the party on Friday?"}, {"he": "תלוי מי מארגן.", "en": "Depends who is hosting."}, {"he": "אני.", "en": "Me."}, {"he": "אז לא.", "en": "Then no."}]}, {"t": [], "l": [{"he": "קראתי שזאת העיר הכי בטוחה במדינה.", "en": "I read this is the safest city in the country."}, {"he": "איפה קראת?", "en": "Where did you read that?"}, {"he": "על שלט של העירייה.", "en": "On a city hall billboard."}, {"he": "השלט הזה נגנב אתמול.", "en": "That billboard was stolen yesterday."}]}, {"t": [], "l": [{"he": "הבוס ביקש ממני לעבוד בסוף השבוע.", "en": "My boss asked me to work the weekend."}, {"he": "ומה אמרת?", "en": "And what did you say?"}, {"he": "אמרתי כן.", "en": "I said yes."}, {"he": "גיבור. גיבור עייף.", "en": "A hero. A tired hero."}]}, {"t": [], "l": [{"he": "אתה מכיר את גאס מהנקניקיות?", "en": "Do you know Gus, the hot dog guy?"}, {"he": "כולם מכירים את גאס.", "en": "Everyone knows Gus."}, {"he": "הוא חייב לי עשרים דולר.", "en": "He owes me twenty bucks."}, {"he": "הוא חייב לכולם עשרים דולר.", "en": "He owes everyone twenty bucks."}]}, {"t": [], "l": [{"he": "חשבתי לקנות כלב.", "en": "I was thinking of getting a dog."}, {"he": "איזה?", "en": "What kind?"}, {"he": "כזה שנובח על שוטרים.", "en": "One that barks at cops."}, {"he": "כלומר כל כלב בעיר הזאת.", "en": "So, any dog in this city."}]}, {"t": [], "l": [{"he": "שמעת על הברווז הענק בפארק?", "en": "Heard about the giant duck in the park?"}, {"he": "שמעתי שהוא זז בלילה.", "en": "I heard it moves at night."}, {"he": "ברווזים לא זזים בלילה.", "en": "Ducks do not move at night."}, {"he": "ברווזים רגילים לא.", "en": "Normal ducks do not."}]}, {"t": [], "l": [{"he": "התחלתי לרוץ כל בוקר.", "en": "I started running every morning."}, {"he": "באמת? כמה?", "en": "Really? How far?"}, {"he": "עד המאפייה.", "en": "To the bakery."}, {"he": "וחזרה?", "en": "And back?"}, {"he": "באוטובוס.", "en": "By bus."}]}, {"t": [], "l": [{"he": "ראית את המשחק אתמול?", "en": "Did you see the game last night?"}, {"he": "ראיתי. כאב לי.", "en": "I did. It hurt."}, {"he": "בשבוע הבא ננצח.", "en": "We will win next week."}, {"he": "אמרת את זה גם בשבוע שעבר.", "en": "You said that last week too."}]}, {"t": [], "l": [{"he": "אני חושב לעבור למרידיאן.", "en": "I am thinking of moving to Meridian."}, {"he": "יקר שם.", "en": "It is expensive there."}, {"he": "אבל יש רכבת לעבודה.", "en": "But there is a train to work."}, {"he": "גם הרכבת יקרה.", "en": "The train is expensive too."}]}, {"t": [], "l": [{"he": "אמא שלי שואלת מתי אני מתחתן.", "en": "My mom keeps asking when I am getting married."}, {"he": "ומה אמרת לה?", "en": "What did you tell her?"}, {"he": "שאני מחכה שהריבית תרד.", "en": "That I am waiting for interest rates to drop."}]}, {"t": [], "l": [{"he": "קניתי טלפון חדש.", "en": "I bought a new phone."}, {"he": "מה הוא עושה?", "en": "What does it do?"}, {"he": "את מה שהישן עשה.", "en": "What the old one did."}, {"he": "אז למה קנית?", "en": "So why did you buy it?"}, {"he": "הישן נפל לים ליד המזח.", "en": "The old one fell in the sea by the pier."}]}, {"t": [], "l": [{"he": "אתה מאמין במזל?", "en": "Do you believe in luck?"}, {"he": "אני מאמין בקזינו.", "en": "I believe in the casino."}, {"he": "זה ההפך ממזל.", "en": "That is the opposite of luck."}, {"he": "תגיד את זה לארנק שלי.", "en": "Tell that to my wallet."}]}, {"t": [], "l": [{"he": "כמה זמן אתה כבר מחכה לאוטובוס?", "en": "How long have you been waiting for the bus?"}, {"he": "מתי היה החורף?", "en": "When was winter?"}]}, {"t": [], "l": [{"he": "שמעת את התחנה החדשה ברדיו?", "en": "Heard the new radio station?"}, {"he": "נאון אף־אם?", "en": "Neon FM?"}, {"he": "לא, זאת עם הבחור שצועק.", "en": "No, the one with the guy who yells."}, {"he": "כולן עם הבחור שצועק.", "en": "They all have the guy who yells."}]}, {"t": [], "l": [{"he": "מה אתה עושה בעבודה, בעצם?", "en": "What do you actually do at work?"}, {"he": "אני מנהל פגישות.", "en": "I run meetings."}, {"he": "על מה?", "en": "About what?"}, {"he": "על פגישות קודמות.", "en": "About previous meetings."}]}, {"t": [], "l": [{"he": "המזגן שלי מתקלקל כל קיץ.", "en": "My AC breaks every summer."}, {"he": "תזמין טכנאי.", "en": "Call a technician."}, {"he": "הטכנאי גר אצלי כבר חודש.", "en": "The technician has been living with me for a month."}]}, {"t": [], "l": [{"he": "ראית איך נוהגים פה?", "en": "Have you seen how people drive here?"}, {"he": "ראיתי. אני הולך ברגל מאז.", "en": "I have. I have been walking ever since."}, {"he": "גם על המדרכה נוסעים.", "en": "They drive on the sidewalk too."}, {"he": "אז אני הולך מהר.", "en": "Then I walk fast."}]}, {"t": [], "l": [{"he": "מצאתי עשרה דולר על הרצפה.", "en": "I found ten bucks on the ground."}, {"he": "איפה?", "en": "Where?"}, {"he": "ליד הכספומט שפוצץ אתמול.", "en": "Next to the ATM that blew up yesterday."}, {"he": "תחזיר אותם.", "en": "Give it back."}, {"he": "למי? לכספומט?", "en": "To whom? The ATM?"}]}, {"t": [], "l": [{"he": "אשתי רוצה שנלך לים בסוף השבוע.", "en": "My wife wants to go to the beach this weekend."}, {"he": "נשמע נחמד.", "en": "Sounds nice."}, {"he": "אני רוצה ללכת לישון בסוף השבוע.", "en": "I want to sleep this weekend."}, {"he": "גם נשמע נחמד.", "en": "Also sounds nice."}]}, {"t": [], "l": [{"he": "אתה יודע מה הסוד להצלחה?", "en": "Do you know the secret to success?"}, {"he": "מה?", "en": "What?"}, {"he": "גם אני לא. חשבתי שאתה יודע.", "en": "Me neither. I thought you knew."}]}, {"t": ["night"], "l": [{"he": "מאוחר. כדאי ללכת הביתה.", "en": "It is late. We should go home."}, {"he": "הבית שלי זה הבר הזה.", "en": "That bar is my home."}, {"he": "הבר סגור.", "en": "The bar is closed."}, {"he": "אז הבית שלי זה הספסל הזה.", "en": "Then this bench is my home."}]}, {"t": ["night"], "l": [{"he": "אתה שומע את זה?", "en": "Do you hear that?"}, {"he": "מה?", "en": "What?"}, {"he": "שקט.", "en": "Silence."}, {"he": "בעיר הזאת? זה מפחיד יותר מיריות.", "en": "In this city? That is scarier than gunfire."}]}, {"t": ["night"], "l": [{"he": "הירח יפה הלילה.", "en": "The moon is pretty tonight."}, {"he": "זה פנס רחוב.", "en": "That is a streetlight."}, {"he": "גם הוא יפה.", "en": "Also pretty."}]}, {"t": ["night"], "l": [{"he": "למה אתה ער בשעה כזאת?", "en": "Why are you up at this hour?"}, {"he": "השכן מנגן בתופים.", "en": "My neighbor plays drums."}, {"he": "בשתיים בלילה?", "en": "At two in the morning?"}, {"he": "הוא אומר שזה הכי שקט אז.", "en": "He says it is quietest then."}]}, {"t": ["morning"], "l": [{"he": "בוקר טוב.", "en": "Good morning."}, {"he": "מה טוב בו?", "en": "What is good about it?"}, {"he": "הקפה.", "en": "Coffee."}, {"he": "נגמר הקפה.", "en": "We are out of coffee."}, {"he": "אז רק בוקר.", "en": "Then just morning."}]}, {"t": ["rain"], "l": [{"he": "שכחתי מטרייה.", "en": "I forgot my umbrella."}, {"he": "שוב?", "en": "Again?"}, {"he": "יש לי עשר מטריות. כולן בבית.", "en": "I own ten umbrellas. All at home."}]}, {"t": ["rain"], "l": [{"he": "הגשם הזה לא נגמר.", "en": "This rain never ends."}, {"he": "לפחות הוא שוטף את העיר.", "en": "At least it washes the city."}, {"he": "יש פה הרבה מה לשטוף.", "en": "There is a lot to wash here."}]}, {"t": ["rain"], "l": [{"he": "החזאי אמר שמש.", "en": "The forecast said sunny."}, {"he": "איזה חזאי?", "en": "Which forecaster?"}, {"he": "זה שגר בבונקר.", "en": "The one who lives in a bunker."}]}, {"t": ["beach"], "l": [{"he": "המים קרים היום?", "en": "Is the water cold today?"}, {"he": "אני לא יודע, אני רק מסתכל על השחפים.", "en": "No idea, I am just watching the seagulls."}, {"he": "למה?", "en": "Why?"}, {"he": "אחד מהם גנב לי סנדוויץ׳. אני מחכה לנקמה.", "en": "One of them stole my sandwich. I am waiting for revenge."}]}, {"t": ["beach"], "l": [{"he": "שכחתי קרם הגנה.", "en": "I forgot sunscreen."}, {"he": "רואים.", "en": "It shows."}, {"he": "כמה רואים?", "en": "How much does it show?"}, {"he": "אתה בצבע של כבאית.", "en": "You are the color of a fire truck."}]}, {"t": ["harbor"], "l": [{"he": "מאמא סולט שוב קנתה משהו בנמל.", "en": "Mama Salt bought something at the harbor again."}, {"he": "מה הפעם?", "en": "What this time?"}, {"he": "את הנמל.", "en": "The harbor."}]}, {"t": ["harbor"], "l": [{"he": "ריח של דגים פה.", "en": "Smells like fish here."}, {"he": "זה נמל.", "en": "It is a harbor."}, {"he": "לא, הריח בא ממך.", "en": "No, the smell is coming from you."}]}, {"t": ["downtown"], "l": [{"he": "יש לי פגישה בעוד חמש דקות.", "en": "I have a meeting in five minutes."}, {"he": "איפה?", "en": "Where?"}, {"he": "בקומה הארבעים.", "en": "On the fortieth floor."}, {"he": "המעלית מקולקלת.", "en": "The elevator is broken."}, {"he": "אז יש לי פגישה מחר.", "en": "Then my meeting is tomorrow."}]}, {"t": ["glass"], "l": [{"he": "המגדל של הילו צריך עוד קומה.", "en": "The Halo tower needs another floor."}, {"he": "למה?", "en": "Why?"}, {"he": "כי השכן בנה אחת.", "en": "Because the neighbor built one."}]}, {"t": ["glass"], "l": [{"he": "בניין חדש, אותו נוף.", "en": "New building, same view."}, {"he": "איזה נוף?", "en": "What view?"}, {"he": "של הבניין הקודם.", "en": "Of the last building."}]}, {"t": ["strip"], "l": [{"he": "הפסדתי הכול בקזינו.", "en": "I lost everything at the casino."}, {"he": "הכול?", "en": "Everything?"}, {"he": "חוץ מהכבוד.", "en": "Except my dignity."}, {"he": "חכה, יש להם שולחן גם לזה.", "en": "Wait, they have a table for that too."}]}, {"t": ["strip"], "l": [{"he": "ראית מישהו זוכה בג׳קפוט?", "en": "Ever seen anyone hit the jackpot?"}, {"he": "פעם אחת.", "en": "Once."}, {"he": "ומה קרה?", "en": "What happened?"}, {"he": "הוא השקיע את הכול בעוד ג׳קפוט.", "en": "He put it all into another jackpot."}]}, {"t": ["neon"], "l": [{"he": "אל תסתובב פה בלילה.", "en": "Do not hang around here at night."}, {"he": "למה?", "en": "Why?"}, {"he": "הקדושים לא אוהבים תיירים.", "en": "The Saints do not like tourists."}, {"he": "אני לא תייר.", "en": "I am not a tourist."}, {"he": "תגיד להם את זה.", "en": "Tell them that."}]}, {"t": ["forge"], "l": [{"he": "המפעל עובד גם בלילה?", "en": "Does the factory run at night too?"}, {"he": "המפעל עובד. אנחנו לא.", "en": "The factory does. We do not."}]}, {"t": ["forge"], "l": [{"he": "מה מייצרים במפעל הזה, בעצם?", "en": "What does this factory actually make?"}, {"he": "ברגים.", "en": "Screws."}, {"he": "בשביל מה?", "en": "For what?"}, {"he": "בשביל מפעל ברגים אחר.", "en": "For another screw factory."}]}, {"t": ["air"], "l": [{"he": "הטיסה שלי מתעכבת כבר שלוש שעות.", "en": "My flight has been delayed three hours."}, {"he": "לאן אתה טס?", "en": "Where are you flying?"}, {"he": "למרידיאן.", "en": "To Meridian."}, {"he": "ברכבת כבר היית שם.", "en": "By train you would be there already."}]}, {"t": ["crown"], "l": [{"he": "הגנן שלי התפטר.", "en": "My gardener quit."}, {"he": "איזה סיוט.", "en": "What a nightmare."}, {"he": "עכשיו הדשא סתם... ירוק.", "en": "Now the grass is just... green."}]}, {"t": ["crown"], "l": [{"he": "קניתי עוד יאכטה.", "en": "I bought another yacht."}, {"he": "לא הייתה לך כבר אחת?", "en": "Did you not have one already?"}, {"he": "היא הייתה בודדה.", "en": "She was lonely."}]}, {"t": ["tourist"], "l": [{"he": "סליחה, איפה החוף?", "en": "Excuse me, where is the beach?"}, {"he": "אתה עומד עליו.", "en": "You are standing on it."}]}, {"t": ["tourist"], "l": [{"he": "צילמתי היום ארבע מאות תמונות.", "en": "I took four hundred photos today."}, {"he": "של מה?", "en": "Of what?"}, {"he": "של יונה אחת.", "en": "Of one pigeon."}]}, {"t": ["elder"], "l": [{"he": "פעם כל זה היה שדות.", "en": "All of this used to be fields."}, {"he": "ומה היה פה?", "en": "And what was here?"}, {"he": "שדות. אמרתי.", "en": "Fields. I said."}]}, {"t": ["elder"], "l": [{"he": "בגיל שלי כבר לא בורחים מהמשטרה.", "en": "At my age you do not run from the police anymore."}, {"he": "אז מה עושים?", "en": "So what do you do?"}, {"he": "הולכים מהר ומתלוננים.", "en": "You walk fast and complain."}]}, {"t": ["biz"], "l": [{"he": "שמעת? המניה ירדה.", "en": "Did you hear? The stock dropped."}, {"he": "איזו?", "en": "Which one?"}, {"he": "כולן.", "en": "All of them."}]}, {"t": ["biz"], "l": [{"he": "אני עובד מהבית היום.", "en": "I am working from home today."}, {"he": "אבל אתה ברחוב.", "en": "But you are in the street."}, {"he": "הבית שלי זה הטלפון.", "en": "My phone is my home."}]}, {"t": ["punk"], "l": [{"he": "הלהקה שלנו מופיעה מחר.", "en": "Our band is playing tomorrow."}, {"he": "איפה?", "en": "Where?"}, {"he": "בחניון.", "en": "In the parking garage."}, {"he": "שוב?", "en": "Again?"}, {"he": "החניון הוא הקהל הכי טוב שלנו.", "en": "The garage is our best crowd."}]}, {"t": ["worker"], "l": [{"he": "כמה זמן לוקח לתקן את הכביש הזה?", "en": "How long does it take to fix this road?"}, {"he": "תלוי.", "en": "Depends."}, {"he": "במה?", "en": "On what?"}, {"he": "אם מישהו יבדוק.", "en": "On whether anyone checks."}]}, {"t": ["party"], "l": [{"he": "איפה המסיבה הבאה?", "en": "Where is the next party?"}, {"he": "איפה שהמשטרה עוד לא הגיעה.", "en": "Wherever the cops have not shown up yet."}]}, {"t": ["party"], "l": [{"he": "אני לא שיכור.", "en": "I am not drunk."}, {"he": "אתה מדבר עם עמוד.", "en": "You are talking to a pole."}, {"he": "והוא מקשיב יותר טוב ממך.", "en": "And it listens better than you."}]}, {"t": ["party"], "l": [{"he": "עוד שיר אחד ואנחנו הולכים.", "en": "One more song and we go."}, {"he": "אמרת את זה לפני שלוש שעות.", "en": "You said that three hours ago."}, {"he": "והיו מאז שירים מעולים.", "en": "And there have been great songs since."}]}, {"t": ["shots"], "l": [{"he": "שמעת את היריות?", "en": "Did you hear the shots?"}, {"he": "שמעתי. אני לא יוצא יותר מהבית.", "en": "I did. I am not leaving the house anymore."}, {"he": "אבל אתה בחוץ.", "en": "But you are outside."}, {"he": "כי הבית מפחיד יותר.", "en": "Because home is scarier."}]}, {"t": ["shots"], "l": [{"he": "עוד פעם יריות?", "en": "Gunfire again?"}, {"he": "זאת העיר. בשבוע הבא יגידו שזה זיקוקים.", "en": "It is this city. Next week they will call it fireworks."}]}, {"t": ["shots"], "l": [{"he": "מישהו נפגע?", "en": "Was anyone hurt?"}, {"he": "רק האוטו שלי. שוב.", "en": "Just my car. Again."}]}, {"t": ["cops"], "l": [{"he": "למה יש פה כל כך הרבה שוטרים?", "en": "Why are there so many cops around?"}, {"he": "מחפשים מישהו.", "en": "They are looking for someone."}, {"he": "את מי?", "en": "Who?"}, {"he": "את מי שמחפשים תמיד.", "en": "The usual someone."}]}, {"t": ["cops"], "l": [{"he": "תסתכל לרצפה כשהשוטרים עוברים.", "en": "Look at the ground when the cops pass."}, {"he": "למה?", "en": "Why?"}, {"he": "ככה לא שואלים אותך שאלות.", "en": "That way they do not ask you questions."}]}, {"t": ["cops"], "l": [{"he": "השוטר הזה רשם לי דוח על חניה.", "en": "That cop gave me a parking ticket."}, {"he": "איפה חנית?", "en": "Where did you park?"}, {"he": "על הניידת שלו.", "en": "On his cruiser."}]}, {"t": ["boom"], "l": [{"he": "ראית את הפיצוץ?", "en": "Did you see the explosion?"}, {"he": "ראיתי. הביטוח שלי לא יאמין.", "en": "I did. My insurance will not believe it."}]}, {"t": ["boom"], "l": [{"he": "זה היה פיצוץ או רעם?", "en": "Was that an explosion or thunder?"}, {"he": "בעיר הזאת? כנראה שניהם.", "en": "In this city? Probably both."}]}, {"t": ["wanted"], "l": [{"he": "זה לא הבחור מהחדשות?", "en": "Is that not the guy from the news?"}, {"he": "איזה בחור?", "en": "What guy?"}, {"he": "זה שכל המשטרה רודפת אחריו.", "en": "The one the whole police force is chasing."}, {"he": "אל תסתכל עליו. תעשה שאתה מדבר איתי.", "en": "Do not look at him. Pretend you are talking to me."}, {"he": "אני מדבר איתך.", "en": "I am talking to you."}]}, {"t": ["player"], "l": [{"he": "ראית את הבחור הזה?", "en": "See that guy?"}, {"he": "איזה?", "en": "Which one?"}, {"he": "זה שעומד ומקשיב לנו.", "en": "The one standing there listening to us."}, {"he": "תדבר יותר בשקט.", "en": "Talk quieter."}]}, {"t": ["player"], "l": [{"he": "נראה לי שהוא מסתכל עלינו.", "en": "I think he is looking at us."}, {"he": "תחייך.", "en": "Smile."}, {"he": "למה?", "en": "Why?"}, {"he": "אולי הוא מהטלוויזיה.", "en": "Maybe he is from TV."}]}];
 Object.assign(REACT,{"shots": [{"he": "יריות! רוצו!", "en": "Shots! Run!"}, {"he": "אלוהים אדירים!", "en": "Oh my god!"}, {"he": "תתכופפו!", "en": "Get down!"}, {"he": "לא שוב! לא היום!", "en": "Not again! Not today!"}, {"he": "מישהו מתקשר למשטרה?!", "en": "Is someone calling the police?!"}, {"he": "רק קניתי חלב!", "en": "I just went out for milk!"}, {"he": "זה אמיתי?! זה אמיתי!", "en": "Is that real?! That is real!"}, {"he": "כולם לברוח!", "en": "Everybody run!"}, {"he": "אני לא פה! לא ראיתם אותי!", "en": "I am not here! You never saw me!"}, {"he": "אמא!", "en": "Mom!"}, {"he": "למה תמיד ברחוב שלי?!", "en": "Why is it always my street?!"}, {"he": "תפסיק לירות, משוגע!", "en": "Stop shooting, you maniac!"}], "shots_elder": [{"he": "בימים שלי לפחות היו מנומסים!", "en": "In my day they were at least polite!"}, {"he": "הלב שלי! הלב!", "en": "My heart! My heart!"}, {"he": "אני מתקשר לנכד שלי!", "en": "I am calling my grandson!"}], "shots_biz": [{"he": "יש לי פגישה בעוד עשר דקות!", "en": "I have a meeting in ten minutes!"}, {"he": "זה לא היה בתוכנית העבודה!", "en": "This was not in the quarterly plan!"}, {"he": "מישהו, תעביר את זה למחלקה המשפטית!", "en": "Someone forward this to legal!"}], "shots_tourist": [{"he": "זה חלק מהסיור?!", "en": "Is this part of the tour?!"}, {"he": "איפה השגרירות?!", "en": "Where is the embassy?!"}, {"he": "אף אחד לא סיפר על זה במדריך!", "en": "The guidebook never mentioned this!"}], "shots_punk": [{"he": "סוף סוף משהו קורה פה!", "en": "Finally something happens around here!"}, {"he": "זה כמו בהופעה שלנו!", "en": "Just like our gig!"}], "shots_worker": [{"he": "אני בהפסקה, אחי!", "en": "I am on my break, man!"}, {"he": "עוד דבר לתקן מחר...", "en": "Another thing to fix tomorrow..."}], "gun": [{"he": "יש לו נשק!", "en": "He has a gun!"}, {"he": "אל תירה!", "en": "Do not shoot!"}, {"he": "קח הכול, רק תוריד את זה!", "en": "Take everything, just lower that!"}, {"he": "וואו, וואו, בוא נירגע.", "en": "Whoa, whoa, let us calm down."}, {"he": "אני רק עובר פה!", "en": "I am just passing through!"}, {"he": "זה צעצוע, נכון? נכון?!", "en": "That is a toy, right? Right?!"}, {"he": "לא ראיתי כלום, אני כבר הולך.", "en": "I saw nothing, I am leaving."}, {"he": "למה שלוף אצלך?!", "en": "Why is that thing out?!"}], "body": [{"he": "שמישהו יזמין אמבולנס!", "en": "Somebody call an ambulance!"}, {"he": "אני לא ראיתי כלום...", "en": "I saw nothing..."}, {"he": "הוא נושם?", "en": "Is he breathing?"}, {"he": "אוי, לא. לא, לא, לא.", "en": "Oh no. No, no, no."}, {"he": "אני הולך מפה, אני לא רוצה להיות עד.", "en": "I am out of here. I do not want to be a witness."}, {"he": "מישהו יודע עזרה ראשונה?", "en": "Does anyone know first aid?"}, {"he": "זאת העיר הזאת, אחי. זאת העיר.", "en": "It is this city, man. It is this city."}], "boom": [{"he": "מה זה היה?!", "en": "What was that?!"}, {"he": "פיצוץ!", "en": "Explosion!"}, {"he": "האוזניים שלי!", "en": "My ears!"}, {"he": "זה היה האוטו שלי?!", "en": "Was that my car?!"}, {"he": "מישהו קרא לכבאים?", "en": "Did anyone call the fire department?"}, {"he": "זה הגז? זה הגז!", "en": "Is it gas? It is gas!"}, {"he": "וואו. טוב. אני עובר דירה.", "en": "Wow. Okay. I am moving."}], "crash": [{"he": "הרסת לי את האוטו!", "en": "You wrecked my car!"}, {"he": "יש לך ביטוח?!", "en": "Do you have insurance?!"}, {"he": "איפה למדת לנהוג?!", "en": "Where did you learn to drive?!"}, {"he": "זה היה ליסינג!", "en": "That was a lease!"}, {"he": "אני אתבע אותך!", "en": "I will sue you!"}, {"he": "רק לפני שבוע ניקיתי אותו!", "en": "I just washed it last week!"}], "bump": [{"he": "היי! תיזהר!", "en": "Hey! Watch it!"}, {"he": "מה הבעיה שלך?", "en": "What is your problem?"}, {"he": "סליחה גם לך!", "en": "Excuse you!"}, {"he": "יש מקום על כל המדרכה!", "en": "There is a whole sidewalk!"}, {"he": "אתה רואה אותי בכלל?", "en": "Can you even see me?"}, {"he": "אוי, הנעליים החדשות!", "en": "Ugh, my new shoes!"}, {"he": "תסתכל לאן אתה הולך!", "en": "Look where you are going!"}, {"he": "ממהר למשהו?", "en": "In a hurry?"}], "bump_elder": [{"he": "צעירים...", "en": "Young people..."}, {"he": "בגילי דוחפים רק בתור לרופא!", "en": "At my age you only push in the doctor's line!"}], "bump_biz": [{"he": "זאת חליפה של אלפיים דולר!", "en": "This suit cost two grand!"}, {"he": "אני על שיחה!", "en": "I am on a call!"}], "horn": [{"he": "מה אתה צופר?!", "en": "Stop honking!"}, {"he": "סבלנות!", "en": "Patience!"}, {"he": "עוד צפירה אחת ואני מתיישב פה!", "en": "One more honk and I sit down right here!"}, {"he": "אני הולך כמה שאני יכול!", "en": "I am walking as fast as I can!"}, {"he": "גם לך יום טוב!", "en": "Have a nice day too!"}, {"he": "שמעתי, שמעתי!", "en": "I heard you, I heard you!"}], "car": [{"he": "משוגע!", "en": "Maniac!"}, {"he": "תלמד לנהוג!", "en": "Learn to drive!"}, {"he": "כמעט דרסת אותי!", "en": "You almost ran me over!"}, {"he": "זאת מדרכה, לא כביש!", "en": "This is a sidewalk, not a road!"}, {"he": "המשטרה! שמישהו יקרא למשטרה!", "en": "Police! Somebody call the police!"}, {"he": "ראיתי את החיים שלי עוברים מול העיניים!", "en": "I saw my life flash before my eyes!"}, {"he": "ראית את הלוחית? מישהו ראה את הלוחית?!", "en": "Did you get the plate? Did anyone get the plate?!"}], "call": [{"he": "הלו, משטרה? ראיתי הכול!", "en": "Hello, police? I saw everything!"}, {"he": "כן, שלום, יש פה בחור עם {0}. הוא מסוכן!", "en": "Yes, hi, there is a guy here in {0}. He is dangerous!"}, {"he": "משטרה? תבואו מהר, הוא עוד פה!", "en": "Police? Come fast, he is still here!"}, {"he": "אני רוצה לדווח על פשע. כן, עכשיו. כן, שוב.", "en": "I want to report a crime. Yes, now. Yes, again."}, {"he": "הוא לבוש {0}. לא, אני לא צוחק.", "en": "He is wearing {0}. No, I am not joking."}, {"he": "הלו? אני מחזיק... כן, אני מחכה.", "en": "Hello? I am on hold... yes, I will wait."}], "cop": [{"he": "עצור! משטרה!", "en": "Freeze! Police!"}, {"he": "ידיים למעלה!", "en": "Hands up!"}, {"he": "על הרצפה, עכשיו!", "en": "On the ground, now!"}, {"he": "אתה עצור!", "en": "You are under arrest!"}, {"he": "אל תזוז!", "en": "Do not move!"}, {"he": "זה ייגמר רע בשבילך!", "en": "This ends badly for you!"}], "copChase": [{"he": "עצור במקום!", "en": "Stop right there!"}, {"he": "אין לך לאן לברוח!", "en": "You have nowhere to run!"}, {"he": "יחידה שתיים, הוא רץ מזרחה!", "en": "Unit two, he is heading east!"}, {"he": "זה לא שווה את זה, חבר!", "en": "It is not worth it, pal!"}, {"he": "תיכנע!", "en": "Give yourself up!"}, {"he": "ראיתי אותך!", "en": "I see you!"}, {"he": "אני מבקש תגבורת!", "en": "Requesting backup!"}, {"he": "לא נוותר עליך!", "en": "We will not let you go!"}], "copHard": [{"he": "כל הניידות, אש חופשית!", "en": "All units, weapons free!"}, {"he": "זה החשוד! תורידו אותו!", "en": "That is the suspect! Take him down!"}, {"he": "תשכח מהבית, אתה הולך לכלא!", "en": "Forget home, you are going to jail!"}, {"he": "הצבא בדרך, כדאי לך להיכנע!", "en": "The army is on its way, you should surrender!"}], "copnear": [{"he": "וואו, תראה כמה ניידות.", "en": "Wow, look at all those cruisers."}, {"he": "מישהו בצרות גדולות.", "en": "Someone is in big trouble."}, {"he": "אני מקווה שזה לא בגללי.", "en": "I hope this is not about me."}, {"he": "שוב מרדף? כל יום פה סרט.", "en": "Another chase? Every day is a movie here."}, {"he": "תתרחק מהכביש, הם לא עוצרים.", "en": "Get off the road, they do not stop."}, {"he": "אני מצלם את זה.", "en": "I am filming this."}, {"he": "זה בגלל הבחור ההוא?", "en": "Is it because of that guy?"}], "film": [{"he": "זה הולך להיות ויראלי!", "en": "This is going viral!"}, {"he": "מישהו מצלם? אני מצלם!", "en": "Is anyone filming? I am filming!"}, {"he": "תעשו לייק ותירשמו!", "en": "Like and subscribe!"}, {"he": "ילדים, אל תנסו את זה בבית.", "en": "Kids, do not try this at home."}, {"he": "החדשות ישלמו לי על זה.", "en": "The news will pay me for this."}, {"he": "הקצב, הקצב! איזה סרטון!", "en": "The action! What a video!"}], "brave": [{"he": "רק תנסה, אני לא מפחד!", "en": "Try it, I am not scared!"}, {"he": "עשיתי צבא, אחי!", "en": "I served, man!"}, {"he": "אני מכיר קרטה! בערך!", "en": "I know karate! Sort of!"}], "fight": [{"he": "אתה רוצה מכות?", "en": "You want a fight?"}, {"he": "בוא הנה!", "en": "Come here!"}, {"he": "טעות גדולה, חבר!", "en": "Big mistake, pal!"}, {"he": "עכשיו אני כועס!", "en": "Now I am angry!"}, {"he": "אתה עוד תתחרט על זה!", "en": "You are going to regret that!"}, {"he": "רק את החולצה הזאת קיבלתי מתנה!", "en": "This shirt was a gift!"}], "rain": [{"he": "איזה מבול...", "en": "What a downpour..."}, {"he": "הנעליים שלי ספוגות.", "en": "My shoes are soaked."}, {"he": "מי הזמין את הגשם הזה?", "en": "Who ordered this rain?"}, {"he": "לפחות האוטו יהיה נקי.", "en": "At least my car gets a wash."}], "psycho": [{"he": "זה הבחור מהחדשות!", "en": "That is the guy from the news!"}, {"he": "תתרחק ממני!", "en": "Stay away from me!"}, {"he": "אני לא רוצה צרות!", "en": "I do not want trouble!"}, {"he": "תעשה שאתה לא רואה אותו.", "en": "Pretend you do not see him."}], "chat": [{"he": "מה העניינים?", "en": "How is it going?"}, {"he": "ראית את מזג האוויר?", "en": "Seen the weather?"}, {"he": "כן, בטח.", "en": "Yeah, sure."}, {"he": "לגמרי.", "en": "Totally."}, {"he": "באמת?", "en": "Really?"}]});
+
+// ---------- v8: more conversations ----------
+CONVS.push(...[{"t": [], "l": [{"he": "ראית את הרכבת העילית?", "en": "Have you seen the Sky Line?"}, {"he": "עליתי עליה פעם. שלוש פעמים פספסתי את התחנה.", "en": "I rode it once. Missed my stop three times."}, {"he": "איך?", "en": "How?"}, {"he": "הנוף. והתנומה.", "en": "The view. And the nap."}]}, {"t": [], "l": [{"he": "אני חושב לפתוח סטארט־אפ.", "en": "I am thinking of starting a startup."}, {"he": "מה הוא עושה?", "en": "What does it do?"}, {"he": "עדיין לא יודע. אבל כבר יש לי לוגו.", "en": "Not sure yet. But I already have a logo."}]}, {"t": [], "l": [{"he": "אשתי אומרת שאני מכור לטלפון.", "en": "My wife says I am addicted to my phone."}, {"he": "ומה ענית?", "en": "What did you say?"}, {"he": "שלחתי לה הודעה.", "en": "I texted her back."}]}, {"t": [], "l": [{"he": "שמעת שפותחים עוד חנות קפה ברחוב?", "en": "Heard they are opening another coffee shop on this street?"}, {"he": "זאת תהיה השמינית.", "en": "That makes eight."}, {"he": "ובכל זאת אין איפה לחנות.", "en": "And still no parking."}]}, {"t": [], "l": [{"he": "הזמנתי משהו באינטרנט לפני חודש.", "en": "I ordered something online a month ago."}, {"he": "והגיע?", "en": "Did it arrive?"}, {"he": "הגיעה הודעה שהוא בדרך. כבר חודש.", "en": "A message arrived saying it is on its way. For a month."}, {"he": "אולי שלחו עם קוויקדרופ.", "en": "Maybe they used QuickDrop."}]}, {"t": [], "l": [{"he": "אתה זוכר את ההוא שקפץ עם אופנוע מהגשר?", "en": "Remember the guy who jumped a bike off the bridge?"}, {"he": "בחדשות אמרו שהוא שרד.", "en": "The news said he survived."}, {"he": "בחדשות גם אמרו שהברווז הוא יצירת אמנות.", "en": "The news also said the duck is art."}]}, {"t": [], "l": [{"he": "אני בדיאטה חדשה.", "en": "I am on a new diet."}, {"he": "איזו?", "en": "Which one?"}, {"he": "אוכלים רק מה שלא נופל על הרצפה.", "en": "You only eat what does not fall on the floor."}, {"he": "ואיך הולך?", "en": "How is it going?"}, {"he": "אני מאוד זריז עכשיו.", "en": "I am very quick now."}]}, {"t": [], "l": [{"he": "למה כולם פה צופרים?", "en": "Why does everyone here honk?"}, {"he": "כי הצופר זה החלק היחיד באוטו שעובד.", "en": "Because the horn is the only part of the car that works."}]}, {"t": [], "l": [{"he": "ראיתי מישהו רוקד מול תחנת המשטרה.", "en": "I saw someone dancing in front of the police station."}, {"he": "והשוטרים?", "en": "And the cops?"}, {"he": "רקדו איתו. זאת עיר מוזרה.", "en": "They danced with him. Weird city."}]}, {"t": [], "l": [{"he": "שמעתי שיש פתקים בבקבוקים על החופים.", "en": "I heard there are notes in bottles on the beaches."}, {"he": "ומה כתוב בהם?", "en": "What do they say?"}, {"he": "שמישהו תקוע על אי עם מיליונרים.", "en": "That someone is stuck on an island with millionaires."}, {"he": "אז הוא לא תקוע. הוא בחופש.", "en": "Then he is not stuck. He is on vacation."}]}, {"t": [], "l": [{"he": "מישהו ראה את הבחור שמפליץ ליד אנשים?", "en": "Has anyone seen the guy who farts near people?"}, {"he": "כן. הוא עשה את זה ליד פסל.", "en": "Yes. He did it next to a statue."}, {"he": "והפסל?", "en": "And the statue?"}, {"he": "זז. בפעם הראשונה בעשר שנים.", "en": "Moved. For the first time in ten years."}]}, {"t": ["night"], "l": [{"he": "ראית את האור הירוק מעל הבסיס הצבאי?", "en": "Did you see the green light over the army base?"}, {"he": "זה בטח רחפן.", "en": "Probably a drone."}, {"he": "רחפנים לא עושים ווווווו.", "en": "Drones do not go wooooo."}]}, {"t": ["night"], "l": [{"he": "אומרים שבחצות יש מכונית רפאים על הגשר.", "en": "They say there is a ghost car on the bridge at midnight."}, {"he": "מכונית רפאים? מה היא עושה?", "en": "A ghost car? What does it do?"}, {"he": "נוסעת במהירות המותרת. זה הכי מפחיד.", "en": "Drives the speed limit. That is the scariest part."}]}, {"t": ["night"], "l": [{"he": "למה אתה עם פנס?", "en": "Why the flashlight?"}, {"he": "אני מחפש את ביגפוט.", "en": "I am looking for Bigfoot."}, {"he": "בעיר?", "en": "In the city?"}, {"he": "בפרדס הישן. הוא אוהב שקט ושיחים.", "en": "In Old Orchard. He likes quiet and bushes."}]}, {"t": ["rain"], "l": [{"he": "זה גשם או שמישהו משקה את העיר?", "en": "Is it rain or is someone watering the city?"}, {"he": "בעירייה אמרו שזה חיסכון במים.", "en": "City hall said it saves water."}]}, {"t": ["coral"], "l": [{"he": "נשארת במלון קורל גרנד?", "en": "Are you staying at the Coral Grand?"}, {"he": "לא, אני רק שואף את האוויר. גם הוא בתשלום.", "en": "No, I am just breathing the air. That costs extra too."}]}, {"t": ["coral"], "l": [{"he": "ראית את הבריכה של וייל?", "en": "Have you seen Vale's pool?"}, {"he": "בצורת הפנים שלו.", "en": "Shaped like his face."}, {"he": "אני שוחה רק באף.", "en": "I only swim in the nose."}]}, {"t": ["coral"], "l": [{"he": "כמה עולה פה כוס מיץ?", "en": "How much is a juice here?"}, {"he": "שלושים דולר.", "en": "Thirty dollars."}, {"he": "והקוקוס?", "en": "And the coconut?"}, {"he": "הקוקוס חינם. הקש בשלושים.", "en": "The coconut is free. The straw is thirty."}]}, {"t": ["coral"], "l": [{"he": "החוף הזה פרטי?", "en": "Is this beach private?"}, {"he": "הכול פה פרטי. גם החול.", "en": "Everything here is private. Even the sand."}]}, {"t": ["glass"], "l": [{"he": "אני עובד בהילו.", "en": "I work at HALO."}, {"he": "מה אתם עושים שם?", "en": "What do you do there?"}, {"he": "חדשנות.", "en": "Innovation."}, {"he": "של מה?", "en": "Of what?"}, {"he": "עוד לא החליטו.", "en": "They have not decided yet."}]}, {"t": ["glass"], "l": [{"he": "שמעת שהבוס של הילו נעלם?", "en": "Heard the HALO boss vanished?"}, {"he": "לא נעלם. נעצר.", "en": "Not vanished. Arrested."}, {"he": "אז מי מנהל עכשיו?", "en": "So who runs it now?"}, {"he": "הבינה המלאכותית. היא עדיין מבקשת הכרה.", "en": "The AI. It is still asking for recognition."}]}, {"t": ["forge"], "l": [{"he": "שמעת על המבשלה החדשה?", "en": "Heard about the new brewery?"}, {"he": "אלכוהול מהמפחה. טעם של ברגים.", "en": "Forge Ale. Tastes like screws."}, {"he": "זה טוב או רע?", "en": "Is that good or bad?"}, {"he": "תלוי כמה אתה אוהב ברגים.", "en": "Depends how much you like screws."}]}, {"t": ["downtown"], "l": [{"he": "המשרד שלנו עבר לקומה עשרים.", "en": "Our office moved to the twentieth floor."}, {"he": "נוף יפה?", "en": "Nice view?"}, {"he": "לחניון של הבניין ממול.", "en": "Of the parking lot across the street."}]}, {"t": ["beach"], "l": [{"he": "למה כולם פה שזופים חוץ ממני?", "en": "Why is everyone tan here but me?"}, {"he": "כי אתה בצל של הגלגל הענק.", "en": "Because you are in the shadow of the ferris wheel."}]}, {"t": ["harbor"], "l": [{"he": "הדייגים אומרים שיש כרישים במפרץ.", "en": "The fishermen say there are sharks in the bay."}, {"he": "כרישים?", "en": "Sharks?"}, {"he": "כרישי נדל״ן. הם קונים את כל הרציף.", "en": "Real estate sharks. They are buying the whole wharf."}]}, {"t": ["strip"], "l": [{"he": "שיחקתי בקזינו כל הלילה.", "en": "I played at the casino all night."}, {"he": "ניצחת?", "en": "Did you win?"}, {"he": "ניצחתי את השינה.", "en": "I beat sleep."}]}, {"t": ["tourist"], "l": [{"he": "איפה אפשר לראות את הברווז הענק?", "en": "Where can I see the giant duck?"}, {"he": "פשוט תסתכל למעלה. הוא בכל מקום.", "en": "Just look up. It is everywhere."}]}, {"t": ["elder"], "l": [{"he": "בזמני הרכבת הייתה על הקרקע.", "en": "In my day the train was on the ground."}, {"he": "וזה היה טוב יותר?", "en": "Was that better?"}, {"he": "לא. אבל היה לנו על מה להתלונן.", "en": "No. But we had something to complain about."}]}, {"t": ["biz"], "l": [{"he": "יש לי ארבע פגישות במקביל.", "en": "I have four meetings at the same time."}, {"he": "איך?", "en": "How?"}, {"he": "בכולן אני על השתק.", "en": "I am on mute in all of them."}]}, {"t": ["punk"], "l": [{"he": "כתבתי שיר על הרכבת העילית.", "en": "I wrote a song about the Sky Line."}, {"he": "איך קוראים לו?", "en": "What is it called?"}, {"he": "״רכבת לשום מקום, ותחנה בקורל קי״.", "en": "\"Train to Nowhere, with a Stop at Coral Key\"."}]}, {"t": ["worker"], "l": [{"he": "כמה זמן אתם בונים את המגדל הזה?", "en": "How long have you been building that tower?"}, {"he": "שש שנים.", "en": "Six years."}, {"he": "ומתי יגמרו?", "en": "When will it be done?"}, {"he": "כשהמנוף יחזור מהחופש.", "en": "When the crane gets back from vacation."}]}, {"t": ["party"], "l": [{"he": "מישהו ראה את החבר שלי? בחולצה זוהרת?", "en": "Anyone seen my friend? Glowing shirt?"}, {"he": "כולם פה בחולצה זוהרת.", "en": "Everyone here has a glowing shirt."}]}, {"t": ["cops"], "l": [{"he": "הם עשו מחסום בכביש הראשי.", "en": "They set a roadblock on the main road."}, {"he": "בגלל מי?", "en": "Because of who?"}, {"he": "בגלל הבחור עם האוטו הגנוב.", "en": "Because of the guy with the stolen car."}, {"he": "איזה מהם?", "en": "Which one?"}]}, {"t": ["shots"], "l": [{"he": "תשמע, זה נשמע קרוב.", "en": "Listen, that sounded close."}, {"he": "כולם פה מתנהגים כאילו זה רגיל.", "en": "Everyone acts like this is normal."}, {"he": "כי זה רגיל.", "en": "Because it is."}]}, {"t": ["player"], "l": [{"he": "סליחה, אתה מהטלוויזיה?", "en": "Excuse me, are you from TV?"}, {"he": "הוא לא עונה.", "en": "He is not answering."}, {"he": "כנראה מהטלוויזיה.", "en": "Must be from TV."}]}]);
+for(const [k,v] of Object.entries({"copnear": [{"he": "זה בגלל המחסום?", "en": "Is it because of the roadblock?"}, {"he": "עוד יומיים והם יבנו פה תחנה.", "en": "Two more days and they will build a station here."}, {"he": "זה המסוק? הוא שוב פה?", "en": "Is that the helicopter? Again?"}], "shots": [{"he": "אני צריך חופשה. בקורל קי.", "en": "I need a vacation. On Coral Key."}, {"he": "מישהו קורא למבוגר אחראי?", "en": "Someone call a responsible adult?"}, {"he": "שוב זה! תמיד בשעה שאני הולך לקנות לחם!", "en": "This again! Always when I go buy bread!"}], "film": [{"he": "שמונה מיליון צפיות, בטוח!", "en": "Eight million views, easy!"}, {"he": "מישהו לוקח את זה לחדשות?", "en": "Someone take this to the news?"}], "rain": [{"he": "הגשם הזה אישי נגדי.", "en": "This rain is personal."}, {"he": "אפילו הברווז נרטב.", "en": "Even the duck is wet."}], "bump": [{"he": "יש עוד מקום על המדרכה, אחי.", "en": "There is more sidewalk, man."}, {"he": "איך אתה תמיד נתקל בי?", "en": "How do you always bump into me?"}]}))REACT[k]=(REACT[k]||[]).concat(v);
 
 // ---------- v6: conversation engine, no-repeat picker, varied reactions ----------
 G.bags={};G.convUsed=new Set();
@@ -1967,7 +1979,7 @@ function bagPick(key,arr){let b=G.bags[key];if(!b||!b.length||b.n!==arr.length){
   const i=b.pop();b.last=i;return i;}
 function say(p,key,dur){if(!p)return;const kk=p.kind&&REACT[key+'_'+p.kind];let pool=REACT[key],k=key;if(kk&&(!pool||rand()<0.55)){pool=kk;k=key+'_'+p.kind;}if(!pool||!pool.length)return;
   let t=L(pool[bagPick(k,pool)]);if(t.indexOf('{0}')>=0)t=t.replace('{0}',L(OUTFIT()));p.say=t;p.sayT=dur||Math.min(4,1.6+t.length*0.035);}
-const AREATAG={down:['neon','downtown'],harb:['harbor'],beach:['beach'],crown:['crown'],strip:['strip'],glass:['glass','downtown'],forge:['forge'],air:['air'],air2:['air'],vista:['beach'],east:[],res:[]};
+const AREATAG={coral:['coral'],down:['neon','downtown'],harb:['harbor'],beach:['beach'],crown:['crown'],strip:['strip'],glass:['glass','downtown'],forge:['forge'],air:['air'],air2:['air'],vista:['beach'],east:[],res:[]};
 function ctxTags(p,o){const P=G.player,t=new Set(),h=ENV.clock,ar=areaAt(p.x,p.y);
   if(ENV.dark>0.5)t.add('night');if(h>=6&&h<10.5)t.add('morning');if(ENV.rain>0.3)t.add('rain');
   for(const a of (AREATAG[ar]||[]))t.add(a);for(const q of [p,o]){if(q.kind)t.add(q.kind);if(q.party)t.add('party');}
@@ -1984,7 +1996,7 @@ function convTick(p,o,dt){if(!p.conv&&!o.conv){if(!onScreen(p.x,p.y,300))return;
   if(cv.i>=cv.c.l.length){for(const q of [cv.a,cv.b]){q.conv=null;q.st='walk';q.mate=null;q.tm=rr(1,3);q.chatT=G.time+rr(20,40);q.a=rr(0,TAU);}return;}
   const sp=cv.i%2?cv.b:cv.a,ls=cv.i%2?cv.a:cv.b;if(sp.dead||ls.dead||sp.st!=='chat'){cv.i=cv.c.l.length;return;}
   sp.say=L(cv.c.l[cv.i]);sp.sayT=Math.min(4.8,1.5+sp.say.length*0.05);cv.t=sp.sayT+0.3;cv.i++;const vv=dv(sp.x,sp.y);if(vv>0.12)sfx.voice(sp,vv);}
-function shotReact(x,y,op){G.shotT=G.time;G.shotX=x;G.shotY=y;let spoke=0;
+function shotReact(x,y,op){ducksScare(x,y,480);G.shotT=G.time;G.shotX=x;G.shotY=y;let spoke=0;
   for(const p of G.peds){if(p.type!=='civ'||p.dead||p.medicP||hyp(p.x-x,p.y-y)>380)continue;if(p.st==='call'||p.brawl>0)continue;if(p.st==='film'||p.st==='cower'||p.st==='flee'){continue;}
     const K=p.kind,r=((p.id*2654435761)>>>0)%100;p.conv=null;
     if(K==='dog'){p.st='flee';p.ft=5;p.fx=x;p.fy=y;continue;}
@@ -1993,7 +2005,7 @@ function shotReact(x,y,op){G.shotT=G.time;G.shotX=x;G.shotY=y;let spoke=0;
     else{p.st='flee';p.ft=rr(4,7);p.fx=x;p.fy=y;}
     if(spoke<2&&G.sayCD<=0&&onScreen(p.x,p.y,0)&&rand()<0.6){spoke++;const key=p.st==='film'?'film':(K==='worker'&&r<25&&op===G.player)?'brave':'shots';say(p,key);
       if(key==='shots'&&spoke===1)sfx.scream(dv(p.x,p.y),p.voice||200);else sfx.voice(p,dv(p.x,p.y));if(spoke===2)G.sayCD=1.1;}}}
-function boomReact(x,y){G.boomT=G.time;G.boomX=x;G.boomY=y;let n=0;for(const p of G.peds){if(p.type!=='civ'||p.dead||hyp(p.x-x,p.y-y)>520||!onScreen(p.x,p.y,0))continue;if(n<2&&rand()<0.5){n++;setTimeout(()=>{if(!p.dead){say(p,'boom');sfx.voice(p,dv(p.x,p.y));}},n*500+rr(200,500));}}}
+function boomReact(x,y){ducksBoom(x,y);G.boomT=G.time;G.boomX=x;G.boomY=y;let n=0;for(const p of G.peds){if(p.type!=='civ'||p.dead||hyp(p.x-x,p.y-y)>520||!onScreen(p.x,p.y,0))continue;if(n<2&&rand()<0.5){n++;setTimeout(()=>{if(!p.dead){say(p,'boom');sfx.voice(p,dv(p.x,p.y));}},n*500+rr(200,500));}}}
 function talkTick(dt){G.talkT=(G.talkT||0)-dt;if(G.talkT>0)return;G.talkT=1.3;const P=G.player;
   if(G.wanted>0){for(const v of G.vehicles){if(!v.siren||v.dead||!v.onScreen)continue;for(const p of G.peds){if(p.type!=='civ'||p.dead||p.kind==='dog'||p.sayT>0||p.st==='flee'||hyp(p.x-v.x,p.y-v.y)>260)continue;if(rand()<0.35){say(p,'copnear');sfx.voice(p,dv(p.x,p.y)*0.8);if(rand()<0.4){p.st='film';p.ft=rr(3,6);p.fx=v.x;p.fy=v.y;}}break;}break;}}
   if(ENV.rain>0.5&&rand()<0.2)for(const p of G.peds){if(p.type!=='civ'||p.dead||p.sayT>0||p.st==='chat'||!onScreen(p.x,p.y,0))continue;say(p,'rain');sfx.voice(p,dv(p.x,p.y)*0.7);break;}}
@@ -2129,14 +2141,15 @@ function trackMini(c,ox,oy,sc,w){const P=TRK.pts;if(!P.length)return;c.strokeSty
 Object.assign(WEAP,{bat:{he:'מחבט בייסבול',en:'Baseball Bat',rate:0.5,melee:1,dmg:20,reach:46,arc:1.3,price:80,pack:1},knife:{he:'סכין',en:'Knife',rate:0.3,melee:1,dmg:24,reach:34,arc:0.9,price:120,pack:1},
  magnum:{he:'מגנום',en:'Magnum',rate:0.65,dmg:58,spread:0.02,price:900,pack:18},sniper:{he:'רובה צלפים',en:'Sniper Rifle',rate:1.3,dmg:115,spread:0.004,price:4500,pack:12,range:1},
  molotov:{he:'בקבוקי מולוטוב',en:'Molotovs',rate:0.9,dmg:0,molo:1,price:700,pack:5},minigun:{he:'מיניגאן',en:'Minigun',rate:0.05,dmg:11,spread:0.1,price:30000,pack:400,heavy:1}});
+WEAP.ray={he:'אקדח קרני חייזרים',en:'Alien Ray Gun',rate:0.3,dmg:60,spread:0.01,price:0,pack:40,noshop:1,ray:1};
 Object.assign(WEAP.rocket,{he:'בזוקה',en:'Bazooka',price:20000,pack:3});
-WORDER.splice(0,WORDER.length,'fist','bat','knife','pistol','magnum','smg','shotgun','rifle','sniper','flame','molotov','grenade','rocket','minigun');
+WORDER.splice(0,WORDER.length,'fist','bat','knife','pistol','magnum','smg','shotgun','rifle','sniper','flame','molotov','grenade','rocket','minigun','ray');
 Object.assign(WICON,{bat:WSV('<path d="M4 15l30-7c4-1 9-1 10 1s-2 5-6 6L8 19c-2 .5-4-.5-4-2z"/>'),knife:WSV('<rect x="5" y="10" width="13" height="5" rx="2"/><path d="M18 9h6c8 0 15 2 20 4c-5 2-12 2-20 2h-6z"/>'),
  magnum:WSV('<path d="M6 6h32v4h4v3H26l-1 3h-3a4 4 0 0 1-8 0h-1l-2 8H6l2-10H6z"/><circle cx="18" cy="13" r="3.5"/>'),
  sniper:WSV('<path d="M1 11h10l3-2h18v2h15v2H32v2h-8l-2 8h-4l-1-7h-5l-2 5H8l2-6H1z"/><rect x="16" y="4" width="13" height="4" rx="2"/><rect x="21" y="8" width="2" height="2"/>'),
  molotov:WSV('<path d="M20 9h8v4c4 2 6 5 6 9v1H14v-1c0-4 2-7 6-9z"/><rect x="21" y="5" width="6" height="4"/><path d="M24 5c-3-2 0-5 2-4c0 2 3 2 1 4z"/>'),
  minigun:WSV('<rect x="2" y="7" width="16" height="11" rx="3"/><rect x="18" y="8" width="26" height="2.4"/><rect x="18" y="11.3" width="26" height="2.4"/><rect x="18" y="14.6" width="26" height="2.4"/><rect x="8" y="18" width="5" height="5"/>'),
- rocket:WSV('<path d="M3 9h33v7H3z"/><path d="M36 7h4v11h-4z"/><path d="M40 8.5l6 4-6 4z"/><rect x="12" y="16" width="4" height="6"/><rect x="22" y="16" width="3" height="4"/><rect x="5" y="6" width="6" height="3"/>')});
+ ray:WSV('<ellipse cx="14" cy="12" rx="10" ry="6"/><rect x="20" y="10" width="18" height="4" rx="2"/><circle cx="40" cy="12" r="4"/><rect x="9" y="16" width="4" height="7"/>'),rocket:WSV('<path d="M3 9h33v7H3z"/><path d="M36 7h4v11h-4z"/><path d="M40 8.5l6 4-6 4z"/><rect x="12" y="16" width="4" height="6"/><rect x="22" y="16" width="3" height="4"/><rect x="5" y="6" width="6" height="3"/>')});
 Object.assign(STR.he,{owned2:'יש לך',heliHit:'פגעת במסוק!',dragged2:'השוטר שולף אותך מהרכב!',gotBz:'מצאת בזוקה! אל תספר לאף אחד.',gotMini:'מצאת מיניגאן סודי!'});
 Object.assign(STR.en,{owned2:'Owned',heliHit:'You hit the helicopter!',dragged2:'The cop is pulling you out of the car!',gotBz:'You found a bazooka! Tell no one.',gotMini:'You found a secret minigun!'});
 Object.assign(REACT,{beg:[R2('בבקשה! יש לי ילדים!','Please! I have kids!'),R2('אני מצטער! אני מצטער!','I am sorry! I am sorry!'),R2('קח את הארנק, הנה, קח!','Take my wallet, here, take it!'),R2('אמא שלי לא תשרוד את זה!','My mother will not survive this!'),R2('זה היה רק ויכוח, אחי!','It was just an argument, man!')],
@@ -2157,6 +2170,7 @@ function attack(){const P=G.player,w=G.weapon,W=WEAP[w];if(w==='fist'||W.melee){
   else if(W.flame){fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{kind:'flame',spd:430,life:0.42});if(rand()<0.3)sfx.flame();}
   else if(W.nade)fire(P,null,P.x,P.y,P.a,W.dmg,0.02,true,{kind:'nade',spd:400,life:0.85,quiet:1});
   else if(W.molo){fire(P,null,P.x,P.y,P.a,0,0.03,false,{kind:'molo',spd:380,life:0.8,quiet:1});aN(0.18,0.12,'bandpass',700,1,{to:1800});}
+  else if(W.ray){fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{kind:'ray',spd:950,life:0.7});aT(1400,0.18,'sine',0.14,{to:300});aT(700,0.18,'square',0.04,{to:200});}
   else if(W.range){fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{spd:1800,life:0.62});aT(60,0.5,'sine',0.35,{to:30,rev:0.6});}
   else{fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,!!W.expl,W.heavy?{quiet:Math.floor(G.time*20)%2}:{});if(W.heavy)G.shake=Math.max(G.shake||0,1.6);if(w==='magnum')G.shake=Math.max(G.shake||0,2.5);}
   if(G.weapons[w]<=0){G.weapon='fist';toggleWbar(false);}crime(1,false);}
@@ -2210,11 +2224,11 @@ function aiHostile(p,dt){const P=G.player,tgt=P.veh||P,d=hyp(tgt.x-p.x,tgt.y-p.y
     fire(p,null,p.x,p.y,p.a,p.type==='soldier'?12:cop?7:9,p.type==='soldier'?0.12:cop?0.2:0.16);}}
 function flankMove(p,tgt,d,keep,sp,dt){const ang=(p.id*2.399)%TAU,off=Math.min(keep*0.8,d*0.5),tx=tgt.x+Math.cos(ang)*off,ty=tgt.y+Math.sin(ang)*off;p.a=Math.atan2(ty-p.y,tx-p.x);walkDir(p,sp,dt);p.a=Math.atan2(tgt.y-p.y,tgt.x-p.x);}
 function dragOut(p){const P=G.player,v=P.veh;if(!v)return;exitVehicle();if(P.veh)return;toast(tr('dragged2'),2);sfx.punch();const a=Math.atan2(P.y-p.y,P.x-p.x);knockDown(0.9,Math.cos(a)*120,Math.sin(a)*120);hurtPed(P,4,p,'punch');G.bustBy=G.time;if(G.wanted<=2)G.bust=Math.max(G.bust||0,0.45);}
-function roadblockTick(dt){G.rbCD=(G.rbCD??20)-dt;const P=G.player,v=P.veh;if(G.rbCD>0||G.wanted<3||!v||Math.abs(v.speed)<200||v.t.boat||v.t.plane)return;
+function roadblockTick(dt){G.rbCD=(G.rbCD??20)-dt;const P=G.player,v=P.veh;if(G.rbCD>0||G.wanted<4||!v||Math.abs(v.speed)<200||v.t.boat||v.t.plane)return;
   const sp=hyp(v.vx,v.vy)||1,ux=v.vx/sp,uy=v.vy/sp;for(const dist of [1100,1300,950]){const [i,j]=nearestNode(P.x+ux*dist,P.y+uy*dist),q=nodePos(i,j);if(onScreen(q.x,q.y,120)||hyp(q.x-P.x,q.y-P.y)<800)continue;
     const dx=q.x-P.x,dy=q.y-P.y;if((dx*ux+dy*uy)/hyp(dx,dy)<0.8)continue;const pa=Math.atan2(uy,ux)+Math.PI/2,ca=Math.cos(pa),sa=Math.sin(pa);
     for(const s of [-1,1]){const c=mkVeh('police',q.x+ca*s*34-ux*20,q.y+sa*s*34-uy*20,pa+(s>0?0.25:-0.25));c.siren=true;c.rb=true;const cp=mkPed('cop',c.x-ux*60,c.y-uy*60,{persist:false});cp.car=c;}
-    G.rbCD=rr(28,40);return;}G.rbCD=3;}
+    G.rbCD=rr(40,60);return;}G.rbCD=3;}
 // ---------- civilians who see a gun mid-fight ----------
 function gunReact(p){const K=KINDS[p.kind]||{},r=((p.id*2654435761)>>>0)%100,P=G.player;p.brawl=0;p.conv=null;
   const tough=K.tough||p.kind==='worker'||p.kind==='punk';
@@ -2230,14 +2244,15 @@ function emote(){const P=G.player;if((G.emoteCD||0)>0||P.veh||P.dead||P.inside||
   P.say=EM[k];P.sayT=1.4;const ca=Math.cos(P.a),sa=Math.sin(P.a);
   if(k==='fart'){for(let i=0;i<6;i++)aT(rr(70,115),0.09,'sawtooth',0.16,{lp:420,at:i*0.065,to:rr(55,90)});aN(0.55,0.22,'bandpass',160,3,{to:90});for(let i=0;i<10;i++)part('gas',P.x-ca*10+rr(-8,8),P.y-sa*10+rr(-8,8),-ca*30+rr(-20,20),-sa*30+rr(-20,20),rr(1.2,2),rr(8,14));}
   else if(k==='burp'){aSyl(78,0,0.55,0.32,3);aSyl(70,0.5,0.25,0.2,4);}
-  else if(k==='whistle'){aT(1300,0.25,'sine',0.13,{to:2300});aT(1250,0.45,'sine',0.13,{to:700,at:0.32});}
+  else if(k==='whistle'){aT(1300,0.25,'sine',0.13,{to:2300});aT(1250,0.45,'sine',0.13,{to:700,at:0.32});ducksCall();}
   else if(k==='laugh'){for(let i=0;i<6;i++)aSyl(175-i*6,i*0.13,0.1,0.22,0);}
-  else if(k==='dance'){G.danceT=2.4;[523,659,784,659,523,784,1046].forEach((f,i)=>aT(f,0.16,'triangle',0.12,{at:i*0.16}));}
+  else if(k==='dance'){G.danceT=2.4;copDanceCheck();[523,659,784,659,523,784,1046].forEach((f,i)=>aT(f,0.16,'triangle',0.12,{at:i*0.16}));}
   else{aSyl(160,0,0.42,0.35,0,0.4);P.say=G.lang==='he'?'היי!':'HEY!';}
   let n=0;for(const p of G.peds){if(p.dead||p.veh||p.medicP||(p.type!=='civ'&&p.type!=='cop'))continue;const d=hyp(p.x-P.x,p.y-P.y);if(d>(k==='yell'?260:170))continue;
     if(p.kind==='dog'){if(k==='fart'||k==='whistle'){p.st='walk';p.a=Math.atan2(P.y-p.y,P.x-p.x);say(p,'dog',1.2);sfx.bark(dv(p.x,p.y));}continue;}
     if(n<3&&p.sayT<=0){n++;setTimeout(()=>{if(p.dead)return;say(p,p.type==='cop'?'copFun':k,2.6);sfx.voice(p,dv(p.x,p.y));},250+n*450);}
     if(p.type!=='civ')continue;p.conv=null;
+    if(p.perf==='statue'&&k==='fart'){p.say='!!!';p.sayT=2;secret('statue');continue;}if(p.perf)continue;
     if(k==='fart'&&d<110){p.st='flee';p.ft=1.6;p.fx=P.x;p.fy=P.y;}
     else if(k==='dance'&&rand()<0.45){p.st='dance';p.ft=rr(2.5,4);}else if(p.st==='walk'||p.st==='idle'){p.st='idle';p.tm=2;p.a=Math.atan2(P.y-p.y,P.x-p.x);}}}
 function emoteTick(dt){const P=G.player;if(G.emoteCD>0)G.emoteCD-=dt;if(P.sayT>0)P.sayT-=dt;if(G.danceT>0){G.danceT-=dt;P.a+=dt*9;if(rand()<dt*6)part('spark',P.x+rr(-20,20),P.y-20+rr(-10,10),rr(-20,20),-50,0.8,3);}
@@ -2245,6 +2260,435 @@ function emoteTick(dt){const P=G.player;if(G.emoteCD>0)G.emoteCD-=dt;if(P.sayT>0
   const show=!P.veh&&!P.inside&&!P.ride&&!P.dead&&G.state==='play';if(show!==G.emoShown){G.emoShown=show;$('bF').style.display=show?'flex':'none';}}
 function genWeapons(){Object.assign(PKC,{bat:['#8d6e63','/'],knife:['#95a5a6','†'],magnum:['#7f8c8d','M'],sniper:['#34495e','◎'],molotov:['#d35400','🔥'],minigun:['#2c3e50','≡']});const R=RESTRICT;WPICKS.push({type:'rocket',x:(R.x0+R.x1)/2+90,y:(R.y0+R.y1)/2-60,once:'bz1'},{type:'minigun',x:(R.x0+R.x1)/2-120,y:R.y1-160,once:'mg1'},{type:'rocket',x:343*T,y:190*T,once:'bz2'},
   {type:'bat',x:POI.start.x+260,y:POI.start.y+40},{type:'knife',x:POI.club.x+120,y:POI.club.y+50},{type:'molotov',x:POI.brew.x+60,y:POI.brew.y+40},{type:'magnum',x:POI.cops.x-150,y:POI.cops.y+40},{type:'sniper',x:POI.halo.x+140,y:POI.halo.y+30});}
+
+// ---------- v8: fairer police, bridge traffic ----------
+Object.assign(VT.police,{max:430,acc:400});
+function sightRange(){return lerp(600,400,ENV.dark)*(1-0.3*ENV.fog-0.12*ENV.rain);}
+function spawnTraffic(cx,cy){const cand=[];for(let i=0;i<XS.length;i++)for(let j=0;j<YS.length;j++)for(let d=0;d<4;d++){if(!validDir(i,j,d))continue;const a=nodePos(i,j),b=nodePos(i+DIRS[d][0],j+DIRS[d][1]);
+    for(let k=0;k<3;k++){const f=rr(0.08,0.92),x=a.x+(b.x-a.x)*f,y=a.y+(b.y-a.y)*f,dd=hyp(x-cx,y-cy);if(dd>=650&&dd<=1500){cand.push([i,j,d,f]);break;}}}
+  for(let k=0;k<8&&cand.length;k++){const [i,j,d,f]=pick(cand),q=nodePos(i,j);const v=mkVeh(trafficType(q.x,q.y),0,0,0);trafficAt(v,i,j,d,f);
+    if(onScreen(v.x,v.y,60)||G.vehicles.some(o=>o!==v&&hyp(o.x-v.x,o.y-v.y)<120)){G.vehicles.pop();continue;}v.driver='civ';return v;}}
+function policeCD(dt){if(G.chaseCD>0)G.chaseCD-=dt;}
+
+// ---------- v8: Coral Key island, street performers, secrets ----------
+Object.assign(AREAS,{coral:{he:'קורל קי',en:'Coral Key'}});
+Object.assign(STR.he,{secretFound:'🔎 סוד נמצא! ({0}/{1}) · {2}',secrets:'סודות שנמצאו: {0}/{1}',rayGun:'קיבלת אקדח קרני חייזרים. אל תשאל.',bottle:'בקבוק עם פתק ({0}/5): "{1}"',treasure:'מצאת את האוצר של הפתקים! +{0}$',bigfootRun:'משהו גדול ושעיר רץ בין העצים...',ufoHint:'יש אור מוזר בשמיים...'});
+Object.assign(STR.en,{secretFound:'🔎 Secret found! ({0}/{1}) · {2}',secrets:'Secrets found: {0}/{1}',rayGun:'You got an alien ray gun. Do not ask.',bottle:'Message in a bottle ({0}/5): "{1}"',treasure:'You found the bottle treasure! +${0}',bigfootRun:'Something big and hairy runs between the trees...',ufoHint:'There is a strange light in the sky...'});
+const SECRETS={bigfoot:R2('צילמת את ביגפוט','You spotted Bigfoot'),ufo:R2('נחטפת לרגע על ידי עב״ם','Briefly abducted by a UFO'),ghost:R2('נגעת במכונית הרפאים','You touched the ghost car'),loop:R2('נסעת סיבוב שלם בקו העילי','Full loop on the Sky Line'),
+ duck:R2('הברווז הענק דיבר','The giant duck spoke'),bottles:R2('אספת את כל הפתקים','Collected every bottle note'),copdance:R2('גרמת לשוטרים לרקוד','You made the cops dance'),halo:R2('נחתת על גג מגדל הילו','Landed on the HALO tower roof'),statue:R2('הפסל החי זז','The living statue flinched'),dev:R2('מצאת את חדר המפתחים','Found the developers\' room'),goldduck:R2('ליטפת את הברווזון המוזהב','Petted the golden duckling'),duckking:R2('עשרה ברווזים הלכו אחריך','Ten ducks followed you'),rubber:R2('הברווז הענק בנמל צייץ 12 פעמים','Made the harbor rubber duck squeak 12 times')};
+const NSECRET=Object.keys(SECRETS).length;
+function secret(k){if(G.got.includes('egg_'+k))return false;G.got.push('egg_'+k);const n=G.got.filter(x=>x.startsWith('egg_')).length;toast(fmt(tr('secretFound'),n,NSECRET,L(SECRETS[k])),5);sfx.pass();G.money+=750;saveGame();return true;}
+// ---------- island ----------
+function genCoral(){const R=mulberry32(7171),rp=a=>a[Math.floor(R()*a.length)];
+  for(let y=150;y<=198;y++)for(let x=14;x<=112;x++){const dx=(x-63)/49,dy=(y-176)/21.5,e=dx*dx+dy*dy+0.035*Math.sin(x*0.5)+0.03*Math.cos(y*0.7);if(e<1){tset(x,y,e>0.8?TL.SAND:TL.GRASS);}}
+  for(let y=138;y<=158;y++)for(const x of [48,49]){const t=tget(x,y);if(t===0||t===TL.DOCK)tset(x,y,TL.BRIDGE);else if(t!==TL.ROAD)tset(x,y,TL.ROAD);}
+  for(let y=138;y<=158;y+=5)LAMPS.push({x:47*T,y:y*T,lx:48.5*T,ly:y*T});
+  const road=(x0,y0,x1,y1)=>fillT(x0,y0,x1,y1,TL.ROAD);fillT(28,161,99,190,TL.WALK,true);
+  road(30,163,97,164);road(30,187,97,188);road(30,163,31,188);road(96,163,97,188);road(48,159,49,188);road(72,163,73,188);
+  const C={};
+  // grand hotel
+  fillT(33,166,46,184,TL.CONC);const ht=addBld(34,167,45,176,7.2,'#f4ead8',{logo:'CORAL GRAND',logoC:'#e8508a',neon:'#ff7aa8'});C.hotel={x:39.5*T,y:178.5*T};
+  DECOR.push({t:'fountain',x:39.5*T,y:181*T});for(const [ax,ay] of [[34,184],[45,184],[34,178],[45,178]])TREES.push({x:ax*T,y:ay*T,r:22,palm:1});
+  addShop('market',addBld(34,179,37,183,1.3,'#79d2c0',{logo:'BAR',logoC:'#fff3c4'}),1,{name:R2('בר הקוקוס','Coconut Bar'),col:'#5fe0d0'});
+  // golf course
+  fillT(51,166,70,185,TL.GRASS);C.golf={x:60.5*T,y:175.5*T};DECOR.push({t:'golf',x:51*T,y:166*T,w:20*T,h:20*T});
+  // Vale estate
+  fillT(75,166,94,185,TL.GRASS);for(let x=75;x<=94;x++){tset(x,166,TL.FENCE);tset(x,185,TL.FENCE);}for(let y=166;y<=185;y++){tset(75,y,TL.FENCE);tset(94,y,TL.FENCE);}tset(75,175,TL.CONC);tset(75,176,TL.CONC);
+  fillT(76,174,86,177,TL.CONC);const vm=addBld(80,168,91,173,3.1,'#e9e4da',{logo:'V',logoC:'#c9a227'});vm.roof='#c9b79a';vm.rim='#8e7a5a';
+  fillT(82,178,88,181,TL.WATER);DECOR.push({t:'helipad',x:90*T,y:181*T});C.vale={x:84*T,y:176*T};C.valeGate={x:73.5*T,y:175.5*T};C.valePad={x:90*T,y:181*T};
+  for(const [ax,ay] of [[77,168],[77,183],[92,168],[92,183],[85,184]])TREES.push({x:ax*T,y:ay*T,r:24,palm:1});
+  // villas and beach
+  for(const [a,b,c,e] of [[33,190,40,192],[52,190,60,192],[64,190,70,192],[86,190,93,192],[99,167,103,173],[99,177,103,183],[24,167,27,173],[24,177,27,183]])villa(a,b,c,e,R,rp);
+  for(let k=0;k<26;k++){const a=R()*TAU,x=63+Math.cos(a)*45,y=176+Math.sin(a)*19.5;if(tget(Math.floor(x),Math.floor(y))===TL.SAND)TREES.push({x:x*T,y:y*T,r:20+R()*8,palm:1});}
+  for(let k=0;k<10;k++){const x=40+k*5,y=194.2;if(tget(x,Math.floor(y))===TL.SAND)DECOR.push({t:'umb',x:x*T,y:y*T,c:rp(['#e74c3c','#f1c40f','#3498db','#ff7aa8','#2ecc71'])});}
+  for(let x=104;x<=110;x++)tset(x,176,TL.DOCK);C.pier={x:108*T,y:178*T};POI.boats.push({x:109*T,y:179.5*T,a:0});
+  Object.assign(POI,{coralHotel:C.hotel,golf:C.golf,vale:C.vale,valeGate:C.valeGate,valePad:C.valePad,coralPier:C.pier,coralBridge:{x:48.5*T,y:150*T}});
+  for(const [x,y,a] of [[44,186,0],[66,186,0],[78,186,0],[70,162,0]])PARKSPOTS.push({x:x*T,y:y*T,a});}
+function drawGolf(dc){const x=dc.x,y=dc.y,w=dc.w,h=dc.h;g.fillStyle='rgba(120,200,90,0.35)';g.fillRect(x,y,w,h);g.strokeStyle='rgba(255,255,255,0.12)';g.lineWidth=18;for(let k=0;k<w;k+=48){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k,y+h);g.stroke();}
+  for(const [fx,fy] of [[0.25,0.3],[0.7,0.22],[0.55,0.75]]){g.fillStyle='#9bdc78';g.beginPath();g.ellipse(x+w*fx,y+h*fy,70,52,0.3,0,TAU);g.fill();g.fillStyle='#e9d9a6';g.beginPath();g.ellipse(x+w*fx+80,y+h*fy+40,32,20,0.4,0,TAU);g.fill();
+    g.fillStyle='#1b1b1b';g.beginPath();g.arc(x+w*fx,y+h*fy,5,0,TAU);g.fill();g.fillStyle='#f4f6f7';g.fillRect(x+w*fx-1,y+h*fy-30,2.5,30);g.fillStyle='#e74c3c';g.beginPath();g.moveTo(x+w*fx+1.5,y+h*fy-30);g.lineTo(x+w*fx+18,y+h*fy-24+Math.sin(G.time*3)*2);g.lineTo(x+w*fx+1.5,y+h*fy-18);g.fill();}}
+// ---------- street performers ----------
+const PERF=[];
+function genPerformers(){const ft=DECOR.filter(d=>d.t==='fountain');const P=(kind,x,y,o)=>PERF.push(Object.assign({kind,x,y},o||{}));
+  if(ft[0])P('mime',ft[0].x+70,ft[0].y);if(ft[1])P('preacher',ft[1].x-80,ft[1].y+10);P('statue',POI.pier.x+120,POI.pier.y-60);P('musician',POI.halo.x-120,POI.halo.y+20);
+  P('protest',POI.duck.x+120,POI.duck.y+40,{n:3});P('protest2',POI.cops.x+40,POI.cops.y+70,{n:2});P('dogmascot',POI.vendors[0].x+40,POI.vendors[0].y+30);P('golfer',POI.golf.x,POI.golf.y-20);}
+const PLINES={mime:[R2('(המים תקוע בקופסה בלתי נראית)','(The mime is stuck in an invisible box)'),R2('(המים מושך חבל בלתי נראה. אף אחד לא יודע לאן)','(The mime pulls an invisible rope. Nobody knows where to)'),R2('(המים מבקש כסף. בתנועות. בתוקף)','(The mime asks for money. With gestures. Firmly)')],
+ preacher:[R2('הסוף קרוב! כנראה ביום שלישי!','The end is near! Probably Tuesday!'),R2('תחזרו בתשובה! או לפחות תחזירו את העגלה לסופר!','Repent! Or at least return your shopping cart!'),R2('הברווז רואה הכול!','The duck sees all!'),R2('הייתי פעם רואה חשבון. גם זה היה סוף העולם.','I used to be an accountant. That was the end of the world too.')],
+ statue:[R2('...','...'),R2('(הפסל החי לא זז. בכלל. מרשים)','(The living statue does not move. At all. Impressive)')],
+ musician:[R2('השיר הבא מוקדש לכל מי שנתקע בפקק!','This next song goes out to everyone stuck in traffic!'),R2('טיפים מתקבלים. גם במטבעות. גם בכריכים.','Tips welcome. Coins too. Sandwiches too.'),R2('תודה, תודה, אני פה כל השבוע. ואת כל החיים.','Thank you, thank you, I am here all week. And all my life.')],
+ protest:[R2('מה אנחנו רוצים? ברווז קטן יותר! מתי? עכשיו!','What do we want? A smaller duck! When do we want it? Now!'),R2('הברווז מסתיר לנו את השמש!','The duck blocks our sun!'),R2('לא לברווז הענק! כן לברווז בינוני!','No to the giant duck! Yes to a medium duck!')],
+ protest2:[R2('חניה חינם לכולם! גם על המדרכה!','Free parking for all! Sidewalks too!'),R2('דוחות זה דיכוי!','Tickets are oppression!')],
+ dogmascot:[R2('נקניקייה! נקניקייה! אני נקניקייה!','Hot dog! Hot dog! I am a hot dog!'),R2('בבקשה תקנו משהו, חם לי בתחפושת.','Please buy something, it is hot in this costume.')],
+ golfer:[R2('פור! פור! מישהו ראה את הכדור?','Fore! Fore! Has anyone seen my ball?'),R2('הכדור נכנס לבריכה של מר וייל. אני לא הולך לשם.','The ball went into Mr. Vale\'s pool. I am not going there.')]};
+const SIGNTXT={protest:R2('לא לברווז!','NO DUCK!'),protest2:R2('חניה זה זכות','PARK FREE')};
+function spawnPerformers(){for(const pf of PERF){pf.peds=[];const n=pf.n||1;for(let i=0;i<n;i++){const p=mkPed('civ',pf.x+i*26,pf.y+(i%2)*10);setKind(p,pf.kind==='golfer'?'biz':pf.kind==='protest'||pf.kind==='protest2'?'casual':'casual');p.persist=true;p.perf=pf.kind;p.st='perf';p.a=Math.PI/2;
+    if(pf.kind==='mime'){p.shirt='#f4f6f7';p.pants='#111';p.hat='#111';}if(pf.kind==='statue'){p.shirt='#c9a227';p.pants='#c9a227';p.skin='#d4af37';p.hair='#b8962e';p.hat=null;}
+    if(pf.kind==='dogmascot'){p.shirt='#c0392b';p.pants='#e6b35a';p.hat='#e6b35a';}if(pf.kind==='preacher'){p.shirt='#2b2b33';p.hat='#111';}if(pf.kind==='musician'){p.shirt='#8e44ad';}
+    if(pf.kind.startsWith('protest'))p.sign=SIGNTXT[pf.kind];pf.peds.push(p);}}}
+function perfTick(dt){const P=G.player;G.perfT=(G.perfT||0)-dt;for(const pf of PERF)for(const p of pf.peds||[]){if(p.dead||p.st!=='perf')continue;p.walk=0;
+    if(pf.kind==='mime'){p.a=Math.PI/2+Math.sin(G.time*1.5)*0.4;}else if(pf.kind==='musician'){p.a=Math.PI/2;}else if(pf.kind==='dogmascot'){p.a+=dt*3;}else if(pf.kind.startsWith('protest')){p.a=Math.PI/2+Math.sin(G.time*3+p.id)*0.3;}
+    const d=hyp(P.x-p.x,P.y-p.y);if(d<260&&p.sayT<=0&&rand()<dt*0.35){p.say=L(PLINES[pf.kind][bagPick('pf_'+pf.kind,PLINES[pf.kind])]);p.sayT=Math.min(4.5,1.6+p.say.length*0.04);if(pf.kind!=='mime'&&pf.kind!=='statue')sfx.voice(p,dv(p.x,p.y));}
+    if(pf.kind==='musician'&&d<420&&G.state==='play'){p.mt=(p.mt||0)-dt;if(p.mt<=0){p.mt=0.28;const sc=[392,440,494,523,587,659,587,523],k=(p.mi=(p.mi||0)+1)%sc.length,v=0.06*(1-d/420);aT(sc[k],0.25,'triangle',v);if(k%2===0)aT(sc[k]/2,0.35,'sine',v*0.8);}}}}
+function drawPerfExtra(p){if(p.sign){g.save();g.translate(p.x,p.y-26);g.fillStyle='#6b4f2a';g.fillRect(-1.5,0,3,16);g.fillStyle='#f5e6c4';g.fillRect(-26,-14,52,16);g.strokeStyle='#6b4f2a';g.lineWidth=1.5;g.strokeRect(-26,-14,52,16);g.fillStyle='#b03a2e';g.font='bold 9px Rubik,sans-serif';g.textAlign='center';g.textBaseline='middle';g.direction=G.lang==='he'?'rtl':'ltr';g.fillText(L(p.sign),0,-6,50);g.restore();}
+  if(p.perf==='musician'){g.save();g.translate(p.x,p.y);g.rotate(p.a);g.fillStyle='#a0522d';g.beginPath();g.ellipse(9,4,7,5,0.4,0,TAU);g.fill();g.fillStyle='#3e2a1a';g.fillRect(13,1,12,2);g.restore();if(rand()<0.05)part('spark',p.x+rr(-10,10),p.y-20,rr(-15,15),-40,0.9,3);}
+  if(p.perf==='mime'){g.strokeStyle='rgba(255,255,255,'+(0.25+0.15*Math.sin(G.time*2))+')';g.lineWidth=1.5;g.setLineDash([4,4]);g.strokeRect(p.x-22,p.y-22,44,44);g.setLineDash([]);}}
+// ---------- secrets & easter eggs ----------
+const BOTTLES=[];
+function genSecrets(){const sands=[];for(let k=0;k<4000&&sands.length<60;k++){const x=4+Math.floor(rand2(k)*340),y=4+Math.floor(rand2(k+9999)*190);if(tget(x,y)===TL.SAND&&tget(x+1,y)!==TL.BLD)sands.push([x,y]);}
+  const picks=[[95,40],[30,152],[236,30],[262,90],[102,194]];for(const [x,y] of picks){let best=null,bd=1e9;for(const s of sands){const d=hyp(s[0]-x,s[1]-y);if(d<bd){bd=d;best=s;}}if(best)BOTTLES.push({x:(best[0]+0.5)*T,y:(best[1]+0.5)*T});}
+  DECOR.push({t:'devroom',x:POI.vale?POI.vale.x+380:0,y:POI.vale?POI.vale.y+700:0});}
+function rand2(k){const x=Math.sin(k*12.9898+78.233)*43758.5453;return x-Math.floor(x);}
+const BNOTES=[R2('אם מצאת את זה, אני עדיין תקוע על האי. יש פה רק קוקוסים ומיליונרים.','If you found this, I am still stuck on the island. Only coconuts and millionaires here.'),R2('הברווז לא ברווז. תבדוק את העיניים שלו.','The duck is not a duck. Check its eyes.'),R2('ביגפוט אוהב את הפרדס הישן. בלילה. הוא ביישן.','Bigfoot likes Old Orchard. At night. He is shy.'),R2('ראיתי אור ירוק מעל הבסיס הצבאי בשלוש לפנות בוקר.','I saw a green light over the army base at 3 a.m.'),R2('האוצר: מתחת לדגל של חור הגולף האחרון. סליחה, אין לי עט טוב.','The treasure: under the flag of the last golf hole. Sorry, bad pen.')];
+function secretsTick(dt){const P=G.player,px=P.veh?P.veh.x:P.x,py=P.veh?P.veh.y:P.y,h=ENV.clock;
+  // bottles
+  for(let i=0;i<BOTTLES.length;i++){const b=BOTTLES[i];if(G.got.includes('bt'+i)||P.veh||hyp(px-b.x,py-b.y)>34)continue;G.got.push('bt'+i);const n=BOTTLES.filter((_,k)=>G.got.includes('bt'+k)).length;toast(fmt(tr('bottle'),n,L(BNOTES[i%5])),7);sfx.blip();if(n>=5)secret('bottles');}
+  if(G.got.includes('egg_bottles')&&!G.got.includes('treasure')&&POI.golf&&hyp(px-(POI.golf.x+240),py-(POI.golf.y+270))<70&&!P.veh){G.got.push('treasure');G.money+=5000;toast(fmt(tr('treasure'),5000),5);sfx.pass();}
+  // bigfoot at night in Old Orchard
+  if(ENV.dark>0.6&&areaAt(px,py)==='res'){if(!G.bigfoot&&rand()<dt*0.05){const a=rr(0,TAU),x=px+Math.cos(a)*420,y=py+Math.sin(a)*420;if(sideOK(tileAt(x,y))&&!onScreen(x,y,10)){const p=mkPed('civ',x,y);p.persist=true;p.bigfoot=1;p.shirt='#5d4037';p.pants='#4e342e';p.skin='#6d4c41';p.hair='#3e2723';p.hat=null;p.st='walk';G.bigfoot=p;toast(tr('bigfootRun'),3);}}}
+  const bf=G.bigfoot;if(bf){if(bf.dead||bf.remove||ENV.dark<0.5||hyp(bf.x-px,bf.y-py)>1600){bf.remove=true;G.bigfoot=null;}else{const d=hyp(bf.x-px,bf.y-py);if(d<240){bf.st='flee';bf.ft=3;bf.fx=px;bf.fy=py;}if(d<70&&!P.veh){secret('bigfoot');G.got.push('bigfootSeen');bf.remove=true;G.bigfoot=null;for(let k=0;k<8;k++)part('dust',bf.x,bf.y,rr(-60,60),rr(-60,60),0.8,10);}}}
+  // UFO 2-4 am over the army base
+  if(h>=2&&h<4.2&&!G.got.includes('egg_ufo')){const ux=(RESTRICT.x0+RESTRICT.x1)/2,uy=(RESTRICT.y0+RESTRICT.y1)/2;G.ufo={x:ux+Math.cos(G.time*0.7)*240,y:uy+Math.sin(G.time*0.9)*160};
+    if(hyp(px-G.ufo.x,py-G.ufo.y)<1400&&!G.ufoHint){G.ufoHint=1;toast(tr('ufoHint'),3);}if(hyp(px-G.ufo.x,py-G.ufo.y)<70){secret('ufo');giveWeapon('ray',40);G.weapon='ray';setTimeout(()=>toast(tr('rayGun'),5),2500);for(let k=0;k<20;k++)part('spark',px+rr(-30,30),py+rr(-30,30),rr(-80,80),rr(-80,80),1,3);}}else G.ufo=null;
+  // ghost car on the west bridge at midnight
+  if((h>=23.9||h<1)&&!G.got.includes('egg_ghost')){if(!G.ghostCar){const y=nodePos(7,4).y+30;G.ghostCar={x:120*T,y,vx:220};}const gc=G.ghostCar;gc.x+=gc.vx*dt;if(gc.x>170*T)gc.x=110*T;if(hyp(px-gc.x,py-gc.y)<60){secret('ghost');G.ghostCar=null;}}else G.ghostCar=null;
+  // train loop
+  if(P.ride&&P.ride.tr){const s=P.ride.tr.s;if(P.ride.s0==null){P.ride.s0=s;P.ride.trav=0;P.ride.last=s;}else{P.ride.trav+=fwd(P.ride.last,s);P.ride.last=s;if(P.ride.trav>TRK.L-50)secret('loop');}}
+  // HALO roof landing
+  const v=P.veh;if(v&&v.t.heli&&POI.halo){const hb=BUILDINGS.find(b=>b.logo==='HALO');if(hb&&px>hb.x*T&&px<(hb.x+hb.w)*T&&py>hb.y*T&&py<(hb.y+hb.h)*T&&v.alt<0.45&&Math.abs(v.speed)<40){v.alt=Math.max(v.alt,0.3);secret('halo');}}
+  // dev room behind the Vale estate palms
+  const dr=DECOR.find(d=>d.t==='devroom');if(dr&&!P.veh&&hyp(px-dr.x,py-dr.y)<50)secret('dev');}
+function duckHonk(){const P=G.player,v=P.veh;if(!v||!POI.duck||hyp(v.x-POI.duck.x,v.y-POI.duck.y)>360)return;G.duckN=(G.time-(G.duckT||0)<2.5?(G.duckN||0)+1:1);G.duckT=G.time;
+  if(G.duckN>=3){G.duckN=0;if(secret('duck')){aSyl(120,0,0.6,0.4,0);aSyl(100,0.6,0.7,0.4,3);toast(L(R2('הברווז: "קוואק. תפסיק לצפור עליי." (והפיל כסף)','The duck: "Quack. Stop honking at me." (and dropped cash)')),5);for(let k=0;k<5;k++)mkPickup('cash',POI.duck.x+rr(-60,60),POI.duck.y+rr(30,90),{amt:200});}}}
+function copDanceCheck(){const P=G.player;if(!POI.cops||hyp(P.x-POI.cops.x,P.y-POI.cops.y)>260||G.wanted>0)return;let n=0;for(const p of G.peds)if(p.type==='cop'&&!p.dead&&hyp(p.x-P.x,p.y-P.y)<300){p.st='dance';p.ft=4;n++;}if(n)secret('copdance');}
+function drawSecrets(inV){for(let i=0;i<BOTTLES.length;i++){const b=BOTTLES[i];if(G.got.includes('bt'+i)||!inV(b.x,b.y,30))continue;const bob=Math.sin(G.time*2+i)*2;g.save();g.translate(b.x,b.y+bob);g.rotate(0.6);g.fillStyle='rgba(120,200,160,0.85)';rrect(g,-8,-4,14,8,3);g.fill();g.fillStyle='#8a6b4a';g.fillRect(6,-2,4,4);g.fillStyle='#f5e6c4';g.fillRect(-5,-2,8,4);g.restore();}
+  const gc=G.ghostCar;if(gc&&inV(gc.x,gc.y,80)){g.save();g.globalAlpha=0.35+0.2*Math.sin(G.time*7);g.translate(gc.x,gc.y);g.fillStyle='#cfe9ff';rrect(g,-34,-15,68,30,12);g.fill();g.fillStyle='#ffffff';g.fillRect(-10,-11,22,22);g.restore();}
+  if(G.got.includes('egg_bottles')&&!G.got.includes('treasure')&&POI.golf){const x=POI.golf.x+240,y=POI.golf.y+270;if(inV(x,y,40)){g.fillStyle='rgba(255,215,0,'+(0.3+0.3*Math.sin(G.time*5))+')';g.beginPath();g.arc(x,y,22,0,TAU);g.fill();g.fillStyle='#8a5a2b';g.font='bold 20px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('✕',x,y);}}
+  const dr=DECOR.find(d=>d.t==='devroom');if(dr&&inV(dr.x,dr.y,60)){g.fillStyle='rgba(0,0,0,0.25)';g.fillRect(dr.x-18,dr.y-14,40,32);g.fillStyle='#6b4f2a';g.fillRect(dr.x-20,dr.y-16,40,32);g.fillStyle='#f5e6c4';g.font='bold 8px Rubik,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(G.lang==='he'?'צוות הפיתוח':'DEV TEAM',dr.x,dr.y-6);g.fillText(G.lang==='he'?'היה כאן':'WAS HERE',dr.x,dr.y+5);}}
+function drawUfo(){const u=G.ufo;if(!u)return;const q=projPt(u.x,u.y,260);g.save();g.globalCompositeOperation='lighter';g.fillStyle='rgba(120,255,140,0.18)';g.beginPath();g.moveTo(q[0]-14,q[1]);g.lineTo(u.x-60,u.y+40);g.lineTo(u.x+60,u.y+40);g.lineTo(q[0]+14,q[1]);g.fill();g.globalCompositeOperation='source-over';
+  g.fillStyle='#9aa4ad';g.beginPath();g.ellipse(q[0],q[1],46,16,0,0,TAU);g.fill();g.fillStyle='#bfe9ff';g.beginPath();g.ellipse(q[0],q[1]-6,18,12,0,0,TAU);g.fill();for(let k=0;k<6;k++){const a=G.time*3+k*1.05;g.fillStyle=k%2?'#7dff8a':'#ffe14d';g.beginPath();g.arc(q[0]+Math.cos(a)*36,q[1]+Math.sin(a)*10,3,0,TAU);g.fill();}g.restore();}
+
+// ---------- v8: Chapter 3 (Coral Key), more side missions, clear story/side labels ----------
+Object.assign(SPK,{vale:{he:'אדריאן וייל',en:'Adrian Vale',c:'#c9a227',p:150},pino:{he:'פינו',en:'Pino',c:'#ff9f43',p:190},mime:{he:'המים',en:'The Mime',c:'#f4f6f7',p:200},hans:{he:'הנס',en:'Hans',c:'#7fd4ff',p:230},darren:{he:'דארן',en:'Darren',c:'#b8e600',p:180},chip:{he:'צ׳יפ',en:'Chip',c:'#9bdc78',p:160},otto:{he:'אוטו',en:'Otto',c:'#d8dee6',p:120}});
+Object.assign(STR.he,{tagStory:'סיפור',tagSide:'משימת צד',tagFree:'חופשי',passStory:'משימת סיפור הושלמה!',passSide:'משימת צד הושלמה!',chap3:'פרק 3',startStory:'משימת סיפור',startSide:'משימת צד'});
+Object.assign(STR.en,{tagStory:'STORY',tagSide:'SIDE JOB',tagFree:'FREE ROAM',passStory:'Story mission passed!',passSide:'Side job done!',chap3:'Chapter 3',startStory:'Story mission',startSide:'Side job'});
+function nearWater(x,y){let best=null,bd=1e9;for(let dy=-12;dy<=12;dy++)for(let dx=-12;dx<=12;dx++){const tx=Math.floor(x/T)+dx,ty=Math.floor(y/T)+dy;if(tget(tx,ty)!==0||tget(tx+1,ty)!==0||tget(tx,ty+1)!==0||tget(tx-1,ty)!==0)continue;const d=dx*dx+dy*dy;if(d<bd){bd=d;best={x:(tx+0.5)*T,y:(ty+0.5)*T,a:0};}}return best||{x,y,a:0};}
+function nearWalk(x,y){let best=null,bd=1e9;for(let dy=-5;dy<=5;dy++)for(let dx=-5;dx<=5;dx++){const tx=Math.floor(x/T)+dx,ty=Math.floor(y/T)+dy,t=tget(tx,ty);if(t!==TL.WALK&&t!==TL.CONC&&t!==TL.SAND&&t!==TL.GRASS)continue;const d=dx*dx+dy*dy;if(d<bd){bd=d;best={x:(tx+0.5)*T,y:(ty+0.5)*T};}}return best||{x,y};}
+function buildMissions4(){const cp=(i,j)=>{const p=nodePos(i,j);return[p.x,p.y];};
+ POI.dealM={x:POI.dealer.x,y:POI.dealer.y+74,a:0};POI.padM={x:POI.pad.x+96,y:POI.pad.y,a:-Math.PI/2};
+ POI.haloDoor=nearWalk(POI.halo.x,POI.halo.y+60);POI.galaCar=nearWalk(POI.safe.x+140,POI.safe.y+40);POI.truckStart={x:48.5*T,y:170*T};
+ POI.pinoStart=nearWalk(POI.pier.x-220,POI.pier.y);POI.pinoBoat=nearWater(POI.pier.x-260,POI.pier.y+120);POI.mimeStart=nearWalk(PERF[0]?PERF[0].x+110:POI.duck.x,PERF[0]?PERF[0].y+40:POI.duck.y);
+ POI.hans=nearWalk(POI.pier.x+60,POI.pier.y+140);POI.darren=nearWalk(nodePos(1,6).x+90,nodePos(1,6).y+90);POI.chip=nearWalk(POI.golf.x-420,POI.golf.y-560);POI.chipCart=nearWalk(POI.chip.x+70,POI.chip.y);POI.otto=nearWalk(STATIONS[0].gx+80,STATIONS[0].gy);
+ POI.vanStart={x:nodePos(2,2).x,y:nodePos(2,2).y};
+ MISSIONS.push(
+ {id:'m9',name:R2('הקונה','The Buyer'),giver:'salt',col:'#ffd23f',ic:'3',start:POI.tide,hint:R2('פרק 3: מאמא סולט במחסן בנמל','Chapter 3: Mama Salt at the harbor warehouse'),steps:[
+  {t:'talk',lines:[l('salt','מצאנו את פנקס החשבונות של הקולונל. כל תשלום הלך לאותה חתימה: H.','We found the Colonel\'s ledger. Every payment went to the same signature: H.'),l('benny','H כמו... הילו? המגדל הזה במרידיאן שנראה כמו מגהץ?','H as in... HALO? That tower in Meridian that looks like an iron?'),
+   l('ray','חברת הייטק קונה רובים מקולונל?','A tech company buys rifles from a colonel?'),l('salt','חברת הייטק קונה הכול, מתוק. קח את הרכבת העילית, זה כיף. מישהו שם ידבר.','A tech company buys everything, sweetheart. Take the Sky Line, it is fun. Someone there will talk.')]},
+  {t:'goto',at:'haloDoor',r:90,obj:R2('סע למגדל הילו ברובע הזכוכית (הרכבת העילית עוצרת קרוב)','Go to the HALO tower in the Glass Quarter (the Sky Line stops nearby)')},
+  {t:'talk',lines:[l('ivy','אתה שוב. הבחור מנסיעת המבחן.','You again. The test-drive guy.'),l('ray','אני מחפש את מי שקנה את הנשק של הקולונל.','I am looking for whoever bought the Colonel\'s guns.'),l('ivy','אדריאן וייל. הבוס לשעבר שלי. הוא פיטר אותי בהולוגרמה.','Adrian Vale. My old boss. He fired me by hologram.'),
+   l('ivy','הוא עושה מסיבת גאלה באי הפרטי שלו, קורל קי. דרומית לנמל, יש גשר חדש.','He is throwing a gala on his private island, Coral Key. South of the harbor, there is a new bridge.'),l('ray','ומה את רוצה מזה?','And what do you want out of this?'),l('ivy','את המכונית שלו. ונקמה. בעיקר את המכונית.','His car. And revenge. Mostly the car.')]},
+  {t:'reward',money:3000}]},
+ {id:'m10',name:R2('נסיעת מבחן אמיתית','A Real Test Drive'),giver:'ivy',col:'#ffd23f',ic:'3',start:POI.dealer,hint:R2('פרק 3: אייבי בסוכנות אוטוהאוס במרידיאן','Chapter 3: Ivy at the Autohaus dealership in Meridian'),steps:[
+  {t:'talk',lines:[l('ivy','וייל משאיר פה את אב הטיפוס שלו, ואנטה X. ההזמנה לגאלה בתא הכפפות.','Vale keeps his prototype here, the Vanta X. The gala invitation is in the glovebox.'),l('ray','ואיך גונבים מכונית מסוכנות?','And how do you steal a car from a dealership?'),
+   l('ivy','נוסעים מהר. האזעקה מחוברת למשטרה.','You drive fast. The alarm is wired to the police.'),l('ivy','אחר כך תצבע אותה באחד המוסכים. סגול זה לא הצבע שלה, אבל זה צבע שלא מחפשים.','Then respray it at a garage. Purple is not her color, but nobody looks for purple.')]},
+  {t:'getveh',key:'vx',type:'vanta',at:'dealM',col:'#c9a227',obj:R2('גנוב את ואנטה X','Steal the Vanta X')},{t:'wanted',n:2},
+  {t:'cond',f:M=>{const v=M.key.vx,P=G.player;return P.veh===v&&SPRAYS.some(sp=>hyp(v.x-sp.x,v.y-sp.y)<95);},init:M=>{M.target=SPRAYS.map(sp=>({x:sp.x,y:sp.y})).sort((a,b)=>hyp(a.x-G.player.x,a.y-G.player.y)-hyp(b.x-G.player.x,b.y-G.player.y))[0];},obj:R2('צבע את ואנטה X באחד ממוסכי הצביעה ✦','Respray the Vanta X at any spray garage ✦')},
+  {t:'talk',lines:[l('ivy','(בטלפון) ההזמנה אצלך? יופי. קוד לבוש: חליפה. בבקשה לא אימונית.','(On the phone) Got the invitation? Good. Dress code: suit. Please, not the tracksuit.'),l('ray','האימונית שלי מכובדת.','My tracksuit is respectable.'),l('ivy','האימונית שלך מבוקשת בשלוש מדינות.','Your tracksuit is wanted in three states.')]},
+  {t:'reward',money:4000}]},
+ {id:'m11',name:R2('עין בשמיים','Eye in the Sky'),giver:'cap',col:'#ffd23f',ic:'3',start:POI.pad,hint:R2('פרק 3: קפטן רוטור במנחת סקייפורט','Chapter 3: Captain Rotor at the Skyport pad'),steps:[
+  {t:'talk',lines:[l('cap','שמעתי שאתה הולך לגאלה של וייל. באי שלו יש יותר שומרים מבחתונה של האקסית שלי.','I hear you are going to Vale\'s gala. His island has more guards than my ex\'s wedding.'),l('ray','אז מה ההצעה?','So what is the plan?'),l('cap','מצלמים מלמעלה. אני מחזיק את המצלמה, אתה מחזיק את ההגה. ובבקשה, הפעם עם שני הידיים.','We take pictures from above. I hold the camera, you hold the stick. Both hands this time, please.')]},
+  {t:'getveh',key:'heli',type:'heli',at:'padM',col:'#16161d',obj:R2('היכנס למסוק','Get in the helicopter')},
+  {t:'pick',air:1,pts:()=>[[POI.coralHotel.x,POI.coralHotel.y],[POI.golf.x,POI.golf.y],[POI.vale.x,POI.vale.y],[POI.coralPier.x,POI.coralPier.y]],obj:R2('טוס מעל קורל קי וצלם ({0}/{1})','Fly over Coral Key and take photos ({0}/{1})')},
+  {t:'cond',f:M=>{const v=M.key.heli;return !(v.alt>0)&&hyp(v.x-POI.pad.x,v.y-POI.pad.y)<420;},obj:R2('נחת בחזרה במנחת סקייפורט','Land back at the Skyport pad')},
+  {t:'talk',lines:[l('cap','צלפים על הגג, מנחת מסוקים, ובריכה בצורת הפנים שלו.','Snipers on the roof, a helipad, and a pool shaped like his face.'),l('ray','בצורת הפנים שלו?','Shaped like his face?'),l('cap','עשירים. הם לא קונים מראות, הם קונים בריכות.','Rich people. They do not buy mirrors, they buy pools.')]},
+  {t:'reward',money:3500}]},
+ {id:'m12',name:R2('ערב גאלה','Gala Night'),giver:'ivy',col:'#ffd23f',ic:'3',start:POI.galaCar,hint:R2('פרק 3: אייבי מחכה ליד הבית שלך בנמל','Chapter 3: Ivy is waiting by your place at the harbor'),steps:[
+  {t:'talk',lines:[l('ivy','הגאלה מתחילה. יש לך הזמנה, יש לך מכונית סגולה. חסרה לך חליפה.','The gala is starting. You have an invitation, you have a purple car. You are missing a suit.'),l('ray','יש לי חולצת הוואי.','I have a Hawaiian shirt.'),l('ivy','זה אי פרטי, לא טיול שנתי. חליפה. בחנות בגדים או בארון בבית.','It is a private island, not a school trip. A suit. Clothing store, or your wardrobe at home.')]},
+  {t:'cond',f:()=>G.outfit==='suit',init:M=>{const s=SHOPS.filter(s=>s.k==='clothes').sort((a,b)=>hyp(a.sx-G.player.x,a.sy-G.player.y)-hyp(b.sx-G.player.x,b.sy-G.player.y))[0];if(s)M.target={x:s.sx,y:s.sy};},obj:R2('לבש חליפה (חנות בגדים או ארון בבית)','Put on a suit (clothing store or your wardrobe at home)')},
+  {t:'goto',at:'coralHotel',r:100,obj:R2('סע לגאלה במלון קורל גרנד (דרך הגשר הדרומי לקורל קי)','Drive to the gala at the Coral Grand (over the south bridge to Coral Key)')},
+  {t:'talk',lines:[l('vale','מר שליח! אני עוקב אחרי העבודה שלך. הקפיצות מגשרים, הברווז. מקסים.','Mister Courier! I have followed your work. The bridge jumps, the duck. Delightful.'),l('ray','קנית את הנשק של הקולונל.','You bought the Colonel\'s guns.'),
+   l('vale','אני קונה הכול. עיר היא בסך הכול סטארט־אפ גדול מאוד. והסטארט־אפ הזה צריך... התייעלות.','I buy everything. A city is just a very large startup. And this startup needs... efficiency.'),l('ray','כלומר?','Meaning?'),l('vale','כלומר פחות אנשים כמוך. אבטחה, בבקשה תלוו את האורח החוצה. לתמיד.','Meaning fewer people like you. Security, please escort our guest out. Permanently.')]},
+  {t:'kill',n:6,at:'vale',rad:260,ptype:'gang',faction:'vale',obj:R2('צא מהאחוזה של וייל בחיים ({0}/{1})','Fight your way out of Vale\'s estate ({0}/{1})')},{t:'wanted',n:3},{t:'lose'},
+  {t:'talk',lines:[l('ivy','(בטלפון) ראיתי בחדשות. "תקרית קלה בגאלה". הוא בורח, ריי. הוא מעביר את כל הכסף ליבשה.','(On the phone) Saw it on the news. "A minor incident at the gala". He is running, Ray. He is moving all his money to the mainland.')]},
+  {t:'reward',money:6000}]},
+ {id:'m13',name:R2('המלך של קורל קי','King of Coral Key'),giver:'salt',col:'#ffd23f',ic:'★',start:POI.tide,hint:R2('סיום פרק 3: מאמא סולט במחסן בנמל','Chapter 3 finale: Mama Salt at the harbor warehouse'),steps:[
+  {t:'talk',lines:[l('salt','וייל מעביר משאית מלאה כסף מהאי. הוא קורא לזה "רה־ארגון". אצל עשירים זה אומר לשרוף עיר ולקנות אותה בזול.','Vale is moving a truck full of cash off the island. He calls it "restructuring". For rich men that means burn a city and buy it cheap.'),
+   l('benny','אז עושים רעש.','So we make noise.'),l('salt','עושים הרבה רעש. ריי, המשאית. ואחר כך האיש עצמו.','A lot of noise. Ray, the truck. And then the man himself.')]},
+  {t:'hostiles',n:2,type:'suv',faction:'vale',col:'#16161d'},
+  {t:'destroy',type:'bulwark',col:'#c9a227',hp:1500,move:240,timer:300,pts:()=>[[POI.truckStart.x/T,POI.truckStart.y/T,-Math.PI/2]],obj:R2('עצור את משאית הכסף של וייל ({0}/{1})','Stop Vale\'s cash truck ({0}/{1})')},
+  {t:'kill',n:1,at:'valePad',rad:40,ptype:'gang',faction:'vale',hp:450,boss:1,obj:R2('וייל בורח למסוק שלו — עצור אותו! ({0}/{1})','Vale is running for his helicopter — stop him! ({0}/{1})')},
+  {t:'talk',lines:[l('vale','אתה לא יכול לגעת בי! יש לי משקיעים!','You cannot touch me! I have investors!'),l('salt','משקיעים? מתוק, יש לך אותנו.','Investors? Darling, you have us.'),l('ray','סולס ביי זה לא סטארט־אפ.','Solace Bay is not a startup.'),l('vale','...אפשר לפחות לשמור את הברווז?','...Can I at least keep the duck?'),
+   l('salt','הברווז נשאר. אתה הולך. המשטרה כבר בדרך, ודווקא היום הם ממהרים.','The duck stays. You go. The police are on their way, and today of all days they are in a hurry.')]},
+  {t:'reward',money:15000,fn:()=>{const v=mkVeh('heli',POI.valePad.x,POI.valePad.y,0,'#c9a227');v.persist=true;v.fuel=1;},endMsg:R2('סוף פרק 3 — קורל קי שלך. המסוק המוזהב של וייל מחכה לך במנחת שלו.','End of Chapter 3 — Coral Key is yours. Vale\'s golden helicopter waits on his helipad.')}]});
+ SIDE.push(
+ {id:'s9',name:R2('פיצה פיראטית','Pizza Pirate'),giver:'pino',start:POI.pinoStart,look:'worker',steps:[
+  {t:'talk',lines:[l('pino','אמיגו! יש לי שלוש הזמנות פיצה לסירות במפרץ. הים לא מחכה, הגבינה גם לא.','Amigo! I have three pizza orders for boats in the bay. The sea does not wait, neither does the cheese.'),l('ray','למה שמישהו יזמין פיצה לסירה?','Why would anyone order pizza to a boat?'),l('pino','כי הם עשירים ומשועממים. כמו כל המפרץ.','Because they are rich and bored. Like the whole bay.')]},
+  {t:'getveh',key:'boat',type:'speedboat',at:'pinoBoat',col:'#ff9f43',obj:R2('עלה על סירת הפיצה','Get in the pizza boat')},
+  {t:'pick',timer:200,r:110,pts:()=>[nearWater(POI.pier.x+300,POI.pier.y+700),nearWater(60*T,150*T),nearWater(POI.coralPier.x+150,POI.coralPier.y)].map(q=>[q.x,q.y]),obj:R2('מסור פיצות לסירות ({0}/{1})','Deliver pizzas to the boats ({0}/{1})')},
+  {t:'talk',lines:[l('pino','שלוש סירות, אפס פיצות רטובות. אתה אמן.','Three boats, zero soggy pizzas. You are an artist.'),l('ray','אחת נפלה למים.','One fell in the water.'),l('pino','אז הדגים קיבלו פיצה. גם הם לקוחות.','Then the fish got pizza. They are customers too.')]},
+  {t:'reward',money:900}]},
+ {id:'s10',name:R2('הנקמה של המים','The Mime\'s Revenge'),giver:'mime',start:POI.mimeStart,look:'casual',steps:[
+  {t:'talk',lines:[l('mime','(המים מצביע עליך. ואז על טנדר גלידה. ואז מעביר אצבע על הצוואר)','(The mime points at you. Then at an ice-cream van. Then drags a finger across his throat)'),l('ray','אתה רוצה שאני... אפגע בטנדר גלידה?','You want me to... hit an ice-cream van?'),l('mime','(מהנהן בהתלהבות. מחקה מישהו שגונב לו את הכובע ובורח בטנדר)','(Nods eagerly. Mimes someone stealing his hat and fleeing in a van)'),l('ray','הליצן גנב לך את הכובע. הבנתי.','The clown stole your hat. Got it.')]},
+  {t:'destroy',type:'van',col:'#ff9ff3',move:220,timer:180,pts:()=>[[POI.vanStart.x/T,POI.vanStart.y/T,0]],obj:R2('השמד את טנדר הגלידה של הליצן ({0}/{1})','Destroy the clown\'s ice-cream van ({0}/{1})')},
+  {t:'talk',lines:[l('mime','(מוחא כפיים בלי קול. מוציא כסף מכיס בלתי נראה. הכסף אמיתי)','(Claps silently. Pulls money from an invisible pocket. The money is real)')]},
+  {t:'reward',money:800}]},
+ {id:'s11',name:R2('סיור סלפי','Selfie Tour'),giver:'hans',start:POI.hans,look:'tourist',steps:[
+  {t:'talk',lines:[l('hans','סליחה! אני הנס. יש לי רק שעה בעיר ואני צריך סלפי בכל המקומות המפורסמים.','Excuse me! I am Hans. I have one hour in town and I need a selfie at every famous spot.'),l('ray','ואני הנהג?','And I am the driver?'),l('hans','אתה הנהג, הצלם והמדריך. התשלום טוב. הנוף טוב יותר.','You are driver, photographer and guide. The pay is good. The view is better.')]},
+  {t:'pick',timer:330,r:90,pts:()=>[[POI.duck.x,POI.duck.y+60],[POI.pier.x,POI.pier.y],[POI.halo.x,POI.halo.y+80],[POI.coralHotel.x,POI.coralHotel.y],[STATIONS[2].gx,STATIONS[2].gy]],obj:R2('קח את הנס לנקודות הסלפי ({0}/{1})','Take Hans to the selfie spots ({0}/{1})')},
+  {t:'talk',lines:[l('hans','מושלם! בכל התמונות רואים רק את האצבע שלי, אבל זה האומנות.','Perfect! In every photo you only see my finger, but that is art.')]},
+  {t:'reward',money:1200}]},
+ {id:'s12',name:R2('צייד ביגפוט','Bigfoot Hunter'),giver:'darren',start:POI.darren,look:'punk',steps:[
+  {t:'talk',lines:[l('darren','אתה! אתה נראה כמו מישהו שמאמין.','You! You look like a believer.'),l('ray','אני מאמין בהרבה דברים. בעיקר בכסף.','I believe in many things. Mostly money.'),l('darren','ביגפוט גר בפרדס הישן. הוא יוצא רק בלילה. אף אחד לא מאמין לי, אפילו לא אמא שלי, שהיא בעצמה ראתה עב״ם.','Bigfoot lives in Old Orchard. He only comes out at night. Nobody believes me, not even my mom, who saw a UFO herself.')]},
+  {t:'cond',f:()=>G.got.includes('bigfootSeen'),init:M=>{M.target={x:POI.darren.x,y:POI.darren.y};},obj:R2('מצא את ביגפוט בפרדס הישן — רק בלילה','Find Bigfoot in Old Orchard — only at night')},
+  {t:'talk',lines:[l('darren','ראית אותו?! באמת?! אני ידעתי! אני הולך לספר לאמא!','You saw him?! Really?! I knew it! I am telling my mom!')]},
+  {t:'reward',money:1500}]},
+ {id:'s13',name:R2('טורניר הגולף','Golf Rage'),giver:'chip',start:POI.chip,look:'biz',req:'m9',steps:[
+  {t:'talk',lines:[l('chip','אני צ׳יפ, מנהל מועדון הגולף. מישהו פיזר עשרה כדורים במגרש ויש תחרות בעוד דקה וחצי.','I am Chip, golf club manager. Someone scattered balls all over the course and the tournament starts in ninety seconds.'),l('ray','ואני...?','And I...?'),l('chip','אתה אוסף אותם בעגלת גולף. ובלי לדרוס את הדשא. טוב, תדרוס קצת.','You collect them in a golf cart. And do not ruin the grass. Fine, ruin it a little.')]},
+  {t:'getveh',key:'cart',type:'cart',at:'chipCart',col:'#f4f6f7',obj:R2('עלה על עגלת הגולף','Get in the golf cart')},
+  {t:'pick',timer:100,r:46,pts:()=>[[0.2,0.25],[0.4,0.15],[0.7,0.22],[0.85,0.5],[0.6,0.6],[0.3,0.7],[0.55,0.85]].map(f=>[51*T+f[0]*20*T,166*T+f[1]*20*T]),obj:R2('אסוף את כדורי הגולף ({0}/{1})','Collect the golf balls ({0}/{1})')},
+  {t:'talk',lines:[l('chip','הצלת את הטורניר! טוב, את רוב הדשא לא.','You saved the tournament! Well, not most of the grass.')]},
+  {t:'reward',money:1000}]},
+ {id:'s14',name:R2('פקח רכבת','Ticket Inspector'),giver:'otto',start:POI.otto,look:'elder',steps:[
+  {t:'talk',lines:[l('otto','אני אוטו, פקח הרכבת. הברכיים שלי פרשו לפניי. תבדוק בשבילי שלוש תחנות?','I am Otto, train inspector. My knees retired before me. Check three stations for me?'),l('ray','מה אני בודק?','What am I checking?'),l('otto','שהן עדיין שם. פעם אחת תחנה נעלמה. התברר שזה היה ערפל.','That they are still there. Once a station vanished. Turned out it was fog.')]},
+  {t:'pick',timer:420,r:70,pts:()=>[STATIONS[3],STATIONS[5],STATIONS[7]].map(s=>[s.gx,s.gy]),obj:R2('בקר בשלוש תחנות רכבת ({0}/{1}) — אפשר לנסוע ברכבת','Visit three train stations ({0}/{1}) — you can ride the train')},
+  {t:'talk',lines:[l('otto','כולן שם? מצוין. אני הולך לנמנם בקרון האחרון. שם השקט.','All still there? Excellent. I am napping in the last car. It is quiet there.')]},
+  {t:'reward',money:1100}]});}
+// ---------- clarity: story vs side ----------
+function isSide(m){return SIDE.includes(m);}
+function setObj(t){const M=G.mission,tag=M?(isSide(M.m)?'side':'story'):(t&&nextMission()&&t===L(nextMission().hint)?'story':'');const key=tag+'|'+t;if(G.obj===key)return;G.obj=key;const el=$('obj');
+  el.innerHTML='';if(tag){const c=document.createElement('span');c.className='otag '+tag;c.textContent=tr(tag==='side'?'tagSide':'tagStory');el.appendChild(c);}el.appendChild(document.createTextNode(t||''));el.className=tag;el.style.display=t?'block':'none';el.style.opacity=1;G.objT=6;}
+function startMission(m){G.mission={m,step:-1,key:{},timer:null,target:null,ents:[]};const side=isSide(m);bigMsg(L(m.name),side?'#c59bff':'#ffd23f',tr(side?'startSide':'startStory'));nextStep();}
+function passMission(s){G.misLock={x:G.player.x,y:G.player.y};const M=G.mission,side=isSide(M.m);G.money+=s.money||0;
+  if(s.weapon){giveWeapon(s.weapon[0],s.weapon[1]);setTimeout(()=>toast(fmt(tr('newweap'),L(WEAP[s.weapon[0]]))),1600);}
+  G.done.push(M.m.id);if(s.fn)s.fn();if(s.endMsg)setTimeout(()=>toast(L(s.endMsg),8),3500);cleanupMission();bigMsg(tr(side?'passSide':'passStory'),side?'#c59bff':'#5dff7a',fmt(tr('reward'),s.money||0));sfx.pass();saveGame();
+  if(s.end)setTimeout(()=>toast(tr('chapend'),7),3500);}
+function drawMissionLabels(inV){if(G.mission)return;const lab=(x,y,txt,col,ic)=>{if(!inV(x,y,120))return;g.save();g.font='bold 13px Rubik,sans-serif';g.direction=G.lang==='he'?'rtl':'ltr';const w=Math.min(220,g.measureText(txt).width+34);g.fillStyle='rgba(10,12,22,0.82)';rrect(g,x-w/2,y-62,w,24,12);g.fill();g.strokeStyle=col;g.lineWidth=2;rrect(g,x-w/2,y-62,w,24,12);g.stroke();
+    g.fillStyle=col;g.textAlign='center';g.textBaseline='middle';g.fillText(ic+' '+txt,x,y-49.5,w-10);g.restore();};
+  const nm=nextMission();if(nm)lab(nm.start.x,nm.start.y,tr('tagStory')+': '+L(nm.name),'#ffd23f','★');for(const sm of sideAvail())lab(sm.start.x,sm.start.y,tr('tagSide')+': '+L(sm.name),'#c59bff','?');}
+
+// ---------- v8 graphics: textured roofs, roof equipment, street furniture, nicer trees ----------
+const ROOFPAT={};
+function roofPat(col){if(ROOFPAT[col])return ROOFPAT[col];const c=document.createElement('canvas');c.width=c.height=96;const q=c.getContext('2d');q.fillStyle=col;q.fillRect(0,0,96,96);let s=col.length*977;
+  const r=()=>{s=(s*16807)%2147483647;return s/2147483647;};for(let k=0;k<260;k++){q.fillStyle=r()<0.5?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.08)';q.fillRect(r()*96,r()*96,1+r()*2,1+r()*2);}
+  q.strokeStyle='rgba(0,0,0,0.07)';q.lineWidth=1;for(let k=0;k<3;k++){const y=r()*96;q.beginPath();q.moveTo(0,y);q.lineTo(96,y+r()*6-3);q.stroke();}return ROOFPAT[col]=g.createPattern(c,'repeat');}
+function roofSurface(b,rx,ry,rw,rh){const pw=Math.min(12,Math.max(5,Math.min(rw,rh)*0.08));
+  g.fillStyle='rgba(255,255,255,0.13)';g.fillRect(rx,ry,rw,pw);g.fillRect(rx,ry+pw,pw,rh-pw);g.fillStyle='rgba(0,0,0,0.1)';g.fillRect(rx+pw,ry+rh-pw,rw-pw,pw);g.fillRect(rx+rw-pw,ry+pw,pw,rh-pw*2);
+  g.fillStyle='rgba(0,0,0,0.13)';g.fillRect(rx+pw,ry+pw,rw-pw*2,4);g.fillRect(rx+pw,ry+pw+4,4,rh-pw*2-4);
+  g.fillStyle=roofPat(b.roof);g.fillRect(rx+pw+4,ry+pw+4,rw-pw*2-4,rh-pw*2-4);
+  const gr=g.createLinearGradient(rx,ry,rx+rw,ry+rh);gr.addColorStop(0,'rgba(255,255,255,0.10)');gr.addColorStop(0.55,'rgba(255,255,255,0)');gr.addColorStop(1,'rgba(0,0,0,0.10)');g.fillStyle=gr;g.fillRect(rx+pw,ry+pw,rw-pw*2,rh-pw*2);}
+function roofBits(b,rx,ry,rw,rh,d){if(rw<70||rh<70)return;let s=b.seed||1;const r=()=>{s=(s*48271)%2147483647;return s/2147483647;};const pw=10;
+  // vents along one edge
+  const nv=1+Math.floor(r()*3),edge=Math.floor(r()*4);for(let k=0;k<nv;k++){const t=0.2+0.6*(k+0.5)/nv;let x,y;if(edge===0){x=rx+rw*t;y=ry+pw+10;}else if(edge===1){x=rx+rw-pw-10;y=ry+rh*t;}else if(edge===2){x=rx+rw*t;y=ry+rh-pw-10;}else{x=rx+pw+10;y=ry+rh*t;}
+    g.fillStyle='rgba(0,0,0,0.25)';g.beginPath();g.arc(x+2.5,y+2.5,5.5,0,TAU);g.fill();g.fillStyle='#8d949c';g.beginPath();g.arc(x,y,5.5,0,TAU);g.fill();g.fillStyle='#4a5058';g.beginPath();g.arc(x,y,2.6,0,TAU);g.fill();}
+  // roof hatch
+  if(r()<0.7){const x=rx+pw+8+r()*(rw-pw*2-30),y=ry+pw+8+r()*(rh-pw*2-30);g.fillStyle='rgba(0,0,0,0.22)';g.fillRect(x+3,y+3,18,18);g.fillStyle='#7d858e';g.fillRect(x,y,18,18);g.fillStyle='#a3abb3';g.fillRect(x+2,y+2,14,6);g.strokeStyle='rgba(0,0,0,0.3)';g.lineWidth=1;g.strokeRect(x+0.5,y+0.5,17,17);}
+  // pipe run
+  if(r()<0.55){const y=ry+rh*(0.3+r()*0.4);g.strokeStyle='rgba(0,0,0,0.22)';g.lineWidth=5;g.beginPath();g.moveTo(rx+pw+6,y+2);g.lineTo(rx+rw-pw-6,y+2);g.stroke();g.strokeStyle='#9aa3ab';g.lineWidth=3.5;g.beginPath();g.moveTo(rx+pw+6,y);g.lineTo(rx+rw-pw-6,y);g.stroke();}
+  // solar panels on bigger roofs
+  if(rw>140&&rh>110&&r()<0.4){const cols=Math.floor((rw-60)/34),x0=rx+30;for(let k=0;k<Math.min(5,cols);k++){const x=x0+k*34,y=ry+rh-pw-44;g.fillStyle='rgba(0,0,0,0.25)';g.fillRect(x+3,y+3,28,30);g.fillStyle='#1d3557';g.fillRect(x,y,28,30);g.strokeStyle='rgba(160,200,255,0.35)';g.lineWidth=1;g.strokeRect(x+0.5,y+0.5,27,29);g.beginPath();g.moveTo(x+14,y);g.lineTo(x+14,y+30);g.moveTo(x,y+15);g.lineTo(x+28,y+15);g.stroke();}}
+  if(d>0.35&&r()<0.5){g.fillStyle=`rgba(255,80,60,${0.5+0.5*Math.sin(G.time*3+b.seed)})`;g.beginPath();g.arc(rx+pw+4,ry+pw+4,2.5,0,TAU);g.fill();}}
+// ---------- street furniture ----------
+const STREET=new Map();
+function genStreet(){let s=4242;const r=()=>{s=(s*48271)%2147483647;return s/2147483647;};const near=(x,y,list,rad)=>list.some(o=>hyp(o.x-x,o.y-y)<rad);
+  const avoid=[...SHOPS.map(s=>({x:s.sx,y:s.sy})),...USES,...LADS.map(l=>({x:l.x,y:l.y})),...STATIONS.map(st=>({x:st.gx,y:st.gy})),...PROPS,...SPRAYS];
+  for(let y=1;y<MH-1;y++)for(let x=1;x<MW-1;x++){if(tget(x,y)!==TL.WALK)continue;let rd=-1;if(tget(x,y-1)===TL.ROAD)rd=0;else if(tget(x+1,y)===TL.ROAD)rd=1;else if(tget(x,y+1)===TL.ROAD)rd=2;else if(tget(x-1,y)===TL.ROAD)rd=3;if(rd<0)continue;
+    if(r()>0.16)continue;const cx=(x+0.5)*T,cy=(y+0.5)*T,ox=[0,1,0,-1][rd],oy=[-1,0,1,0][rd],px=cx+ox*20,py=cy+oy*20;if(near(px,py,avoid,90))continue;
+    const k=r(),t=k<0.28?'stree':k<0.46?'bench':k<0.62?'bin':k<0.72?'hydrant':k<0.82?'planter':k<0.9?'news':k<0.95?'bikes':'busstop';const it={t,x:px,y:py,a:[0,Math.PI/2,Math.PI,-Math.PI/2][rd],h:r()};
+    const key=(Math.floor(px/1024))+','+(Math.floor(py/1024));if(!STREET.has(key))STREET.set(key,[]);STREET.get(key).push(it);}}
+function drawStreet(inV){const vw=G.view;if(!vw)return;const x0=Math.floor((vw[0]-80)/1024),x1=Math.floor((vw[2]+80)/1024),y0=Math.floor((vw[1]-80)/1024),y1=Math.floor((vw[3]+80)/1024);
+  for(let cx=x0;cx<=x1;cx++)for(let cy=y0;cy<=y1;cy++){const L2=STREET.get(cx+','+cy);if(!L2)continue;for(const it of L2)if(inV(it.x,it.y,50))drawStreetItem(it);}}
+function drawStreetItem(it){g.save();g.translate(it.x,it.y);g.rotate(it.a);const sh=(w,h)=>{g.fillStyle='rgba(0,0,0,0.22)';g.fillRect(-w/2+3,-h/2+3,w,h);};
+  switch(it.t){case'bench':sh(34,12);g.fillStyle='#6b4a2b';g.fillRect(-17,-6,34,12);g.fillStyle='#8a6240';for(let k=-15;k<15;k+=6)g.fillRect(k,-5,4,10);g.fillStyle='#2b2b33';g.fillRect(-17,-7,3,14);g.fillRect(14,-7,3,14);break;
+   case'bin':g.fillStyle='rgba(0,0,0,0.22)';g.beginPath();g.arc(3,3,8,0,TAU);g.fill();g.fillStyle='#2e7d32';g.beginPath();g.arc(0,0,8,0,TAU);g.fill();g.fillStyle='#1b5e20';g.beginPath();g.arc(0,0,5,0,TAU);g.fill();if(it.h<0.4){g.fillStyle='#f4f6f7';g.fillRect(-2,-3,5,4);}break;
+   case'hydrant':g.fillStyle='rgba(0,0,0,0.22)';g.beginPath();g.arc(2,2,6,0,TAU);g.fill();g.fillStyle='#c0392b';g.beginPath();g.arc(0,0,6,0,TAU);g.fill();g.fillStyle='#e74c3c';g.beginPath();g.arc(-1,-1,3,0,TAU);g.fill();g.fillStyle='#8e2a20';g.fillRect(-8,-2,16,4);break;
+   case'planter':sh(22,22);g.fillStyle='#8d7a66';rrect(g,-11,-11,22,22,4);g.fill();g.fillStyle='#3d8b37';g.beginPath();g.arc(-3,-2,7,0,TAU);g.arc(4,3,6,0,TAU);g.arc(3,-5,5,0,TAU);g.fill();if(it.h>0.5){g.fillStyle=it.h>0.75?'#ff6b9d':'#ffd23f';for(let k=0;k<4;k++){g.beginPath();g.arc(-6+k*4,(k%2)*4-2,1.8,0,TAU);g.fill();}}break;
+   case'news':sh(12,10);g.fillStyle=it.h<0.5?'#2980b9':'#c0392b';g.fillRect(-6,-5,12,10);g.fillStyle='#f4f6f7';g.fillRect(-4,-3,8,3);break;
+   case'bikes':g.strokeStyle='#7f8c8d';g.lineWidth=2;for(let k=-12;k<=12;k+=8){g.beginPath();g.arc(k,0,4,Math.PI,0);g.stroke();}if(it.h<0.6){g.strokeStyle='#e84393';g.lineWidth=2;g.beginPath();g.arc(-8,-4,4,0,TAU);g.arc(2,-4,4,0,TAU);g.stroke();}break;
+   case'busstop':sh(54,18);g.fillStyle='rgba(160,210,240,0.55)';g.fillRect(-27,-9,54,18);g.strokeStyle='#2c3e50';g.lineWidth=2;g.strokeRect(-27,-9,54,18);g.fillStyle='#2c3e50';g.fillRect(-27,-9,54,4);g.fillStyle='#ffd23f';g.beginPath();g.arc(30,-6,5,0,TAU);g.fill();g.fillStyle='#16161d';g.font='bold 7px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('BUS',30,-6);break;
+   case'stree':{g.fillStyle='#5d4a3a';g.fillRect(-9,-9,18,18);g.fillStyle='#4a3a2c';g.fillRect(-7,-7,14,14);g.restore();g.save();const t={x:it.x,y:it.y,r:15+it.h*5,palm:false,seed:Math.floor(it.h*1000)};const [rx,ry]=projPt(t.x,t.y,55);g.strokeStyle='#5a3d22';g.lineWidth=3.5;g.beginPath();g.moveTo(t.x,t.y);g.lineTo(rx,ry);g.stroke();drawCanopy(t,rx,ry);break;}}
+  g.restore();}
+// ---------- nicer trees ----------
+const TREEC=[['#255b29','#2f7232','#46923a','#6fb04e'],['#2d5e22','#3d7a2a','#5a9a36','#86bd58'],['#1f5233','#2a6b40','#3f8a52','#6bb07a']];
+function drawCanopy(t,rx,ry){const pal=TREEC[(t.seed!=null?t.seed:Math.floor(t.x*0.37+t.y*0.11))%3],R0=t.r;
+  g.fillStyle=pal[0];g.beginPath();for(let k=0;k<7;k++){const a=k*TAU/7+t.x*0.01;g.moveTo(rx+Math.cos(a)*R0*0.5+R0*0.55,ry+Math.sin(a)*R0*0.5);g.arc(rx+Math.cos(a)*R0*0.5,ry+Math.sin(a)*R0*0.5,R0*0.55,0,TAU);}g.fill();
+  g.fillStyle=pal[1];g.beginPath();for(let k=0;k<5;k++){const a=k*TAU/5+t.y*0.01;g.moveTo(rx-R0*0.12+Math.cos(a)*R0*0.32+R0*0.45,ry-R0*0.14+Math.sin(a)*R0*0.32);g.arc(rx-R0*0.12+Math.cos(a)*R0*0.32,ry-R0*0.14+Math.sin(a)*R0*0.32,R0*0.45,0,TAU);}g.fill();
+  g.fillStyle=pal[2];g.beginPath();g.arc(rx-R0*0.25,ry-R0*0.3,R0*0.38,0,TAU);g.arc(rx+R0*0.05,ry-R0*0.4,R0*0.25,0,TAU);g.fill();g.fillStyle=pal[3];g.globalAlpha=0.6;g.beginPath();g.arc(rx-R0*0.33,ry-R0*0.4,R0*0.16,0,TAU);g.fill();g.globalAlpha=1;}
+function drawPalm(t,rx,ry,tt,sway){for(let k=0;k<8;k++){const a=k*TAU/8+t.x*0.01+Math.sin(tt*1.5+k)*0.04*sway,L=t.r*1.15,ex=rx+Math.cos(a)*L,ey=ry+Math.sin(a)*L,nx=-Math.sin(a),ny=Math.cos(a),w=t.r*0.24;
+    g.fillStyle=k%2?'#3f9a3a':'#2f8030';g.beginPath();g.moveTo(rx,ry);g.quadraticCurveTo(rx+Math.cos(a)*L*0.5+nx*w,ry+Math.sin(a)*L*0.5+ny*w,ex,ey);g.quadraticCurveTo(rx+Math.cos(a)*L*0.5-nx*w*0.4,ry+Math.sin(a)*L*0.5-ny*w*0.4,rx,ry);g.fill();
+    g.strokeStyle='rgba(20,60,20,0.5)';g.lineWidth=1;g.beginPath();g.moveTo(rx,ry);g.lineTo(ex,ey);g.stroke();}
+  g.fillStyle='#7a5a32';g.beginPath();g.arc(rx,ry,4.5,0,TAU);g.fill();g.fillStyle='#5a3f1e';for(let k=0;k<3;k++){g.beginPath();g.arc(rx+Math.cos(k*2.1)*4,ry+Math.sin(k*2.1)*4,2.4,0,TAU);g.fill();}}
+
+// ---------- ducks: live duck families, crossings, feeding, angry moms, golden duckling, rubber duck, pet duck ----------
+const DSPOT=[];let RUBBER=null;
+const DUCKC={f:{b:'#8a6a45',w:'#5d4630',h:'#7a5b3a'},m:{b:'#cfc8b8',w:'#7a6a58',h:'#1f7a3a'},pet:{b:'#f4f1ea',w:'#d9d2c3',h:'#f4f1ea'}};
+function dWalk(x,y,road){const t=tileAt(x,y);return t!==TL.BLD&&t!==TL.FENCE&&(road||t!==TL.ROAD);}
+function dWater(x,y){return tileAt(x,y)===TL.WATER;}
+function genDucks(){const N=MW*MH,lab=new Int32Array(N).fill(-1);let id=0;const comps=[];
+  for(let i=0;i<N;i++){if(lab[i]>=0||MAP[i]!==TL.WATER)continue;const st=[i];lab[i]=id;let n=0,sx=0,sy=0,big=false;
+    while(st.length){const k=st.pop();n++;const x=k%MW,y=(k/MW)|0;sx+=x;sy+=y;if(n>120)big=true;
+      if(x===0||y===0||x===MW-1||y===MH-1){big=true;}
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=MW||ny>=MH)continue;const q=ny*MW+nx;if(lab[q]<0&&MAP[q]===TL.WATER){lab[q]=id;st.push(q);}}}
+    if(!big&&n>=2)comps.push({x:(sx/n+0.5)*T,y:(sy/n+0.5)*T,n});id++;}
+  for(const c of comps)DSPOT.push({x:c.x,y:c.y,pond:1,cool:0});
+  const R=mulberry32(4242),sand=[];for(let y=2;y<MH-2;y+=2)for(let x=2;x<MW-2;x+=2){if(tget(x,y)!==TL.SAND)continue;let w=0;for(const [dx,dy] of [[2,0],[-2,0],[0,2],[0,-2]])if(tget(x+dx,y+dy)===TL.WATER)w++;if(w)sand.push([x,y]);}
+  for(let k=0;k<400&&DSPOT.length<comps.length+16;k++){const s=sand[Math.floor(R()*sand.length)];if(!s)break;const x=(s[0]+0.5)*T,y=(s[1]+0.5)*T;if(DSPOT.some(d=>hyp(d.x-x,d.y-y)<26*T))continue;DSPOT.push({x,y,cool:0});}
+  for(const sp of DSPOT){sp.cross=[];for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){let mode=0,a=null;const hx=Math.floor(sp.x/T),hy=Math.floor(sp.y/T);
+    for(let s=1;s<16;s++){const t=tget(hx+dx*s,hy+dy*s);if(t===TL.BLD||t===TL.FENCE)break;if(mode===0&&t!==TL.ROAD&&t!==TL.WATER){a={x:(hx+dx*s+0.5)*T,y:(hy+dy*s+0.5)*T};}
+      if(t===TL.ROAD){if(!a)break;mode=1;}else if(mode===1&&t!==TL.WATER){sp.cross.push([a,{x:(hx+dx*s+0.5)*T,y:(hy+dy*s+0.5)*T}]);break;}}}}
+  const pr=POI.pier||POI.tide;if(pr&&typeof nearWater==='function'){const w=nearWater(pr.x-380,pr.y+260);if(w)RUBBER={x:w.x,y:w.y,hx:w.x,hy:w.y,vx:0,vy:0,hits:0,sq:0};}}
+function quack(x,y,p,n,v){const k=(v==null?1:v)*dv(x,y);if(k<0.04)return;for(let i=0;i<(n||1);i++)aT(560*(p||1),0.12,'sawtooth',0.17*k,{to:330*(p||1),lp:1500,bp:1,q:3,at:i*0.17});}
+function peep(x,y){const k=dv(x,y);if(k<0.05)return;aT(2500+rr(-200,200),0.06,'sine',0.07*k,{to:3300});}
+function squeak(x,y){const k=dv(x,y);if(k<0.05)return;aT(1700,0.09,'sine',0.2*k,{to:2600});aT(2600,0.12,'sine',0.16*k,{to:1500,at:0.1});}
+function mkDuck(gr,k,x,y){const d={g:gr,k,x,y,a:rr(0,TAU),ph:rr(0,9),z:0,vz:0,st:'idle',dead:false,t:0};G.ducks.push(d);gr.m.push(d);return d;}
+function spawnDuckGroup(sp,opt){opt=opt||{};const gr={sp,home:{x:sp.x,y:sp.y},m:[],mode:'idle',t:rr(1,3),tx:sp.x,ty:sp.y,crossT:rr(12,30),noise:rr(2,5)};G.dgroups.push(gr);
+  const ok=(x,y)=>dWater(x,y)||dWalk(x,y);const pt=()=>{for(let k=0;k<20;k++){const x=sp.x+rr(-90,90),y=sp.y+rr(-90,90);if(ok(x,y))return[x,y];}return[sp.x,sp.y];};
+  if(opt.momOnly){const[x,y]=pt();mkDuck(gr,'f',x,y);gr.wait=1;return gr;}
+  const fam=rand()<0.62;if(fam){let [x,y]=pt();mkDuck(gr,'f',x,y);if(rand()<0.5)mkDuck(gr,'m',x+rr(-20,20),y+rr(-20,20));const nb=2+Math.floor(rand()*5);for(let i=0;i<nb;i++)mkDuck(gr,rand()<0.06&&!G.got.includes('egg_goldduck')?'gold':'b',x-rr(10,40),y+rr(-20,20));}
+  else{const n=2+Math.floor(rand()*3);for(let i=0;i<n;i++){const[x,y]=pt();mkDuck(gr,rand()<0.5?'m':'f',x,y);}}
+  return gr;}
+function duckLead(gr){return gr.m.find(d=>!d.dead&&!d.gone&&d.k!=='b'&&d.k!=='gold'&&d.st!=='fly')||gr.m.find(d=>!d.dead&&!d.gone);}
+function ducksScare(x,y,r){if(!G.ducks)return;for(const gr of G.dgroups){if(gr.lost||gr.chain)continue;let hit=false;for(const d of gr.m){if(d.dead||d.gone||d.pet)continue;if(hyp(d.x-x,d.y-y)<r){hit=true;break;}}if(!hit)continue;
+  gr.mode='flee';gr.t=rr(5,7);gr.fx=x;gr.fy=y;let q=0;for(const d of gr.m){if(d.dead||d.gone)continue;if(d.k==='b'||d.k==='gold'){d.st='run';}else{d.st='fly';d.vz=70;}if(q++<2)quack(d.x,d.y,rr(0.95,1.15),2);}
+  if(!gr.momBack)gr.momBack=rr(9,14);}}
+function ducksBoom(x,y){if(!G.ducks)return;for(const d of G.ducks)if(!d.dead&&!d.gone&&!d.pet&&hyp(d.x-x,d.y-y)<130)killDuck(d,G.player,'boom');ducksScare(x,y,650);}
+function ducksCall(){if(!G.ducks)return;const P=G.player;let n=0;for(const gr of G.dgroups){if(gr.lost||gr.chain||gr.mode==='flee'||gr.wait)continue;const L0=duckLead(gr);if(!L0||hyp(L0.x-P.x,L0.y-P.y)>280)continue;gr.mode='follow';gr.t=25;n++;quack(L0.x,L0.y,1,2);}
+  if(n){if(!G.duckFollowTip){G.duckFollowTip=1;toast(L(R2('🦆 הברווזים עוקבים אחריך! (שריקה נוספת מאריכה)','🦆 The ducks are following you! (whistle again to keep them)')),4);}react(nearestCiv(P.x,P.y,260),'duckFollow');}}
+function killDuck(d,by,how){if(d.dead||d.gone||d.pet)return;d.dead=true;d.deadT=0;d.st='dead';const pl=by===G.player||(by&&by===G.player.veh);
+  aT(700,0.18,'sawtooth',0.2*dv(d.x,d.y),{to:200,lp:1800});for(let i=0;i<(d.k==='b'?6:12);i++)G.dfeath.push({x:d.x,y:d.y,z:6,vx:rr(-70,70),vy:rr(-70,70),vz:rr(40,110),r:rr(0,TAU),life:rr(1.6,2.6),c:d.k==='b'?'#ffe27a':d.k==='gold'?'#ffd700':rand()<0.5?'#f4f1ea':DUCKC[d.k]?DUCKC[d.k].b:'#ddd'});
+  if(!pl)return;G.duckKills=(G.duckKills||0)+1;react(nearestCiv(d.x,d.y,320),'duckDead');crime(0.5);
+  if(G.duckKills===1)toast(L(R2('🦆 הרגת ברווז. איגוד הברווזים של סולס ביי פתח בחקירה.','🦆 You killed a duck. The Solace Bay Duck Union has opened an investigation.')),4);
+  else if(G.duckKills===10)toast(L(R2('🦆 10 ברווזים. הברווזים כבר תולים את התמונה שלך בפארק.','🦆 10 ducks. The ducks have put your photo up in the park.')),4);
+  const gr=d.g;if((d.k==='b'||d.k==='gold')&&gr){const mom=gr.m.find(o=>!o.dead&&!o.gone&&o.k==='f'&&o.st!=='fly');if(mom){mom.st='angry';mom.t=14;quack(mom.x,mom.y,0.8,3,1.3);if(!G.momTip){G.momTip=1;toast(L(R2('🦆 אמא ברווזה רוצה נקמה! ברח!','🦆 Mama duck wants revenge! Run!')),4);}}}}
+function duckHit(b){if(!G.ducks)return false;for(const d of G.ducks){if(d.dead||d.gone||d.pet||d.z>40)continue;if((d.x-b.x)**2+(d.y-b.y)**2<(d.k==='b'?100:170)){killDuck(d,b.op,'shot');return !b.expl;}}
+  const R0=RUBBER;if(R0&&(R0.x-b.x)**2+(R0.y-b.y)**2<45*45){squeak(R0.x,R0.y);R0.vx+=b.vx*0.02;R0.vy+=b.vy*0.02;R0.sq=0.5;if(++R0.hits===12)secret('rubber');return true;}return false;}
+function duckMove(d,tx,ty,sp,dt,road){const dx=tx-d.x,dy=ty-d.y,dd=hyp(dx,dy);if(dd<2)return 0;const wa=Math.atan2(dy,dx);d.a+=clamp(angDiff(d.a,wa),-dt*8,dt*8);
+  const s=Math.min(sp*dt,dd),nx=d.x+Math.cos(wa)*s,ny=d.y+Math.sin(wa)*s;
+  if(dWater(nx,ny)||dWalk(nx,ny,road)){d.x=nx;d.y=ny;d.ph+=dt*(dWater(nx,ny)?3:12);return s;}
+  if(dWater(nx,d.y)||dWalk(nx,d.y,road)){d.x=nx;d.ph+=dt*12;return s;}if(dWater(d.x,ny)||dWalk(d.x,ny,road)){d.y=ny;d.ph+=dt*12;return s;}return 0;}
+function pickDuckTarget(gr){const h=gr.home;for(let k=0;k<14;k++){const x=h.x+rr(-150,150),y=h.y+rr(-150,150);if(dWater(x,y)||dWalk(x,y)){gr.tx=x;gr.ty=y;return;}}gr.tx=h.x;gr.ty=h.y;}
+function ducksTick(dt){if(!G.ducks){G.ducks=[];G.dgroups=[];G.dfeath=[];}const P=G.player,px=P.veh?P.veh.x:P.x,py=P.veh?P.veh.y:P.y;
+  G.duckSpT=(G.duckSpT||0)-dt;if(G.duckSpT<=0){G.duckSpT=1.2;
+    for(const sp of DSPOT){if(sp.cool>0){sp.cool-=1.2;continue;}if(sp.act)continue;const d=hyp(sp.x-px,sp.y-py);if(d<1350&&d>(G.time<6?0:420)&&G.dgroups.filter(g0=>!g0.lost&&!g0.chain).length<7){sp.act=1;spawnDuckGroup(sp);}}
+    for(const gr of G.dgroups){if(gr.lost||gr.chain||gr.wait)continue;const alive=gr.m.filter(d=>!d.dead&&!d.gone);let far=true;for(const d of gr.m)if(hyp(d.x-px,d.y-py)<1900)far=false;if(far||!alive.length&&gr.m.every(d=>d.deadT>15)){gr.dead=1;gr.sp.act=0;gr.sp.cool=20;}}
+    if(G.dgroups.some(g0=>g0.dead)){G.dgroups=G.dgroups.filter(g0=>!g0.dead);G.ducks=G.ducks.filter(d=>d.g&&!d.g.dead||d.pet);}
+    G.ducks=G.ducks.filter(d=>!d.gone);
+    if(G.got.includes('petduck')&&!G.ducks.some(d=>d.pet)){const gr={m:[],pet:1,home:{x:px,y:py},mode:'pet'};G.dgroups.push(gr);const d=mkDuck(gr,'pet',P.x-30,P.y+20);d.pet=1;}}
+  // groups
+  for(const gr of G.dgroups){if(gr.pet||gr.lost)continue;const lead=duckLead(gr);if(!lead)continue;gr.t-=dt;
+    if(gr.mode==='idle'){if(gr.t<=0){gr.t=rr(3,7);pickDuckTarget(gr);}duckMove(lead,gr.tx,gr.ty,dWater(lead.x,lead.y)?28:36,dt,false);
+      gr.crossT-=dt;if(gr.crossT<=0){gr.crossT=rr(18,40);const sp=gr.sp;if(sp&&sp.cross&&sp.cross.length&&hyp(lead.x-px,lead.y-py)<850&&rand()<0.6){const c=sp.cross[Math.floor(rand()*sp.cross.length)];gr.mode='cross';gr.path=[c[0],c[1]];gr.back=[c[1],c[0]];gr.stay=0;gr.warned=0;}}}
+    else if(gr.mode==='cross'){const w=gr.path[0];if(!w){gr.stay+=dt;if(gr.stay>14){if(gr.back){gr.path=gr.back;gr.back=null;gr.warned=0;}else{gr.mode='idle';gr.t=0;}}}
+      else{if(!duckMove(lead,w.x,w.y,34,dt,true)&&hyp(lead.x-w.x,lead.y-w.y)>8){gr.stuck=(gr.stuck||0)+dt;if(gr.stuck>4){gr.path.shift();gr.stuck=0;}}if(hyp(lead.x-w.x,lead.y-w.y)<10)gr.path.shift();}
+      if(!gr.warned&&gr.m.some(d=>!d.dead&&tileAt(d.x,d.y)===TL.ROAD)&&onScreen(lead.x,lead.y,0)){gr.warned=1;if((G.time-(G.crossTip||-99))>60){G.crossTip=G.time;toast(L(R2('🦆 חציית ברווזים! כל התנועה עוצרת.','🦆 Duck crossing! All traffic stops.')),3);}react(nearestCiv(lead.x,lead.y,300),'duckCross');}}
+    else if(gr.mode==='follow'){const tx=px-Math.cos(P.a)*40,ty=py-Math.sin(P.a)*40;if(P.veh&&Math.abs(P.veh.speed)>150){gr.mode='return';gr.t=12;}else duckMove(lead,tx,ty,hyp(tx-lead.x,ty-lead.y)>60?95:40,dt,true);if(gr.t<=0){gr.mode='return';gr.t=12;}}
+    else if(gr.mode==='return'){if(!duckMove(lead,gr.home.x,gr.home.y,40,dt,true)||gr.t<=0){if(!onScreen(lead.x,lead.y,80)||gr.t<-6){for(const d of gr.m){d.x=gr.home.x+rr(-40,40);d.y=gr.home.y+rr(-40,40);}gr.mode='idle';gr.t=1;}}if(hyp(lead.x-gr.home.x,lead.y-gr.home.y)<60){gr.mode='idle';gr.t=1;}}
+    else if(gr.mode==='flee'){if(gr.t<=0){gr.mode='idle';gr.t=1;for(const d of gr.m)if(d.st==='run')d.st='idle';}}
+    if(gr.momBack!=null&&gr.mode!=='flee'){gr.momBack-=dt;if(gr.momBack<=0){gr.momBack=null;if(!gr.m.some(d=>!d.dead&&!d.gone&&d.k!=='b'&&d.k!=='gold')&&gr.m.some(d=>!d.dead&&!d.gone)){const a=rr(0,TAU),d=mkDuck(gr,'f',gr.home.x+Math.cos(a)*700,gr.home.y+Math.sin(a)*700);d.st='land';d.z=70;}}}
+    // ambient
+    gr.noise-=dt;if(gr.noise<=0){gr.noise=rr(2.5,6);const d=gr.m[Math.floor(rand()*gr.m.length)];if(d&&!d.dead&&!d.gone&&onScreen(d.x,d.y,40)){if(d.k==='b'||d.k==='gold')peep(d.x,d.y);else quack(d.x,d.y,rr(0.9,1.1),rand()<0.4?3:1,0.7);}}}
+  // individual ducks
+  let following=0;
+  for(const d of G.ducks){if(d.dead){d.deadT+=dt;continue;}const gr=d.g;d.t-=dt;
+    if(d.st==='fly'){d.z=Math.min(90,d.z+d.vz*dt);const ax=d.x-(gr.fx!=null?gr.fx:px),ay=d.y-(gr.fy!=null?gr.fy:py),a=Math.atan2(ay,ax);d.a=a;d.x+=Math.cos(a)*170*dt;d.y+=Math.sin(a)*170*dt;d.ph+=dt*16;if(hyp(d.x-px,d.y-py)>1100||d.z>=90&&!onScreen(d.x,d.y,100))d.gone=true;continue;}
+    if(d.st==='land'){const h=gr.home,dd=hyp(h.x-d.x,h.y-d.y);d.a=Math.atan2(h.y-d.y,h.x-d.x);const s=Math.min(dd,150*dt);d.x+=Math.cos(d.a)*s;d.y+=Math.sin(d.a)*s;d.z=Math.max(0,Math.min(d.z,dd*0.12));d.ph+=dt*16;if(dd<20){d.st='idle';d.z=0;quack(d.x,d.y,1,2);}continue;}
+    if(d.st==='run'){const ax=d.x-gr.fx,ay=d.y-gr.fy,a=Math.atan2(ay,ax)+Math.sin(G.time*3+d.ph)*0.6;duckMove(d,d.x+Math.cos(a)*40,d.y+Math.sin(a)*40,70,dt,true);continue;}
+    if(d.st==='angry'){const tx=P.veh?P.veh.x:P.x,ty=P.veh?P.veh.y:P.y,dd=hyp(tx-d.x,ty-d.y);duckMove(d,tx,ty,dd>30?118:20,dt,true);
+      if(dd<(P.veh?P.veh.t.w*0.5+16:24)&&(d.peck=(d.peck||0)-dt)<=0){d.peck=0.7;quack(d.x,d.y,0.85,1,1.2);if(!P.veh&&!P.dead){P.hp-=3;G.hurtFlash=0.3;}else if(P.veh)damageVeh(P.veh,1,null,'hit');d.say='!!!';d.sayT=0.6;}
+      if(d.t<=0||dd>900){d.st='idle';}continue;}
+    if(d.pet){const tgt=P.veh?null:{x:P.x-Math.cos(P.a)*34,y:P.y-Math.sin(P.a)*34};if(P.veh){d.ride=P.veh;d.x=P.veh.x;d.y=P.veh.y;}else{if(d.ride){d.ride=null;d.x=P.x-20;d.y=P.y+16;}const dd=hyp(tgt.x-d.x,tgt.y-d.y);if(dd>500){d.x=tgt.x;d.y=tgt.y;}else duckMove(d,tgt.x,tgt.y,dd>50?150:dd>14?60:0,dt,true);}
+      if((d.ns=(d.ns||rr(6,14))-dt)<=0){d.ns=rr(8,18);quack(d.x,d.y,1.15,rand()<0.3?2:1,0.6);}continue;}
+    if(d.st==='lost'){if(rand()<dt*0.6)peep(d.x,d.y);if(!P.veh&&!P.dead&&hyp(P.x-d.x,P.y-d.y)<46){d.st='chain';d.g=G.duckChain;G.duckChain.m.push(d);peep(d.x,d.y);peep(d.x,d.y);toast(L(R2('🐥 ברווזון הצטרף אליך!','🐥 A duckling joined you!')),2);}continue;}
+    if(gr&&(gr.mode==='follow'))following++;
+    // followers: chain behind previous member
+    if(gr){const lead=gr.chain?null:duckLead(gr);if(d!==lead){const idx=gr.m.indexOf(d);let prev=null;for(let i=idx-1;i>=0;i--){const o=gr.m[i];if(!o.dead&&!o.gone&&o.st!=='fly'&&o.st!=='land'&&o.st!=='angry'){prev=o;break;}}
+      if(!prev&&gr.chain)prev={x:P.x,y:P.y,a:P.a};if(prev){const gap=d.k==='b'||d.k==='gold'?15:22,tx=prev.x-Math.cos(prev.a)*gap,ty=prev.y-Math.sin(prev.a)*gap,dd=hyp(tx-d.x,ty-d.y);if(dd>2.5)duckMove(d,tx,ty,dd>80?110:dd>20?60:30,dt,true);if(dd>700&&!onScreen(d.x,d.y,50)){d.x=tx;d.y=ty;}}}}
+    // dodge / get run over
+    if(d.z<4){for(const v of G.vehicles){if(v.sunk||v.alt>0.2||Math.abs(v.x-d.x)>90||Math.abs(v.y-d.y)>90)continue;const sp=Math.abs(v.speed||0);if(sp<25)continue;
+        if(pointInVeh(v,d.x,d.y,4)){if(v.t.boat&&!dWater(d.x,d.y))continue;killDuck(d,v.driver===P?P:null,'car');break;}
+        if(d.k!=='b'&&d.k!=='gold'&&rand()<dt*3&&d.st!=='chain'){const a=v.a+Math.PI/2*(rand()<0.5?1:-1);duckMove(d,d.x+Math.cos(a)*30,d.y+Math.sin(a)*30,160,dt,true);}}}
+    if(d.k==='gold'&&!d.dead&&!P.veh&&!P.dead&&hyp(P.x-d.x,P.y-d.y)<30){if(secret('goldduck')){peep(d.x,d.y);toast(L(R2('🐥✨ ליטפת את הברווזון המוזהב. הוא הניח לך מטבע.','🐥✨ You petted the golden duckling. It left you a coin.')),4);mkPickup('cash',d.x+10,d.y+10,{amt:500});}d.k='b';}
+    d.road=tileAt(d.x,d.y)===TL.ROAD;if(d.sayT>0)d.sayT-=dt;}
+  if(following>=10&&secret('duckking'))toast(L(R2('🦆👑 עשרה ברווזים אחריך. אתה מלך הברווזים.','🦆👑 Ten ducks behind you. You are the Duck King.')),4);
+  // player sprinting through ducks
+  if(!P.veh&&!P.dead){const sp=hyp(P.mvx||0,P.mvy||0);if(sp>120)for(const d of G.ducks){if(d.dead||d.gone||d.pet||d.st!=='idle'&&d.st!=='chain')continue;if(Math.abs(d.x-P.x)<34&&Math.abs(d.y-P.y)<34){const a=Math.atan2(d.y-P.y,d.x-P.x);d.x+=Math.cos(a)*10;d.y+=Math.sin(a)*10;if(rand()<0.3)quack(d.x,d.y,1.2,1,0.8);}}}
+  // feathers
+  for(const f of G.dfeath){f.life-=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.vx*=1-dt*1.5;f.vy*=1-dt*1.5;f.vz-=140*dt;if(f.vz<-25)f.vz=-25;f.z=Math.max(0,f.z+f.vz*dt);f.r+=dt*4;f.x+=Math.sin(G.time*4+f.r)*dt*14;}
+  if(G.dfeath.length)G.dfeath=G.dfeath.filter(f=>f.life>0);
+  // rubber duck
+  const R0=RUBBER;if(R0){R0.x+=R0.vx*dt;R0.y+=R0.vy*dt;R0.vx*=1-dt*0.8;R0.vy*=1-dt*0.8;R0.vx+=(R0.hx-R0.x)*dt*0.05;R0.vy+=(R0.hy-R0.y)*dt*0.05;if(R0.sq>0)R0.sq-=dt;
+    if(P.veh&&P.veh.t.boat){const v=P.veh,dd=hyp(v.x-R0.x,v.y-R0.y);if(dd<70&&dd>1){R0.vx+=(R0.x-v.x)/dd*90;R0.vy+=(R0.y-v.y)/dd*90;if(R0.sq<=0){squeak(R0.x,R0.y);R0.sq=0.6;}}}}}
+// ---------- drawing ----------
+function drawDuckBody(d,x,y,s,swim,fly){const k=d.k,a=d.a,wob=swim||fly?0:Math.sin(d.ph)*0.18;g.save();g.translate(x,y);g.rotate(a+wob);g.scale(s,s);
+  if(k==='b'||k==='gold'){const gd=k==='gold';g.fillStyle=gd?'#ffd700':'#ffd84a';g.beginPath();g.ellipse(0,0,5.4,4.3,0,0,TAU);g.fill();g.fillStyle=gd?'#e6a800':'#b89430';g.beginPath();g.ellipse(-1.5,0,2.6,1.6,0,0,TAU);g.fill();
+    g.fillStyle=gd?'#fff1a0':'#ffe27a';g.beginPath();g.arc(4.6,0,3.1,0,TAU);g.fill();g.fillStyle='#e08a20';g.beginPath();g.ellipse(7.6,0,1.8,1.2,0,0,TAU);g.fill();g.fillStyle='#222';g.fillRect(5,-1.9,1,1);g.fillRect(5,0.9,1,1);
+    if(gd&&Math.sin(G.time*6+d.ph)>0.6){g.fillStyle='#fff';g.fillRect(-3,-5,1.6,1.6);g.fillRect(2,4,1.2,1.2);}g.restore();return;}
+  const C=DUCKC[k]||DUCKC.f;
+  if(fly){const fl=Math.sin(d.ph)*0.9;g.fillStyle=C.w;for(const sd of[-1,1]){g.save();g.scale(1,sd);g.rotate(-0.3+fl*0.5);g.beginPath();g.ellipse(-1,9,4,10*(0.55+Math.abs(fl)*0.45),0.2,0,TAU);g.fill();g.fillStyle='#2e6fd0';g.fillRect(-3,4,3,2.5);g.fillStyle=C.w;g.restore();}}
+  g.fillStyle=C.w;g.beginPath();g.moveTo(-9,-2.5);g.lineTo(-13,0);g.lineTo(-9,2.5);g.fill();
+  g.fillStyle=C.b;g.beginPath();g.ellipse(0,0,9,6,0,0,TAU);g.fill();
+  if(!fly){g.fillStyle=C.w;g.beginPath();g.ellipse(-2,-2.6,5.5,2.4,-0.12,0,TAU);g.fill();g.beginPath();g.ellipse(-2,2.6,5.5,2.4,0.12,0,TAU);g.fill();if(k!=='pet'){g.fillStyle='#2e6fd0';g.fillRect(-1.5,-4.4,2.6,1.2);g.fillRect(-1.5,3.2,2.6,1.2);}}
+  if(k==='m'){g.fillStyle='#7b3f22';g.beginPath();g.ellipse(5.5,0,3.2,4.4,0,0,TAU);g.fill();g.fillStyle='#fff';g.beginPath();g.ellipse(7.3,0,1,3.4,0,0,TAU);g.fill();}
+  g.fillStyle=C.h;g.beginPath();g.arc(8.8,0,3.9,0,TAU);g.fill();if(k==='m'){g.fillStyle='rgba(255,255,255,0.25)';g.beginPath();g.arc(9.6,-1.2,1.5,0,TAU);g.fill();}
+  g.fillStyle=k==='m'?'#e8c33a':'#e8962a';g.beginPath();g.ellipse(13.2,0,2.6,1.7,0,0,TAU);g.fill();
+  g.fillStyle='#111';g.fillRect(9.6,-2.8,1.2,1.2);g.fillRect(9.6,1.6,1.2,1.2);
+  if(k==='pet'){g.fillStyle='#d62828';g.fillRect(5.2,-4,2.4,8);g.beginPath();g.moveTo(5.2,-4);g.lineTo(1.5,-7);g.lineTo(3.6,-3.6);g.fill();}
+  g.restore();}
+function drawDuck(d,inV){if(d.gone||!inV(d.x,d.y,60))return;const swim=!d.dead&&d.z<2&&dWater(d.x,d.y),s=(d.k==='b'||d.k==='gold'?1.5:1.6);
+  if(d.dead){if(d.deadT>25)return;g.globalAlpha=Math.max(0,1-d.deadT/25);g.fillStyle='rgba(120,20,20,0.35)';g.beginPath();g.ellipse(d.x,d.y,9,6,d.a,0,TAU);g.fill();g.save();g.translate(d.x,d.y);g.rotate(d.a);g.scale(1.3,0.5);g.translate(-d.x,-d.y);drawDuckBody(Object.assign({},d,{ph:0}),d.x,d.y,1,true,false);g.restore();g.globalAlpha=1;return;}
+  if(d.ride){const v=d.ride;drawDuckBody(Object.assign({},d,{a:v.a}),d.x-Math.cos(v.a)*v.t.l*0.08,d.y-Math.sin(v.a)*v.t.l*0.08,s*1.05,true,false);return;}
+  if(d.z>2)return;
+  if(swim){g.strokeStyle=`rgba(255,255,255,${0.25+0.12*Math.sin(G.time*3+d.ph)})`;g.lineWidth=1.2;g.beginPath();g.ellipse(d.x,d.y,13*s,9*s,d.a,0,TAU);g.stroke();}
+  else{g.fillStyle='rgba(0,0,0,0.22)';g.beginPath();g.ellipse(d.x+2,d.y+3,9*s,6*s,d.a,0,TAU);g.fill();
+    if(d.k!=='b'&&d.k!=='gold'){const st=Math.sin(d.ph);g.fillStyle='#e8962a';for(const sd of[-1,1]){const fx=d.x+Math.cos(d.a)*(st*sd*3)-Math.sin(d.a)*sd*3,fy=d.y+Math.sin(d.a)*(st*sd*3)+Math.cos(d.a)*sd*3;g.beginPath();g.arc(fx,fy,2,0,TAU);g.fill();}}}
+  drawDuckBody(d,d.x,d.y-(swim?0:1),s,swim,false);
+  const bub=d.st==='lost'?'?':d.st==='angry'?'!!!':d.sayT>0?d.say:null;if(bub){g.font='bold 13px Rubik,sans-serif';g.textAlign='center';g.fillStyle='rgba(10,12,22,0.8)';rrect(g,d.x-14,d.y-34,28,17,8);g.fill();g.fillStyle=d.st==='angry'?'#ff5d5d':'#ffd23f';g.fillText(bub,d.x,d.y-21);}
+  if(d.st==='lost'){const pu=(Math.sin(G.time*4)+1)/2;g.strokeStyle=`rgba(255,216,74,${0.3+pu*0.4})`;g.lineWidth=2;g.beginPath();g.arc(d.x,d.y,18+pu*5,0,TAU);g.stroke();}}
+function drawRubber(inV){const R0=RUBBER;if(!R0||!inV(R0.x,R0.y,120))return;const bob=Math.sin(G.time*1.6)*3,sq=R0.sq>0?1+Math.sin(R0.sq*40)*0.06:1,x=R0.x,y=R0.y+bob;
+  g.strokeStyle='rgba(255,255,255,0.35)';g.lineWidth=2;g.beginPath();g.ellipse(R0.x,R0.y+4,72+Math.sin(G.time*2)*4,48,0,0,TAU);g.stroke();
+  g.fillStyle='rgba(0,40,60,0.3)';g.beginPath();g.ellipse(x+8,y+10,62,42,0,0,TAU);g.fill();
+  g.save();g.translate(x,y);g.scale(sq,1/sq);
+  const gr=g.createRadialGradient(-12,-14,6,0,0,64);gr.addColorStop(0,'#fff27a');gr.addColorStop(0.6,'#ffd21f');gr.addColorStop(1,'#e0a800');g.fillStyle=gr;
+  g.beginPath();g.ellipse(-8,0,60,40,0,0,TAU);g.fill();g.beginPath();g.moveTo(-60,-14);g.quadraticCurveTo(-90,-30,-76,0);g.quadraticCurveTo(-90,30,-60,14);g.fill();
+  g.fillStyle='rgba(224,168,0,0.6)';g.beginPath();g.ellipse(-18,-22,24,10,-0.3,0,TAU);g.fill();g.beginPath();g.ellipse(-18,22,24,10,0.3,0,TAU);g.fill();g.restore();
+  const [hx,hy]=projPt(x+30,y,45);const hg=g.createRadialGradient(hx-8,hy-10,4,hx,hy,34);hg.addColorStop(0,'#fff6a0');hg.addColorStop(1,'#f2bd00');g.fillStyle=hg;g.beginPath();g.arc(hx,hy,30,0,TAU);g.fill();
+  g.fillStyle='#ff7a1a';g.beginPath();g.ellipse(hx+32,hy+2,15,9,0,0,TAU);g.fill();g.fillStyle='#e85d00';g.fillRect(hx+20,hy+1,26,2);
+  g.fillStyle='#fff';for(const sd of[-1,1]){g.beginPath();g.arc(hx+12,hy+sd*12,7,0,TAU);g.fill();}g.fillStyle='#111';for(const sd of[-1,1]){g.beginPath();g.arc(hx+14,hy+sd*12,3.6,0,TAU);g.fill();}
+  if(R0.sq>0){g.font='bold 16px Rubik,sans-serif';g.textAlign='center';g.fillStyle='#fff';g.fillText(G.lang==='he'?'ציייץ!':'SQUEAK!',hx,hy-44);}}
+function drawDucks(inV){if(!G.ducks)return;drawRubber(inV);for(const d of G.ducks)drawDuck(d,inV);
+  for(const f of G.dfeath){if(!inV(f.x,f.y,40))continue;g.globalAlpha=Math.min(1,f.life);g.fillStyle=f.c;g.save();g.translate(f.x,f.y-f.z);g.rotate(f.r);g.beginPath();g.ellipse(0,0,4,1.6,0,0,TAU);g.fill();g.restore();}g.globalAlpha=1;}
+function drawDucksAir(inV){if(!G.ducks)return;for(const d of G.ducks){if(d.dead||d.gone||d.z<=2||!inV(d.x,d.y,120))continue;
+  g.fillStyle='rgba(0,0,0,0.18)';g.beginPath();g.ellipse(d.x+d.z*0.5,d.y+d.z*0.7,8,5,d.a,0,TAU);g.fill();const [sx,sy]=projPt(d.x,d.y,d.z*3);drawDuckBody(d,sx,sy,1.6+d.z/140,false,true);}}
+// ---------- side mission: lost ducklings ----------
+function buildMissions5(){Object.assign(SPK,{dora:{he:'דורה מהפארק',en:'Dora from the park',c:'#ffd84a',p:300}});
+  {let best=null,bs=-1;for(const [ox,oy] of [[260,-170],[-260,-170],[260,190],[-260,190],[0,240],[0,-220]]){const q=nearWalk(POI.duck.x+ox,POI.duck.y+oy);if(!q)continue;let md=1e9;for(const m of SIDE.concat(MISSIONS))if(m.start)md=Math.min(md,hyp(m.start.x-q.x,m.start.y-q.y));if(md>bs){bs=md;best=q;}}POI.doraStart=best||{x:POI.duck.x,y:POI.duck.y+240};}
+  SIDE.push({id:'s15',name:R2('ברווזונים אבודים','Lost Ducklings'),giver:'dora',start:POI.doraStart,look:'elder',steps:[
+   {t:'talk',lines:[l('dora','אתה! כן אתה, עם הפנים של מישהו שדורס ברווזים. אני דורה. אני מאכילה את הברווזים כבר ארבעים שנה.','You! Yes, you, with the face of someone who runs over ducks. I am Dora. I have fed these ducks for forty years.'),
+    l('ray','אני לא דורס ברווזים. רוב הזמן.','I do not run over ducks. Mostly.'),l('dora','אמא ברווזה איבדה חמישה ברווזונים. הם נבהלו מהזיקוקים של ראש העיר ופרחו לכל העיר.','Mama duck lost five ducklings. The mayor\'s fireworks scared them all over the city.'),
+    l('dora','לך אליהם ברגל, הם יצטרפו אליך בשורה. ואל תיסע מהר! ברווזונים לא נוסעים במהירות של מכונית.','Walk up to them and they will line up behind you. And no speeding! Ducklings do not do car speed.')]},
+   {t:'cond',init:M=>{const P=G.player;G.duckChain={m:[],chain:1,mode:'chain',home:{x:POI.duck.x,y:POI.duck.y}};G.dgroups.push(G.duckChain);
+     const lostG={m:[],lost:1,home:{x:POI.duck.x,y:POI.duck.y},mode:'lost'};G.dgroups.push(lostG);M.lostG=lostG;M.del=0;
+     const momG=spawnDuckGroup({x:POI.duck.x,y:POI.duck.y,cross:[]},{momOnly:1});M.momG=momG;
+     const angs=[0.3,1.5,2.6,3.8,5.0];for(const a0 of angs){const r=rr(650,1200);const q=nearWalk(POI.duck.x+Math.cos(a0)*r,POI.duck.y+Math.sin(a0)*r)||{x:POI.duck.x+Math.cos(a0)*300,y:POI.duck.y+Math.sin(a0)*300};const d=mkDuck(lostG,'b',q.x,q.y);d.st='lost';}},
+    f:M=>{const lost=M.lostG.m.filter(d=>d.st==='lost'&&!d.dead),ch=G.duckChain.m.filter(d=>!d.dead),dead=M.lostG.m.filter(d=>d.dead).length;
+      if(dead){failMission(L(R2('ברווזון נפגע... דורה לא תסלח לך.','A duckling got hurt... Dora will never forgive you.')));return false;}
+      if(hyp(G.player.x-POI.duck.x,G.player.y-POI.duck.y)<200&&!G.player.veh)for(const d of ch){d.st='idle';d.g=M.momG;M.momG.m.push(d);M.del++;G.duckChain.m.splice(G.duckChain.m.indexOf(d),1);peep(d.x,d.y);}
+      if(M.del>=5)return true;
+      const P=G.player,txt=fmt(L(R2('מצא את הברווזונים ({0}/5 אצלך, {1}/5 בבית)','Find the ducklings ({0}/5 with you, {1}/5 home)')),ch.length,M.del);setObj(txt);
+      if(lost.length){let b=lost[0];for(const d of lost)if(hyp(d.x-P.x,d.y-P.y)<hyp(b.x-P.x,b.y-P.y))b=d;M.target={x:b.x,y:b.y};}else M.target={x:POI.duck.x,y:POI.duck.y};
+      if(G.player.veh&&ch.length&&Math.abs(G.player.veh.speed)>90&&!M.warn){M.warn=1;toast(L(R2('🐥 לאט! הברווזונים לא עומדים בקצב.','🐥 Slow down! The ducklings cannot keep up.')),3);}
+      return false;},obj:R2('מצא את הברווזונים האבודים','Find the lost ducklings')},
+   {t:'talk',lines:[l('dora','כולם פה! אמא ברווזה אומרת תודה. כלומר, היא אמרה "קוואק", אבל בטון של תודה.','They are all here! Mama duck says thank you. Well, she said "quack", but in a grateful tone.'),
+    l('dora','קח את זה. זה ברווז. הוא מעכשיו שלך. הוא נבחר כי הוא הכי עצבני.','Take this. It is a duck. It is yours now. I picked him because he is the angriest.'),l('ray','...תודה?','...thanks?')]},
+   {t:'reward',money:1500,fn:()=>{if(!G.got.includes('petduck'))G.got.push('petduck');if(G.duckChain){G.duckChain.m.length=0;}setTimeout(()=>toast(L(R2('🦆 קיבלת ברווז מחמד. הוא הולך אחריך ויושב על הגג של כל רכב.','🦆 You got a pet duck. It follows you and rides on the roof of every car.')),6),1800);}}]});}
+Object.assign(REACT,{
+ duckDead:[R2('הברווז!!! מה עשית?!','The duck!!! What did you do?!'),R2('יש לך לב של אבן!','You have a heart of stone!'),R2('אני מתקשר לאיגוד הברווזים!','I am calling the Duck Union!'),R2('הוא היה בדרך הביתה...','He was on his way home...'),R2('זה היה ברווז עם משפחה!','That duck had a family!'),R2('מישהו צילם את זה? אני רוצה עדים!','Did anyone film that? I want witnesses!')],
+ duckCross:[R2('ברווזים חוצים! כולם לעצור!','Ducks crossing! Everybody stop!'),R2('אוו, תראו את הקטנים!','Aww, look at the little ones!'),R2('זה הפקק הכי חמוד שהיה פה אי פעם.','Cutest traffic jam this town has ever seen.'),R2('תנו להם, יש להם זכות קדימה!','Let them go, they have right of way!'),R2('אחד, שתיים, שלוש... הם עדיין יוצאים!','One, two, three... they keep coming!')],
+ duckFollow:[R2('למה כל הברווזים הולכים אחריו?','Why are all the ducks following him?'),R2('אחי, אתה אבא שלהם עכשיו.','Dude, you are their dad now.'),R2('זה מצעד? יש פה מצעד?','Is this a parade? Is there a parade?'),R2('הוא שורק והם באים. אני שורק ואף אחד לא בא.','He whistles and they come. I whistle and nobody comes.')]});
+CONVS.push(
+ {t:[],l:[R2('ראית את הברווזים חוצים את הכביש היום?','Did you see the ducks crossing the road today?'),R2('ראיתי. אוטובוס שלם עצר. הנהג מחא כפיים.','I did. A whole bus stopped. The driver applauded.'),R2('הלוואי שעצרו ככה בשבילי.','I wish they stopped like that for me.'),R2('אתה לא חמוד מספיק.','You are not cute enough.')]},
+ {t:[],l:[R2('קראתי שבסולס ביי יש יותר ברווזים מעורכי דין.','I read that Solace Bay has more ducks than lawyers.'),R2('ועדיין, הברווזים מנצחים בבית משפט.','And still the ducks win in court.')]},
+ {t:[],l:[R2('אני מאכילה את הברווזים כל בוקר.','I feed the ducks every morning.'),R2('זה לא אסור?','Isn\'t that forbidden?'),R2('הם אף פעם לא הלשינו עליי.','They never snitched on me.')]},
+ {t:['harbor'],l:[R2('הברווז הצהוב הענק בנמל... מישהו יודע מאיפה הוא הגיע?','The giant yellow duck in the harbor... anyone know where it came from?'),R2('אומרים שהוא נפל מאמבטיה של ענק.','They say it fell out of a giant\'s bathtub.'),R2('ואם תירה בו הוא מצייץ.','And if you shoot it, it squeaks.'),R2('למה שמישהו יירה בברווז גומי?','Why would anyone shoot a rubber duck?'),R2('...אתה לא מכיר את האנשים פה.','...you do not know the people here.')]},
+ {t:[],l:[R2('הבן שלי רוצה ברווז מחמד.','My son wants a pet duck.'),R2('אמרת לו לא?','You said no?'),R2('אמרתי. הברווז לא הסכים. הוא גר אצלנו כבר שבוע.','I did. The duck disagreed. It has lived with us for a week.')]});
 
 const CV=document.getElementById('cv'),g=CV.getContext('2d');
 const LC=document.createElement('canvas'),lg=LC.getContext('2d');
@@ -2263,10 +2707,16 @@ const SHOPC=['255,196,120','130,225,255','255,125,205'];
 function shopOf(b){return b.ht>1.5&&!b.cont&&!b.hangar&&!b.army&&!b.lh&&!b.court&&(b.seed&7)<4?1+(b.seed>>>3)%3:0;}
 function glow(q,sp,x,y,r,a){if(a<=0.01)return;q.globalAlpha=Math.min(1,a);q.drawImage(sp,x-r,y-r,r*2,r*2);}
 
-function getChunk(cx,cy){const k=cx+','+cy;let c=CHUNKS.get(k);if(c){CHUNKS.delete(k);CHUNKS.set(k,c);return c;}
-  c=document.createElement('canvas');c.width=CHPX;c.height=CHPX;const q=c.getContext('2d');
+const CHPOOL=[];
+function getChunk(cx,cy){const k=cx+','+cy;let c=CHUNKS.get(k);if(c){CHUNKS.delete(k);CHUNKS.set(k,c);return c;}return buildChunk(cx,cy);}
+function buildChunk(cx,cy){const k=cx+','+cy;let c=CHPOOL.pop();if(!c){c=document.createElement('canvas');c.width=CHPX;c.height=CHPX;}const q=c.getContext('2d');q.setTransform(1,0,0,1,0,0);q.globalAlpha=1;q.globalCompositeOperation='source-over';q.clearRect(0,0,CHPX,CHPX);
   for(let ty=0;ty<CH;ty++)for(let tx=0;tx<CH;tx++)drawTile(q,cx*CH+tx,cy*CH+ty,tx*T,ty*T);
-  CHUNKS.set(k,c);if(CHUNKS.size>60)CHUNKS.delete(CHUNKS.keys().next().value);return c;}
+  CHUNKS.set(k,c);G.chunkBuilt=(G.chunkBuilt||0)+1;while(CHUNKS.size>64){const ok=CHUNKS.keys().next().value;CHPOOL.push(CHUNKS.get(ok));CHUNKS.delete(ok);}return c;}
+function chunkPrefetch(){if(!G.view||G.state!=='play')return;const P=G.player,v=P.veh,vx=v?v.vx:(P.mvx||0),vy=v?v.vy:(P.mvy||0);
+  const [x0,y0,x1,y1]=G.view,lx=vx*1.3,ly=vy*1.3,cxm=(x0+x1)/2+lx,cym=(y0+y1)/2+ly;
+  const a0=Math.floor((Math.min(x0,x0+lx)-CHPX*0.6)/CHPX),a1=Math.floor((Math.max(x1,x1+lx)+CHPX*0.6)/CHPX),b0=Math.floor((Math.min(y0,y0+ly)-CHPX*0.6)/CHPX),b1=Math.floor((Math.max(y1,y1+ly)+CHPX*0.6)/CHPX);
+  let best=null,bd=1e18;for(let cy=b0;cy<=b1;cy++)for(let cx=a0;cx<=a1;cx++){if(cx<0||cy<0||cx*CH>=MW||cy*CH>=MH)continue;if(CHUNKS.has(cx+','+cy))continue;const d=((cx+0.5)*CHPX-cxm)**2+((cy+0.5)*CHPX-cym)**2;if(d<bd){bd=d;best=[cx,cy];}}
+  if(best)buildChunk(best[0],best[1]);}
 function cornerCut(q,px,py,x,y,r,ok,col,foam){const cs=[[0,0,-1,-1],[T,0,1,-1],[T,T,1,1],[0,T,-1,1]];
   for(const [ox,oy,dx,dy] of cs){const a=tget(x+dx,y),b=tget(x,y+dy);if(!ok(a)||!ok(b))continue;const cx=px+ox,cy=py+oy;
     q.fillStyle=col(a);q.beginPath();q.moveTo(cx,cy);q.lineTo(cx-dx*r,cy);q.arcTo(cx,cy,cx,cy-dy*r,r);q.closePath();q.fill();
@@ -2292,6 +2742,9 @@ function drawTile(q,x,y,px,py){const t=tget(x,y),sh=TSH[y*MW+x]||0;q.fillStyle=T
     q.fillStyle='rgba(255,255,255,0.035)';for(let k=0;k<5;k++)q.fillRect(px+((sh*877*(k+1))%60),py+((sh*349*(k+2))%60),3,2);
     q.fillStyle='rgba(0,0,0,0.1)';for(let k=0;k<4;k++)q.fillRect(px+((sh*491*(k+2))%58),py+((sh*263*(k+1))%58),4,3);
     if(sh>0.93){q.fillStyle='#2c2d31';q.beginPath();q.arc(px+32,py+32,9,0,TAU);q.fill();q.strokeStyle='rgba(255,255,255,0.08)';q.lineWidth=1.5;q.stroke();}
+    else if(sh>0.6&&sh<0.66){q.fillStyle='rgba(10,10,14,0.22)';q.beginPath();q.ellipse(px+20+sh*20,py+30,14,8,sh*3,0,TAU);q.fill();q.fillStyle='rgba(90,60,140,0.08)';q.beginPath();q.ellipse(px+22+sh*20,py+29,7,4,sh*3,0,TAU);q.fill();}
+    else if(sh>0.3&&sh<0.36){q.strokeStyle='rgba(0,0,0,0.28)';q.lineWidth=1.2;q.beginPath();q.moveTo(px+8,py+10+sh*30);q.lineTo(px+22,py+18+sh*20);q.lineTo(px+30,py+14+sh*30);q.lineTo(px+44,py+28);q.stroke();}
+    else if(sh>0.8&&sh<0.84){q.fillStyle='rgba(255,255,255,0.045)';q.fillRect(px+6,py+8,40,30);q.strokeStyle='rgba(0,0,0,0.15)';q.lineWidth=1;q.strokeRect(px+6.5,py+8.5,40,30);}
     if(v&&!h){if(XS.includes(x)){q.fillStyle='#d8c25a';q.fillRect(px+T-2,py+6,4,22);q.fillRect(px+T-2,py+38,4,22);}
       const up=isHR(y-1),dn=isHR(y+1);if(up||dn){q.fillStyle='rgba(240,240,240,0.78)';for(let k=0;k<6;k++)q.fillRect(px+3+k*10.5,up?py+4:py+T-24,6,20);}}
     else if(h&&!v){if(YS.includes(y)){q.fillStyle='#d8c25a';q.fillRect(px+6,py+T-2,22,4);q.fillRect(px+38,py+T-2,22,4);}
@@ -2335,7 +2788,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
     else if(dc.t==='skid'){g.fillStyle='rgba(20,20,20,0.28)';g.fillRect(dc.x-3,dc.y-3,6,6);}
     else if(dc.t==='scorch'){g.fillStyle='rgba(15,15,15,0.5)';g.beginPath();g.arc(dc.x,dc.y,dc.r,0,TAU);g.fill();}}
   if(P.inside)drawInterior(P.inside);
-  for(const dc of DECOR){if(!inV(dc.x,dc.y,dc.t==='runway'?5000:dc.t==='stadium'?520:120))continue;if(!drawDecor2(dc))drawDecor(dc);}
+  for(const dc of DECOR){if(!inV(dc.x,dc.y,dc.t==='runway'?5000:dc.t==='stadium'?520:dc.t==='golf'?1000:120))continue;if(!drawDecor2(dc))drawDecor(dc);}
   // lamp posts + signals (bodies)
   const lamps=[];for(const l of LAMPS)if(inV(l.x,l.y,l.big?460:250)){lamps.push(l);g.strokeStyle='#2a2c30';g.lineWidth=4;g.beginPath();g.moveTo(l.x,l.y);g.lineTo(l.lx,l.ly);g.stroke();
     g.fillStyle='#1d1f22';g.beginPath();g.arc(l.x,l.y,5,0,TAU);g.fill();g.fillStyle=d>0.05?'#fff2c8':'#c9ccd0';g.beginPath();g.arc(l.lx,l.ly,5,0,TAU);g.fill();}
@@ -2344,7 +2797,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
     for(let k=0;k<3;k++){g.fillStyle=cols[k][0]===st?cols[k][2]:cols[k][1];g.beginPath();g.arc(-8+k*8,0,3.3,0,TAU);g.fill();}g.restore();});
   for(const l of LADS)if(inV(l.gx,l.gy,30)){const pu=(Math.sin(tt*5)+1)/2,nr=G.nearLad===l;g.fillStyle=`rgba(255,210,63,${0.22+pu*0.2})`;g.beginPath();g.arc(l.gx,l.gy,nr?27:20+pu*4,0,TAU);g.fill();g.strokeStyle='#ffd23f';g.lineWidth=3;g.stroke();
     g.save();g.translate(l.gx,l.gy);g.rotate(Math.atan2(l.ry-l.gy,l.rx-l.gx)+Math.PI/2);g.strokeStyle='#1b1d22';g.lineWidth=3;g.beginPath();g.moveTo(-5,-10);g.lineTo(-5,10);g.moveTo(5,-10);g.lineTo(5,10);for(let k=-7;k<=7;k+=4.6){g.moveTo(-5,k);g.lineTo(5,k);}g.stroke();g.restore();}
-  drawCityGround(inV);drawProps(inV);drawLife(inV);gpsWorld();
+  drawCityGround(inV);drawStreet(inV);drawProps(inV);drawLife(inV);gpsWorld();
   drawMarkers(inV);
   for(const p of G.pickups){if(p.taken||p.h||!inV(p.x,p.y,30))continue;drawPickup(p);}
   for(const p of G.peds)if(p.dead&&!p.veh&&inV(p.x,p.y,30))drawPed(p);
@@ -2368,10 +2821,7 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
   for(const t of TREES){if(!inV(t.x,t.y,90))continue;let [rx,ry]=projPt(t.x,t.y,t.palm?90:70);rx+=Math.sin(tt*1.7+t.x*0.01)*sway;ry+=Math.cos(tt*1.3+t.y*0.01)*sway*0.5;
     if(su.a>0.02){g.fillStyle=`rgba(0,4,18,${su.a})`;g.beginPath();g.ellipse(t.x+su.ox*40,t.y+su.oy*40,t.r*0.95,t.r*0.8,0,0,TAU);g.fill();}
     g.strokeStyle='#5a3d22';g.lineWidth=5;g.beginPath();g.moveTo(t.x,t.y);g.lineTo(rx,ry);g.stroke();
-    if(t.palm){for(let k=0;k<7;k++){const a=k*TAU/7+t.x*0.01+Math.sin(tt*1.5+k)*0.04*sway;g.fillStyle=k%2?'#3f9a3a':'#358a33';g.beginPath();g.ellipse(rx+Math.cos(a)*t.r*0.55,ry+Math.sin(a)*t.r*0.55,t.r*0.62,t.r*0.19,a,0,TAU);g.fill();}
-      g.fillStyle='#6b4f2a';g.beginPath();g.arc(rx,ry,5,0,TAU);g.fill();}
-    else{g.fillStyle='#28602a';g.beginPath();g.arc(rx,ry,t.r,0,TAU);g.fill();g.fillStyle='#34772f';g.beginPath();g.arc(rx-t.r*0.18,ry-t.r*0.2,t.r*0.74,0,TAU);g.fill();
-      g.fillStyle='#4a9438';g.beginPath();g.arc(rx-t.r*0.3,ry-t.r*0.34,t.r*0.4,0,TAU);g.fill();}}
+    if(t.palm)drawPalm(t,rx,ry,tt,sway);else drawCanopy(t,rx,ry);}
   drawLighting(lamps,inV,bl);drawSirens();
   // ---- emissive pass ----
   setW();g.globalCompositeOperation='lighter';
@@ -2388,11 +2838,11 @@ function render(){const W=G.vw,H=G.vh,dpr=G.dpr,c=G.cam,s=c.s,d=ENV.dark,P=G.pla
   g.globalAlpha=1;
   for(const p of G.parts){if(!(p.type==='fire'||p.type==='spark'||p.type==='flash')||!inV(p.x,p.y,30))continue;const a=p.life/p.max;
     g.fillStyle=p.type==='fire'?`rgba(255,${(110+a*120)|0},35,${a})`:p.type==='spark'?`rgba(255,230,120,${a})`:`rgba(255,240,170,${a})`;g.beginPath();g.arc(p.x,p.y,p.size,0,TAU);g.fill();}
-  for(const b of G.bullets){if(b.kind==='flame')continue;if(b.kind==='nade'){g.fillStyle='#9fb07a';g.beginPath();g.arc(b.x,b.y,5,0,TAU);g.fill();continue;}
+  for(const b of G.bullets){if(b.kind==='flame')continue;if(b.kind==='ray'){g.save();g.globalCompositeOperation='lighter';g.strokeStyle='rgba(120,255,140,0.9)';g.lineWidth=5;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x-b.vx*0.03,b.y-b.vy*0.03);g.stroke();g.restore();continue;}if(b.kind==='nade'){g.fillStyle='#9fb07a';g.beginPath();g.arc(b.x,b.y,5,0,TAU);g.fill();continue;}
     g.strokeStyle=b.expl?'#ffb347':'#fff6c0';g.lineWidth=b.expl?5:2.5;g.beginPath();g.moveTo(b.x,b.y);g.lineTo(b.x-b.vx*0.02,b.y-b.vy*0.02);g.stroke();}
   g.globalCompositeOperation='source-over';g.globalAlpha=1;
   bl.sort((a,b)=>b._d-a._d);for(const b of bl)drawBld(b);
-  drawTrack(inV);trainGlow();
+  drawTrack(inV);trainGlow();drawUfo();drawDucksAir(inV);
   for(const p of G.pickups)if(p.h&&!p.taken&&inV(p.x,p.y,90)&&!(P.inside&&bAt(p.x,p.y)===P.inside.b)){const f=CAMZ/(CAMZ-p.h*50),q=projPt(p.x,p.y,p.h*50);g.save();g.translate(q[0],q[1]);g.scale(f,f);g.translate(-p.x,-p.y);drawPickup(p);g.restore();}
   if(!P.veh&&G.state!=='title'&&(P.roof||P.climb))drawPlayer();
   if(P.inside)drawInsideTop(P.inside,G.view);else drawPropTop();
@@ -2468,8 +2918,7 @@ function drawBld(b){const x0=b.x*T,y0=b.y*T,x1=x0+b.w*T,y1=y0+b.h*T,h=b.ht*50,c=
   else if(b.hangar){g.strokeStyle='rgba(0,0,0,0.25)';g.lineWidth=3;g.beginPath();for(let k=14;k<rh;k+=16){g.moveTo(rx+4,ry+k);g.lineTo(rx+rw-4,ry+k);}g.stroke();}
   else if(b.glass)drawGlassRoof(b,rx,ry,rw,rh);
   else if(b.house)drawHouseRoof(b,rx,ry,rw,rh);
-  else{g.fillStyle='rgba(0,0,0,0.13)';g.fillRect(rx+8,ry+8,rw-16,rh-16);g.fillStyle=b.roof;g.fillRect(rx+12,ry+12,rw-24,rh-24);
-    g.fillStyle='rgba(255,255,255,0.05)';g.fillRect(rx+12,ry+12,rw-24,(rh-24)*0.45);
+  else{roofSurface(b,rx,ry,rw,rh);if(!b.logo&&!b.cross)roofBits(b,rx,ry,rw,rh,d);
     if(!b.logo&&!b.cross&&rw>84&&rh>84&&!roofFun(b,rx,ry,rw,rh,rcx,rcy,d)){const k=b.seed%5;
       if(k===0||k===4){g.fillStyle='rgba(0,0,0,0.2)';g.fillRect(rx+rw*0.2+3,ry+rh*0.25+3,24,17);g.fillStyle='#9aa0a6';g.fillRect(rx+rw*0.2,ry+rh*0.25,24,17);g.fillStyle='#63686e';g.beginPath();g.arc(rx+rw*0.2+12,ry+rh*0.25+8.5,5.5,0,TAU);g.fill();
         if(k===4){g.fillStyle='#9aa0a6';g.fillRect(rx+rw*0.6,ry+rh*0.62,24,17);g.fillStyle='#63686e';g.beginPath();g.arc(rx+rw*0.6+12,ry+rh*0.62+8.5,5.5,0,TAU);g.fill();}}
@@ -2504,10 +2953,10 @@ function drawMarkers(inV){const pulse=(Math.sin(G.time*4)+1)/2;
     g.strokeStyle=col;g.lineWidth=4;g.setLineDash([10,6]);g.lineDashOffset=-G.time*18;g.beginPath();g.arc(x,y,r,0,TAU);g.stroke();g.setLineDash([]);
     if(ic){g.fillStyle='#111';g.font='bold 24px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(ic,x,y+1);}};
   const M=G.mission;
-  if(!M){const nm=nextMission();if(nm)ring(nm.start.x,nm.start.y,nm.col,26,nm.ic);if(G.fare)ring(G.fare.x,G.fare.y,'#ffe14d',50,'');for(const sm of sideAvail())ring(sm.start.x,sm.start.y,'#b07cff',24,'?');}
+  if(!M){const nm=nextMission();if(nm)ring(nm.start.x,nm.start.y,'#ffd23f',30,'★');if(G.fare)ring(G.fare.x,G.fare.y,'#ffe14d',50,'');for(const sm of sideAvail())ring(sm.start.x,sm.start.y,'#b07cff',24,'?');}
   else if(M.target&&M.target.r){ring(M.target.x,M.target.y,'#ffe14d',Math.min(M.target.r,60),'');}
   if(M&&M.rings)for(const r of M.rings)if(!r.h&&r.r<90)ring(r.x,r.y,r.c,r.r,'');
-  if(G.way)ring(G.way.x,G.way.y,'#ff3b3b',30,'');
+  if(G.way)ring(G.way.x,G.way.y,'#ff3b3b',30,'');drawMissionLabels(inV);
   const pv=G.player.veh,dm=pv&&!pv.t.boat&&!pv.t.plane&&(pv.hp<pv.t.hp-1||pv.dents||pv.holes);if(G.wanted>0||dm)for(const sp of SPRAYS)ring(sp.x,sp.y,'#c070ff',30,'✦');}
 const PKC={health:['#e74c3c','+'],armor:['#3d7bd9','▲'],bribe:['#f1c40f','★'],pistol:['#95a5a6','P'],smg:['#5d6d7e','M'],shotgun:['#8d6e63','S'],rifle:['#4e5d3a','R'],flame:['#e67e22','F'],rocket:['#7b4bb3','K'],grenade:['#5f7a3a','G'],cash:['#2ecc71','$'],chest:['#c98a2b','♦'],token:['#ffd700','★']};
 function drawPickup(p){const bob=Math.sin(G.time*3+p.t)*3;g.save();g.translate(p.x,p.y+bob);
@@ -2581,7 +3030,7 @@ function drawPed(p){const isP=p===G.player;g.save();g.translate(p.x,p.y);
     const sw=Math.sin(G.time*7+p.id)*7;g.fillStyle=p.skin;g.beginPath();g.arc(6+sw,-9,3.2,0,TAU);g.arc(6-sw,9,3.2,0,TAU);g.fill();g.beginPath();g.arc(1,0,5.8,0,TAU);g.fill();
     g.fillStyle=isP?'#3b2a1a':p.hair;g.beginPath();g.arc(-0.5,0,4.8,0,TAU);g.fill();g.restore();return;}
   if(!G.noShadow){g.fillStyle='rgba(0,0,0,0.27)';g.beginPath();g.ellipse(4+ENV.sun.ox*4,5,10,10,0,0,TAU);g.fill();}
-  g.rotate(p.a);g.scale(1.24,1.24);drawBody(p,isP);
+  g.rotate(p.a);{const k=p.bigfoot?1.9:p.boss?1.4:1.24;g.scale(k,k);}drawBody(p,isP);
   if(p.type==='civ'&&!isP&&p.kind!=='dog'&&ENV.rain>0.3&&p.id%2===0){g.fillStyle=p.id%3?'#22262e':p.shirt;g.beginPath();g.arc(2,0,14,0,TAU);g.fill();g.strokeStyle='rgba(255,255,255,0.25)';g.lineWidth=1;g.beginPath();for(let k=0;k<8;k++){g.moveTo(2,0);g.lineTo(2+Math.cos(k*TAU/8)*14,Math.sin(k*TAU/8)*14);}g.stroke();}
   g.restore();}
 function drawPlayer(){const P=G.player,hz=playerH(),arc=P.jump>0?Math.sin(Math.PI*(1-P.jump/JT)):0;if(hz<0.02){drawPed(P);return;}
@@ -2602,7 +3051,6 @@ function drawSky(inV,d){const h=G.heli,tt=G.time,c=G.cam;
 function bubble(x,y,txt){g.save();g.font='bold 14px Rubik,sans-serif';g.direction=G.lang==='he'?'rtl':'ltr';const w=g.measureText(txt).width+16;
   g.fillStyle='rgba(255,255,255,0.93)';rrect(g,x-w/2,y-24,w,24,8);g.fill();g.beginPath();g.moveTo(x-5,y);g.lineTo(x+5,y);g.lineTo(x,y+7);g.fill();
   g.fillStyle='#111';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,x,y-12);g.restore();}
-function curTarget(){const M=G.mission;if(M&&M.target)return M.target;if(!M&&G.fare)return G.fare;if(!M){const nm=nextMission();if(nm)return nm.start;}return null;}
 function arrowTo(t,col){const c=G.cam,s=c.s,W=G.vw,H=G.vh,dpr=G.dpr;const sx=(t.x-c.x)*s+W/2,sy=(t.y-c.y)*s+H/2,m=34;g.setTransform(dpr,0,0,dpr,0,0);
   if(sx<m||sy<m+60||sx>W-m||sy>H-m){const a=Math.atan2(sy-H/2,sx-W/2);const ex=clamp(sx,m,W-m),ey=clamp(sy,m+70,H-m);
     g.save();g.translate(ex,ey);g.rotate(a);g.fillStyle=col;g.strokeStyle='#000';g.lineWidth=2;g.beginPath();g.moveTo(16,0);g.lineTo(-10,-11);g.lineTo(-5,0);g.lineTo(-10,11);g.closePath();g.fill();g.stroke();g.restore();}
@@ -2616,7 +3064,7 @@ function drawMini(){const P=G.player,px=P.veh?P.veh.x:P.x,py=P.veh?P.veh.y:P.y;c
   mg.fillStyle='#1d4f75';mg.fillRect(0,0,S,S);mg.imageSmoothingEnabled=true;
   mg.drawImage(MINIMG,S/2-px*sc,S/2-py*sc,MW*T*sc,MH*T*sc);
   if(ENV.dark>0.05){mg.fillStyle=`rgba(6,10,36,${ENV.dark*0.45})`;mg.fillRect(0,0,S,S);}
-  trackMini(mg,S/2-px*sc,S/2-py*sc,sc,2.2);gpsPath(mg,S/2-px*sc,S/2-py*sc,sc,4);
+  trackMini(mg,S/2-px*sc,S/2-py*sc,sc,2.2);if(G.wanted>0&&!G.seenNow&&G.lastSeen){const lx=S/2+(G.lastSeen.x-px)*sc,ly=S/2+(G.lastSeen.y-py)*sc,rr2=Math.max(14,sightRange()*sc*1.2);mg.fillStyle=`rgba(255,60,60,${0.12+0.08*Math.sin(G.time*4)})`;mg.strokeStyle='rgba(255,90,90,0.8)';mg.lineWidth=2;mg.setLineDash([5,4]);mg.beginPath();mg.arc(lx,ly,rr2,0,TAU);mg.fill();mg.stroke();mg.setLineDash([]);}gpsPath(mg,S/2-px*sc,S/2-py*sc,sc,4);
   if(G.wanted>0&&!G.seenNow&&G.lastSeen){const bx=S/2+(G.lastSeen.x-px)*sc,by=S/2+(G.lastSeen.y-py)*sc;mg.fillStyle='rgba(255,60,60,0.22)';mg.strokeStyle='rgba(255,90,90,0.8)';mg.lineWidth=2;mg.beginPath();mg.arc(bx,by,sightRange()*sc*0.8,0,TAU);mg.fill();mg.stroke();}
   const blip=(x,y,col,r,sq)=>{let bx=S/2+(x-px)*sc,by=S/2+(y-py)*sc;const dx=bx-S/2,dy=by-S/2,dd=hyp(dx,dy),R=S/2-10;if(dd>R){bx=S/2+dx/dd*R;by=S/2+dy/dd*R;}
     mg.fillStyle=col;mg.strokeStyle='#000';mg.lineWidth=2;mg.beginPath();if(sq)mg.rect(bx-r,by-r,r*2,r*2);else mg.arc(bx,by,r,0,TAU);mg.fill();mg.stroke();};
@@ -2741,7 +3189,7 @@ function showFeed(t){const el=$('feed');el.textContent=t;el.dir=G.lang==='he'?'r
 function buildTalk(){const el=$('tbar');if(!G.talk){el.style.display='none';return;}el.style.display='flex';el.innerHTML='';el.dir=G.lang==='he'?'rtl':'ltr';const p=G.talk.p;
   const add=k=>{const b=document.createElement('button');b.className='wchip';b.textContent=tr('t_'+k);b.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();talkDo(k);});el.appendChild(b);};
   add('greet');add('taunt');if(p.type==='civ'&&G.weapon!=='fist'&&!p.mugged)add('rob');}const hudCache={};
-function setObj(t){if(G.obj===t)return;G.obj=t;$('obj').textContent=t;$('obj').style.display=t?'block':'none';$('obj').style.opacity=1;G.objT=6;}
+function setObjOld(t){if(G.obj===t)return;G.obj=t;$('obj').textContent=t;$('obj').style.display=t?'block':'none';$('obj').style.opacity=1;G.objT=6;}
 function toast(t,dur){const el=$('toast');el.textContent=bidi(t);el.style.opacity=1;toastT=dur||3.2;}
 function bigMsg(t,col,sub){const el=$('big');el.innerHTML='';const a=document.createElement('div');a.textContent=t;a.style.color=col;el.appendChild(a);
   if(sub){const b=document.createElement('small');b.textContent=sub;el.appendChild(b);}el.style.opacity=1;bigT=3;}
@@ -2812,13 +3260,48 @@ function buildShop(){const s=G.shop,P=G.player,md=G.shopMode,m=$('shop');m.inner
   const grid=document.createElement('div');grid.className='shopgrid';
   const item=(name,sub,price,fn,ic,dis)=>{const b=document.createElement('button');b.className='sitem'+((G.money<price||dis)?' dis':'');b.innerHTML=(ic||'')+'<b></b><span></span><i></i>';b.querySelector('b').textContent=name;b.querySelector('span').textContent=sub;b.querySelector('i').textContent=price?'$'+price:'';
     b.onclick=()=>{if(performance.now()-(G.panelT||0)<350)return;if(G.money<price||dis){sfx.no();return;}G.money-=price;fn();sfx.blip();buildShop();};grid.appendChild(b);};
-  if(md==='guns'){for(const w of WORDER.slice(1)){const W=WEAP[w];item(L(W),W.melee?(G.weapons[w]?tr('owned2'):''):'+'+W.pack+(G.weapons[w]?'  ('+G.weapons[w]+')':''),owned('b_guns')?Math.round(W.price*0.75):W.price,()=>giveWeapon(w,W.melee?1:W.pack),WICON[w],W.melee&&G.weapons[w]>0);}item(tr('armor'),Math.ceil(G.armor)+'/100',300,()=>{G.armor=100;},WICON.armor);}
+  if(md==='guns'){for(const w of WORDER.slice(1)){const W=WEAP[w];if(W.noshop)continue;item(L(W),W.melee?(G.weapons[w]?tr('owned2'):''):'+'+W.pack+(G.weapons[w]?'  ('+G.weapons[w]+')':''),owned('b_guns')?Math.round(W.price*0.75):W.price,()=>giveWeapon(w,W.melee?1:W.pack),WICON[w],W.melee&&G.weapons[w]>0);}item(tr('armor'),Math.ceil(G.armor)+'/100',300,()=>{G.armor=100;},WICON.armor);}
   if(md==='clothes')for(const o of OUTFITS){const own=G.outfits.includes(o.id),on=G.outfit===o.id;item(L(o),on?tr('wearing'):own?tr('wear'):'',own?0:o.price,()=>{if(!own)G.outfits.push(o.id);wearOutfit(o.id);},'<span class="sw" style="background:'+o.shirt+'"></span>',on);}
   if(md==='food'){item(tr('snackI'),'+40',15,()=>{P.hp=Math.min(100,P.hp+40);},null,P.hp>=100);item(tr('medkit'),G.meds+'/3',80,()=>{G.meds++;},null,G.meds>=3);}
   propPanel(md,item,m,P);if(md==='fly')flyPanel(item,m);if(md==='mis')misPanel(item,m);if(grid.children.length)m.appendChild(grid);
   if(md==='slots'){const d=document.createElement('div');d.className='reels';d.textContent=G.slot?G.slot.r.join('   '):'7   ★   ♦';m.appendChild(d);const rs=document.createElement('div');rs.className='stats';rs.textContent=G.slot?(G.slot.win>G.slot.bet?fmt(tr('slotWin'),G.slot.win):G.slot.win?'= $'+G.slot.win:tr('slotLose')):tr('slots');m.appendChild(rs);
     const row=document.createElement('div');row.className='row';for(const b of [50,200,1000])row.appendChild(btn(tr('spin')+' $'+b,()=>slotSpin(b),G.money>=b?'rob':''));m.appendChild(row);}
   m.appendChild(btn(tr('close'),closeShop,'pri'));}
+
+// ---------- performance: frame pacing + adaptive resolution ----------
+const QL=[{d:2},{d:2},{d:2},{d:2,lock:1}];
+const PF={hzS:[],hz:0,win:[],wt:0,good:0,last:0,ban:{},upT:-99,fpsN:0,fpsT:0,fps:0,work:[]};
+G.q=0;G.gfx=store.get('sb_gfx','auto');G.showFps=!!store.get('sb_fps',false);
+if(G.gfx!=='smooth')G.gfx='auto';G.q=G.gfx==='smooth'?3:0;
+function gfxLock(){return G.gfx==='smooth'||(G.gfx==='auto'&&QL[G.q].lock);}
+function resize(){G.dpr=Math.min(2,devicePixelRatio||1);G.lowFx=0;applyLayout();CV.width=Math.round(G.vw*G.dpr);CV.height=Math.round(G.vh*G.dpr);CV.style.width=G.vw+'px';CV.style.height=G.vh+'px';
+  const ms=Math.round(Math.min(130,Math.max(96,Math.min(G.vw,G.vh)/G.ui*0.28)));MC.style.width=MC.style.height=ms+'px';MC.width=MC.height=Math.round(ms*Math.min(2,devicePixelRatio||1)*G.ui);document.getElementById('root').style.setProperty('--vw',G.vw+'px');document.documentElement.style.setProperty('--ms',ms+'px');}
+function setQ(q,why){q=clamp(q,0,3);if(q===G.q)return;const up=q<G.q;G.q=q;PF.last=G.time;PF.win.length=0;PF.good=0;if(up)PF.upT=G.time;if(q<=2)store.set('sb_q',q);resize();}
+function perfAdapt(dt,work){return;PF.win.push(dt);PF.work.push(work);PF.wt+=dt;if(PF.wt<2)return;PF.wt=0;
+  const n=PF.win.length,avg=PF.win.reduce((x,y)=>x+y,0)/n,w=PF.work.slice().sort((x,y)=>x-y),wk=w[(w.length*0.8)|0];PF.win.length=0;PF.work.length=0;
+  if(G.time-PF.last<2.5)return;const lk=gfxLock(),tgt=lk?1/30:1/60;
+  if(avg>tgt*(lk?1.15:1.12)||(!lk&&wk>13)){PF.bad=(PF.bad||0)+1;if(PF.bad>=2||avg>tgt*1.5){if(G.time-PF.upT<10)PF.ban[G.q-1]=1;PF.bad=0;PF.good=0;setQ(G.q+1);}return;}PF.bad=0;
+  if(G.q>0&&!PF.ban[G.q-1]&&(lk?wk<6:avg<tgt*1.04&&wk<8)){if(++PF.good>=4)setQ(G.q-1);}else PF.good=0;}
+let last=0,acc=0;
+function frame(now){requestAnimationFrame(frame);let raw=(now-last)/1000||0;last=now;if(raw>0.3)raw=1/60;
+  if(raw>0.004){PF.hzS.push(raw);if(PF.hzS.length>=90){const s=PF.hzS.slice().sort((x,y)=>x-y);PF.hz=s[8];PF.hzS.length=0;}}
+  const tgt=gfxLock()?1/30:1/60;acc+=raw;
+  if(PF.hz&&PF.hz<tgt*0.62&&acc<tgt*0.86)return;
+  const dt=Math.min(0.05,acc);acc=0;const t0=performance.now();
+  if(G.state==='title'){G.time+=dt;G.cam.x=60*T+Math.sin(G.time*0.05)*1800;G.cam.y=70*T+Math.cos(G.time*0.04)*1500;G.cam.s=Math.min(G.vw,G.vh)/560*0.75;ENV.clock=19.4;calcLight();}
+  else{G.ft=lerp(G.ft||0.016,dt,0.03);step(dt);if(G.state==='map')drawMap();updateCamera(dt);updateHUD(dt);updateAudio();}
+  render();const work=performance.now()-t0;
+  if(work<(gfxLock()?16:9))chunkPrefetch();
+  perfAdapt(dt,work);
+  PF.fpsN++;PF.fpsT+=dt;if(PF.fpsT>=0.5){PF.fps=Math.round(PF.fpsN/PF.fpsT);PF.fpsN=0;PF.fpsT=0;}
+  if(G.showFps){g.setTransform(1,0,0,1,0,0);g.globalAlpha=1;g.globalCompositeOperation='source-over';const z=G.dpr;g.font=`bold ${12*z}px monospace`;g.textAlign='left';g.textBaseline='top';g.fillStyle='rgba(0,0,0,0.55)';g.fillRect(4*z,(G.vh-22)*z,120*z,18*z);g.fillStyle=PF.fps>=55?'#5dff7a':PF.fps>=28?'#ffd23f':'#ff5d5d';g.fillText(PF.fps+' FPS  Q'+G.q+(gfxLock()?' 30':''),8*z,(G.vh-19)*z);}}
+const GFXN={auto:R2('רגיל 60FPS','Normal 60FPS'),smooth:R2('יציב 30FPS','Steady 30FPS')};
+function optRow(rebuild){const row=document.createElement('div');row.className='row';
+  row.appendChild(btn(tr('lang'),()=>{G.lang=G.lang==='he'?'en':'he';store.set('sb_lang',G.lang);applyLang();}));
+  row.appendChild(btn(tr('sound')+': '+tr(G.sound?'on':'off'),()=>{G.sound=!G.sound;store.set('sb_sound',G.sound);AU.setVol();rebuild();}));
+  row.appendChild(btn(tr('ctrl')+': '+tr(G.ctrl),()=>{G.ctrl=G.ctrl==='classic'?'easy':'classic';store.set('sb_ctrl',G.ctrl);rebuild();}));
+  row.appendChild(btn(L(R2('גרפיקה','Graphics'))+': '+L(GFXN[G.gfx]),()=>{G.gfx=G.gfx==='auto'?'smooth':'auto';store.set('sb_gfx',G.gfx);G.q=G.gfx==='smooth'?3:0;resize();rebuild();}));
+  row.appendChild(btn('FPS: '+tr(G.showFps?'on':'off'),()=>{G.showFps=!G.showFps;store.set('sb_fps',G.showFps);rebuild();}));return row;}
 
 // ---------- player ----------
 function updatePlayer(dt){const P=G.player;if(P.dead)return;if(P.ride){rideUpdate(dt);return;}const [mx,my]=readKeys(),mag=Math.min(1,hyp(mx,my)),k=IN.keys;
@@ -2835,7 +3318,7 @@ function updatePlayer(dt){const P=G.player;if(P.dead)return;if(P.ride){rideUpdat
     if(!v.t.boat&&!v.t.tank){v.fuel=Math.max(0,v.fuel-Math.abs(v.thr)*dt/260);if(v.fuel<=0){v.thr=0;if(!v.dry){v.dry=1;toast(tr('nofuel'),4);}}}
     if(fx&&G.fireCD<=0){if(v.t.tank){G.fireCD=1.1;fire(P,v,v.x,v.y,v.a,120,0.01,true);G.shake=6;crime(1,false);}
       else if(v.t.amb||v.t.fire||v.t.police){G.fireCD=0.5;v.siren=!v.siren;toast(tr(v.siren?'sirenOn':'sirenOff'),1.2);sfx.blip();}
-      else{G.fireCD=0.6;sfx.horn(v,1);react(nearestCiv(v.x,v.y,170),'horn');for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-v.x,p.y-v.y)<160){p.st='flee';p.ft=2;p.fx=v.x;p.fy=v.y;}}}
+      else{G.fireCD=0.6;sfx.horn(v,1);duckHonk();react(nearestCiv(v.x,v.y,170),'horn');for(const p of G.peds)if(p.type==='civ'&&!p.dead&&hyp(p.x-v.x,p.y-v.y)<160){p.st='flee';p.ft=2;p.fx=v.x;p.fy=v.y;}}}
     if(IN.enterP)exitVehicle();
   }else if(G.down>0){G.down-=dt;G.skidNow=false;P.walk=0;P.mvx=P.mvy=0;if(P.kvx||P.kvy){pMove(P,P.kvx*dt,P.kvy*dt);P.kvx*=0.9;P.kvy*=0.9;if(Math.abs(P.kvx)+Math.abs(P.kvy)<5){P.kvx=0;P.kvy=0;}}
     P.swim=!P.roof&&!P.inside&&tileAt(P.x,P.y)===TL.WATER;if(P.swim)G.down=0;
@@ -2894,8 +3377,9 @@ function talkNear(){const P=G.player;let best=null,bd=62;for(const p of G.peds){
 
 // ---------- world interactions ----------
 function vehCollide(){const V=G.vehicles,P=G.player;
-  const act=V.map(v=>!v.sunk&&(Math.abs(v.vx)+Math.abs(v.vy)>1||v.thr!==0)&&Math.abs(v.x-P.x)<2600&&Math.abs(v.y-P.y)<2600);
-  for(let i=0;i<V.length;i++){const a=V[i];if(a.sunk)continue;for(let j=i+1;j<V.length;j++){const b=V[j];if(b.sunk||!!a.t.boat!==!!b.t.boat||(!act[i]&&!act[j])||a.alt>0.25||b.alt>0.25)continue;
+  const C=[];for(const v of V){if(v.sunk||v.alt>0.25||Math.abs(v.x-P.x)>2700||Math.abs(v.y-P.y)>2700)continue;v._act=(Math.abs(v.vx)+Math.abs(v.vy)>1||v.thr!==0);C.push(v);}
+  C.sort((p,q)=>p.x-q.x);
+  for(let i=0;i<C.length;i++){const a=C[i];for(let j=i+1;j<C.length;j++){const b=C[j];if(b.x-a.x>140)break;if(!!a.t.boat!==!!b.t.boat||(!a._act&&!b._act))continue;
     const dx=b.x-a.x,dy=b.y-a.y,rad=(a.t.l+b.t.l)*0.5;if(dx*dx+dy*dy>rad*rad)continue;
     for(const p of vehCircles(a))for(const q of vehCircles(b)){const ex=q[0]-p[0],ey=q[1]-p[1],d=hyp(ex,ey),rs=p[2]+q[2];if(d>=rs||d<0.01)continue;
       const nx=ex/d,ny=ey/d,pen=rs-d,ma=a.t.mass||1,mb=b.t.mass||1,tot=ma+mb;
@@ -2969,7 +3453,7 @@ function populateStatic(){
   for(const s of SHOPS){roomInit(s);s.bag=null;s.cust=[];if(!s.clerk){s.clerkP=null;continue;}const q=rw(s,s.clerk.u,s.clerk.v);s.clerkP=mkPed('npc',q[0],q[1],{persist:true,clerk:1,a:s.out>0?Math.PI/2:-Math.PI/2});setKind(s.clerkP,'casual');s.clerkP.shirt=CLERKC[s.k];s.clerkP.hat=null;s.cust=[];}
   for(const sm of SIDE)if(sm.look&&!G.done.includes(sm.id)){const gp=mkPed('npc',sm.start.x+30,sm.start.y-6,{persist:true,a:Math.PI});setKind(gp,sm.look);if(sm.id==='s5'){gp.shirt='#1f3a93';gp.hat='#14256b';}}
   for(const v of POI.vendors)mkPed('npc',v.x+34,v.y,{vendor:1,persist:true,shirt:'#f4f4f4',a:Math.PI/2});
-  populateCity2();
+  populateCity2();spawnPerformers();{const cs=(t,x,y,a,c)=>{const v=mkVeh(t,x,y,a||0,c);v.parked=true;return v;};cs('cart',POI.golf.x-300,POI.golf.y-420,0);cs('limo',POI.coralHotel.x+180,POI.coralHotel.y+40,0);cs('suv',POI.vale.x-260,POI.vale.y,0,'#16161d');cs('jetski',POI.coralPier.x+60,POI.coralPier.y+70,0);}
   for(const w of WPICKS){if(w.once&&G.got.includes(w.once))continue;mkPickup(w.type,w.x,w.y,{respawn:!w.once,h:w.h,amt:w.amt,once:w.once});}}
 function startGame(fresh){AU.init();if(fresh)store.del('sb_save');const sv=store.get('sb_save',null);
   G.vehicles=[];G.peds=[];G.pickups=[];G.bullets=[];G.parts=[];G.decals=[];G.mission=null;G.wanted=0;G.seen={};
@@ -2984,8 +3468,6 @@ function startGame(fresh){AU.init();if(fresh)store.del('sb_save');const sv=store
   saveGame();}
 
 // ---------- loop ----------
-function resize(){G.dpr=Math.min(G.lowFx?1.25:2,devicePixelRatio||1);applyLayout();CV.width=G.vw*G.dpr;CV.height=G.vh*G.dpr;CV.style.width=G.vw+'px';CV.style.height=G.vh+'px';
-  const ms=Math.round(Math.min(130,Math.max(96,Math.min(G.vw,G.vh)/G.ui*0.28)));MC.style.width=MC.style.height=ms+'px';MC.width=MC.height=Math.round(ms*G.dpr*G.ui);document.getElementById('root').style.setProperty('--vw',G.vw+'px');document.documentElement.style.setProperty('--ms',ms+'px');}
 function updateCamera(dt){const P=G.player,c=G.cam;let tx=P.x,ty=P.y,z=1;
   if(P.veh){const v=P.veh;tx+=v.vx*0.35;ty+=v.vy*0.35;z=lerp(1,0.6,clamp(Math.abs(v.speed)/420,0,1));if(v.alt)z*=1-0.25*v.alt;}
   else if(!P.dead){tx+=(P.mvx||0)*0.3;ty+=(P.mvy||0)*0.3;if(P.ride&&P.ride.tr)z=0.7;}
@@ -3010,13 +3492,7 @@ function step(dt){G.time+=dt;
   if(G.boom){G.boom.t-=dt*1.8;if(G.boom.t<=0)G.boom=null;}
   regenTick(dt);
   if(P.hp<P._lastHp)G.hurtFlash=Math.max(G.hurtFlash||0,0.6);P._lastHp=P.hp;}
-let last=0;
-function frame(now){const dt=Math.min(0.05,(now-last)/1000||0);last=now;
-  if(G.state==='title'){G.time+=dt;G.cam.x=60*T+Math.sin(G.time*0.05)*1800;G.cam.y=70*T+Math.cos(G.time*0.04)*1500;G.cam.s=Math.min(G.vw,G.vh)/560*0.75;ENV.clock=19.4;calcLight();}
-  else{G.ft=lerp(G.ft||0.016,dt,0.03);if(G.state==='play'&&!G.lowFx&&G.ft>0.028&&G.time>10){G.lowFx=1;resize();}
-    step(dt);if(G.state==='map')drawMap();if(G.state!=='pause'||true)updateCamera(dt);updateHUD(dt);updateAudio();}
-  render();requestAnimationFrame(frame);}
-function init(){genWorld();buildMinimap();buildMissions();buildMissions2();buildMissions3();resize();addEventListener('resize',resize);setupInput();
+function init(){genWorld();buildMinimap();buildMissions();buildMissions2();buildMissions3();buildMissions4();buildMissions5();resize();addEventListener('resize',resize);setupInput();
   G.player=mkPed('player',POI.start.x,POI.start.y);G.peds=[];
   applyLang();$('menu').style.display='flex';requestAnimationFrame(frame);
   window.__G=G;}

@@ -2,14 +2,15 @@
 Object.assign(WEAP,{bat:{he:'מחבט בייסבול',en:'Baseball Bat',rate:0.5,melee:1,dmg:20,reach:46,arc:1.3,price:80,pack:1},knife:{he:'סכין',en:'Knife',rate:0.3,melee:1,dmg:24,reach:34,arc:0.9,price:120,pack:1},
  magnum:{he:'מגנום',en:'Magnum',rate:0.65,dmg:58,spread:0.02,price:900,pack:18},sniper:{he:'רובה צלפים',en:'Sniper Rifle',rate:1.3,dmg:115,spread:0.004,price:4500,pack:12,range:1},
  molotov:{he:'בקבוקי מולוטוב',en:'Molotovs',rate:0.9,dmg:0,molo:1,price:700,pack:5},minigun:{he:'מיניגאן',en:'Minigun',rate:0.05,dmg:11,spread:0.1,price:30000,pack:400,heavy:1}});
+WEAP.ray={he:'אקדח קרני חייזרים',en:'Alien Ray Gun',rate:0.3,dmg:60,spread:0.01,price:0,pack:40,noshop:1,ray:1};
 Object.assign(WEAP.rocket,{he:'בזוקה',en:'Bazooka',price:20000,pack:3});
-WORDER.splice(0,WORDER.length,'fist','bat','knife','pistol','magnum','smg','shotgun','rifle','sniper','flame','molotov','grenade','rocket','minigun');
+WORDER.splice(0,WORDER.length,'fist','bat','knife','pistol','magnum','smg','shotgun','rifle','sniper','flame','molotov','grenade','rocket','minigun','ray');
 Object.assign(WICON,{bat:WSV('<path d="M4 15l30-7c4-1 9-1 10 1s-2 5-6 6L8 19c-2 .5-4-.5-4-2z"/>'),knife:WSV('<rect x="5" y="10" width="13" height="5" rx="2"/><path d="M18 9h6c8 0 15 2 20 4c-5 2-12 2-20 2h-6z"/>'),
  magnum:WSV('<path d="M6 6h32v4h4v3H26l-1 3h-3a4 4 0 0 1-8 0h-1l-2 8H6l2-10H6z"/><circle cx="18" cy="13" r="3.5"/>'),
  sniper:WSV('<path d="M1 11h10l3-2h18v2h15v2H32v2h-8l-2 8h-4l-1-7h-5l-2 5H8l2-6H1z"/><rect x="16" y="4" width="13" height="4" rx="2"/><rect x="21" y="8" width="2" height="2"/>'),
  molotov:WSV('<path d="M20 9h8v4c4 2 6 5 6 9v1H14v-1c0-4 2-7 6-9z"/><rect x="21" y="5" width="6" height="4"/><path d="M24 5c-3-2 0-5 2-4c0 2 3 2 1 4z"/>'),
  minigun:WSV('<rect x="2" y="7" width="16" height="11" rx="3"/><rect x="18" y="8" width="26" height="2.4"/><rect x="18" y="11.3" width="26" height="2.4"/><rect x="18" y="14.6" width="26" height="2.4"/><rect x="8" y="18" width="5" height="5"/>'),
- rocket:WSV('<path d="M3 9h33v7H3z"/><path d="M36 7h4v11h-4z"/><path d="M40 8.5l6 4-6 4z"/><rect x="12" y="16" width="4" height="6"/><rect x="22" y="16" width="3" height="4"/><rect x="5" y="6" width="6" height="3"/>')});
+ ray:WSV('<ellipse cx="14" cy="12" rx="10" ry="6"/><rect x="20" y="10" width="18" height="4" rx="2"/><circle cx="40" cy="12" r="4"/><rect x="9" y="16" width="4" height="7"/>'),rocket:WSV('<path d="M3 9h33v7H3z"/><path d="M36 7h4v11h-4z"/><path d="M40 8.5l6 4-6 4z"/><rect x="12" y="16" width="4" height="6"/><rect x="22" y="16" width="3" height="4"/><rect x="5" y="6" width="6" height="3"/>')});
 Object.assign(STR.he,{owned2:'יש לך',heliHit:'פגעת במסוק!',dragged2:'השוטר שולף אותך מהרכב!',gotBz:'מצאת בזוקה! אל תספר לאף אחד.',gotMini:'מצאת מיניגאן סודי!'});
 Object.assign(STR.en,{owned2:'Owned',heliHit:'You hit the helicopter!',dragged2:'The cop is pulling you out of the car!',gotBz:'You found a bazooka! Tell no one.',gotMini:'You found a secret minigun!'});
 Object.assign(REACT,{beg:[R2('בבקשה! יש לי ילדים!','Please! I have kids!'),R2('אני מצטער! אני מצטער!','I am sorry! I am sorry!'),R2('קח את הארנק, הנה, קח!','Take my wallet, here, take it!'),R2('אמא שלי לא תשרוד את זה!','My mother will not survive this!'),R2('זה היה רק ויכוח, אחי!','It was just an argument, man!')],
@@ -30,6 +31,7 @@ function attack(){const P=G.player,w=G.weapon,W=WEAP[w];if(w==='fist'||W.melee){
   else if(W.flame){fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{kind:'flame',spd:430,life:0.42});if(rand()<0.3)sfx.flame();}
   else if(W.nade)fire(P,null,P.x,P.y,P.a,W.dmg,0.02,true,{kind:'nade',spd:400,life:0.85,quiet:1});
   else if(W.molo){fire(P,null,P.x,P.y,P.a,0,0.03,false,{kind:'molo',spd:380,life:0.8,quiet:1});aN(0.18,0.12,'bandpass',700,1,{to:1800});}
+  else if(W.ray){fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{kind:'ray',spd:950,life:0.7});aT(1400,0.18,'sine',0.14,{to:300});aT(700,0.18,'square',0.04,{to:200});}
   else if(W.range){fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,false,{spd:1800,life:0.62});aT(60,0.5,'sine',0.35,{to:30,rev:0.6});}
   else{fire(P,null,P.x,P.y,P.a,W.dmg,W.spread,!!W.expl,W.heavy?{quiet:Math.floor(G.time*20)%2}:{});if(W.heavy)G.shake=Math.max(G.shake||0,1.6);if(w==='magnum')G.shake=Math.max(G.shake||0,2.5);}
   if(G.weapons[w]<=0){G.weapon='fist';toggleWbar(false);}crime(1,false);}
@@ -83,11 +85,11 @@ function aiHostile(p,dt){const P=G.player,tgt=P.veh||P,d=hyp(tgt.x-p.x,tgt.y-p.y
     fire(p,null,p.x,p.y,p.a,p.type==='soldier'?12:cop?7:9,p.type==='soldier'?0.12:cop?0.2:0.16);}}
 function flankMove(p,tgt,d,keep,sp,dt){const ang=(p.id*2.399)%TAU,off=Math.min(keep*0.8,d*0.5),tx=tgt.x+Math.cos(ang)*off,ty=tgt.y+Math.sin(ang)*off;p.a=Math.atan2(ty-p.y,tx-p.x);walkDir(p,sp,dt);p.a=Math.atan2(tgt.y-p.y,tgt.x-p.x);}
 function dragOut(p){const P=G.player,v=P.veh;if(!v)return;exitVehicle();if(P.veh)return;toast(tr('dragged2'),2);sfx.punch();const a=Math.atan2(P.y-p.y,P.x-p.x);knockDown(0.9,Math.cos(a)*120,Math.sin(a)*120);hurtPed(P,4,p,'punch');G.bustBy=G.time;if(G.wanted<=2)G.bust=Math.max(G.bust||0,0.45);}
-function roadblockTick(dt){G.rbCD=(G.rbCD??20)-dt;const P=G.player,v=P.veh;if(G.rbCD>0||G.wanted<3||!v||Math.abs(v.speed)<200||v.t.boat||v.t.plane)return;
+function roadblockTick(dt){G.rbCD=(G.rbCD??20)-dt;const P=G.player,v=P.veh;if(G.rbCD>0||G.wanted<4||!v||Math.abs(v.speed)<200||v.t.boat||v.t.plane)return;
   const sp=hyp(v.vx,v.vy)||1,ux=v.vx/sp,uy=v.vy/sp;for(const dist of [1100,1300,950]){const [i,j]=nearestNode(P.x+ux*dist,P.y+uy*dist),q=nodePos(i,j);if(onScreen(q.x,q.y,120)||hyp(q.x-P.x,q.y-P.y)<800)continue;
     const dx=q.x-P.x,dy=q.y-P.y;if((dx*ux+dy*uy)/hyp(dx,dy)<0.8)continue;const pa=Math.atan2(uy,ux)+Math.PI/2,ca=Math.cos(pa),sa=Math.sin(pa);
     for(const s of [-1,1]){const c=mkVeh('police',q.x+ca*s*34-ux*20,q.y+sa*s*34-uy*20,pa+(s>0?0.25:-0.25));c.siren=true;c.rb=true;const cp=mkPed('cop',c.x-ux*60,c.y-uy*60,{persist:false});cp.car=c;}
-    G.rbCD=rr(28,40);return;}G.rbCD=3;}
+    G.rbCD=rr(40,60);return;}G.rbCD=3;}
 // ---------- civilians who see a gun mid-fight ----------
 function gunReact(p){const K=KINDS[p.kind]||{},r=((p.id*2654435761)>>>0)%100,P=G.player;p.brawl=0;p.conv=null;
   const tough=K.tough||p.kind==='worker'||p.kind==='punk';
@@ -103,14 +105,15 @@ function emote(){const P=G.player;if((G.emoteCD||0)>0||P.veh||P.dead||P.inside||
   P.say=EM[k];P.sayT=1.4;const ca=Math.cos(P.a),sa=Math.sin(P.a);
   if(k==='fart'){for(let i=0;i<6;i++)aT(rr(70,115),0.09,'sawtooth',0.16,{lp:420,at:i*0.065,to:rr(55,90)});aN(0.55,0.22,'bandpass',160,3,{to:90});for(let i=0;i<10;i++)part('gas',P.x-ca*10+rr(-8,8),P.y-sa*10+rr(-8,8),-ca*30+rr(-20,20),-sa*30+rr(-20,20),rr(1.2,2),rr(8,14));}
   else if(k==='burp'){aSyl(78,0,0.55,0.32,3);aSyl(70,0.5,0.25,0.2,4);}
-  else if(k==='whistle'){aT(1300,0.25,'sine',0.13,{to:2300});aT(1250,0.45,'sine',0.13,{to:700,at:0.32});}
+  else if(k==='whistle'){aT(1300,0.25,'sine',0.13,{to:2300});aT(1250,0.45,'sine',0.13,{to:700,at:0.32});ducksCall();}
   else if(k==='laugh'){for(let i=0;i<6;i++)aSyl(175-i*6,i*0.13,0.1,0.22,0);}
-  else if(k==='dance'){G.danceT=2.4;[523,659,784,659,523,784,1046].forEach((f,i)=>aT(f,0.16,'triangle',0.12,{at:i*0.16}));}
+  else if(k==='dance'){G.danceT=2.4;copDanceCheck();[523,659,784,659,523,784,1046].forEach((f,i)=>aT(f,0.16,'triangle',0.12,{at:i*0.16}));}
   else{aSyl(160,0,0.42,0.35,0,0.4);P.say=G.lang==='he'?'היי!':'HEY!';}
   let n=0;for(const p of G.peds){if(p.dead||p.veh||p.medicP||(p.type!=='civ'&&p.type!=='cop'))continue;const d=hyp(p.x-P.x,p.y-P.y);if(d>(k==='yell'?260:170))continue;
     if(p.kind==='dog'){if(k==='fart'||k==='whistle'){p.st='walk';p.a=Math.atan2(P.y-p.y,P.x-p.x);say(p,'dog',1.2);sfx.bark(dv(p.x,p.y));}continue;}
     if(n<3&&p.sayT<=0){n++;setTimeout(()=>{if(p.dead)return;say(p,p.type==='cop'?'copFun':k,2.6);sfx.voice(p,dv(p.x,p.y));},250+n*450);}
     if(p.type!=='civ')continue;p.conv=null;
+    if(p.perf==='statue'&&k==='fart'){p.say='!!!';p.sayT=2;secret('statue');continue;}if(p.perf)continue;
     if(k==='fart'&&d<110){p.st='flee';p.ft=1.6;p.fx=P.x;p.fy=P.y;}
     else if(k==='dance'&&rand()<0.45){p.st='dance';p.ft=rr(2.5,4);}else if(p.st==='walk'||p.st==='idle'){p.st='idle';p.tm=2;p.a=Math.atan2(P.y-p.y,P.x-p.x);}}}
 function emoteTick(dt){const P=G.player;if(G.emoteCD>0)G.emoteCD-=dt;if(P.sayT>0)P.sayT-=dt;if(G.danceT>0){G.danceT-=dt;P.a+=dt*9;if(rand()<dt*6)part('spark',P.x+rr(-20,20),P.y-20+rr(-10,10),rr(-20,20),-50,0.8,3);}

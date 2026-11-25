@@ -134,7 +134,7 @@ function fire(op,ov,x,y,ang,dmg,spread,expl,o){o=o||{};const a=ang+rr(-spread,sp
 function updateBullets(dt){for(const b of G.bullets){const steps=Math.max(1,Math.ceil(hyp(b.vx,b.vy)*dt/10)),sdt=dt/steps;
   if(b.kind==='flame')part('fire',b.x+rr(-4,4),b.y+rr(-4,4),b.vx*0.1,b.vy*0.1,0.22,rr(5,10));
   for(let k=0;k<steps&&!b.dead;k++){b.x+=b.vx*sdt;b.y+=b.vy*sdt;const tt=tileAt(b.x,b.y);
-    if(heliHit(b)||gatorHit(b)){b.dead=true;break;}
+    if(heliHit(b)||gatorHit(b)||duckHit(b)){b.dead=true;break;}
     if((tt===TL.BLD&&!(b.h&&bAt(b.x,b.y).ht<=b.h+0.2))||tt===TL.FENCE){b.dead=true;if(b.kind!=='flame')part('spark',b.x,b.y,rr(-50,50),rr(-50,50),0.2,2);if(b.expl)explodeAt(b.x,b.y,b.op);break;}
     for(const p of G.peds){if(p.dead||p.veh||p===b.op)continue;if((p.x-b.x)**2+(p.y-b.y)**2<130){hurtPed(p,b.dmg,b.op,'shot');if(b.kind==='flame')p.burn=3;b.dead=true;if(b.expl)explodeAt(b.x,b.y,b.op);break;}}
     if(b.dead)break;

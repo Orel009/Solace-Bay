@@ -4,7 +4,7 @@ Object.assign(STR.he,{carFire:'הרכב עולה באש — צא ממנו מהר
 Object.assign(STR.en,{carFire:'The car is on fire — get out now!',thrown:'You were thrown off the bike!',alarmOn:'Car alarm triggered'});
 function damageVeh(v,d,src,how){if(v.dead||d<=0)return;const mx=v.t.hp;
   if(how==='hit'){if(G.time<(v.hitT||0))return;v.hitT=G.time+0.3;d=Math.min(d,mx*0.2);}
-  if(src===G.player&&v.t.police)crime(1,true);
+  if(src===G.player&&v.t.police&&G.time>(v.crimeT||0)){v.crimeT=G.time+3;crime(1,true);}
   if(how==='boom'){v.hp-=d;if(v.hp<=0){v.hp=0;explodeVeh(v,src);}return;}
   v.hp=Math.max(1,v.hp-d);if(v.hp<=mx*0.12&&!v.t.tank&&!v.fuse)startFuse(v,src);}
 function startFuse(v,src){v.fuse=v.driver===G.player?8:5.5;v.fuseSrc=src||null;

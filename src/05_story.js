@@ -78,6 +78,7 @@ function nextStep(){const M=G.mission;if(!M)return;M.step++;const s=M.m.steps[M.
   default:stepStart(M,s);}}
 function updateMission(dt){const M=G.mission;
   if(!M){const nm=nextMission();const P=G.player;
+    if(G.misLock){if(hyp(P.x-G.misLock.x,P.y-G.misLock.y)>80)G.misLock=null;else return;}
     if(nm&&!P.veh&&!P.dead&&hyp(P.x-nm.start.x,P.y-nm.start.y)<36){startMission(nm);return;}
     if(!P.veh&&!P.dead)for(const sm of sideAvail())if(hyp(P.x-sm.start.x,P.y-sm.start.y)<36){startMission(sm);return;}
     setObj(G.fare?tr('fareObj'):nm?L(nm.hint):tr('free'));return;}

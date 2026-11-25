@@ -19,9 +19,9 @@ function spawner(dt){G.spawnT-=dt;if(G.spawnT>0)return;G.spawnT=0.25;const P=G.p
   const tc=Math.round((rural?10:24)*nkCar),pc=Math.round((rural?12:46)*nkPed);
   for(let k=0;k<2&&traffic<tc;k++,traffic++)spawnTraffic(cx,cy);
   for(let k=0;k<3&&civs<pc;k++,civs++){if(rand()<0.22&&civs<pc-3){if(spawnGroup(cx,cy,night>0.5&&lively))civs+=2;}else spawnCiv(cx,cy);}
-  const wantCars=[0,1,2,3,3,4,4][G.wanted],wantArmy=G.wanted>=6?3:G.wanted>=5?2:0;
-  if(chasers.police<wantCars&&!P.dead)spawnChaser('police','police',null,850,1500);
-  if(chasers.army<wantArmy&&!P.dead)spawnChaser('army','army',null,900,1500);
+  const wantCars=[0,1,1,2,2,3,4][G.wanted],wantArmy=G.wanted>=6?2:G.wanted>=5?1:0;
+  if(chasers.police<wantCars&&!P.dead&&!(G.chaseCD>0)){spawnChaser('police','police',null,950,1500);G.chaseCD=G.wanted>=4?4:7;}
+  if(chasers.army<wantArmy&&!P.dead&&!(G.chaseCD>0)){spawnChaser('army','army',null,950,1500);G.chaseCD=6;}
   G.vehicles=G.vehicles.filter(v=>!v.remove);G.peds=G.peds.filter(p=>!p.remove);}
 function spawnTraffic(cx,cy){const rn=ringNodes(cx,cy,620,1500);for(let k=0;k<10&&rn.length;k++){const [i,j]=pick(rn),np=nodePos(i,j);
   const ds=[0,1,2,3].filter(dd=>validDir(i,j,dd));if(!ds.length)continue;const dd=pick(ds);
@@ -73,8 +73,8 @@ function medicJobTick(dt){const P=G.player,v=P.veh;if(G.patCD>0)G.patCD-=dt;
   const J=G.pat;if(J.st==='go'){if(hyp(v.x-J.x,v.y-J.y)<100&&Math.abs(v.speed)<70){J.st='back';J.t=hyp(POI.hosp.x-v.x,POI.hosp.y-v.y)/140+15;J.pay=Math.round(hyp(POI.hosp.x-v.x,POI.hosp.y-v.y)/12)+150;J.x=POI.hosp.x;J.y=POI.hosp.y+40;toast(tr('medPick'),3.5);sfx.door();}}
   else{J.t-=dt;if(J.t<=0){toast(tr('medLost'),3);sfx.fail();G.pat=null;G.patCD=4;return;}if(hyp(v.x-J.x,v.y-J.y)<120&&Math.abs(v.speed)<80){G.money+=J.pay;toast(fmt(tr('medPaid'),J.pay),3);sfx.pass();G.rep=Math.min(50,G.rep+2);G.pat=null;G.patCD=3;}}}
 function curTarget(){const M=G.mission;if(M&&M.target)return M.target;if(!M&&G.fare)return G.fare;if(!M&&G.pat)return G.pat;if(!M){const nm=nextMission();if(nm)return nm.start;}return null;}
-function drawLife(inV){drawStunts(inV);const J=G.pat;if(J&&J.st==='go'&&inV(J.x,J.y,60)){const pu=(Math.sin(G.time*5)+1)/2;g.fillStyle=`rgba(255,60,60,${0.25+pu*0.25})`;g.beginPath();g.arc(J.x,J.y,30+pu*6,0,TAU);g.fill();g.fillStyle='#f4f6f7';g.fillRect(J.x-10,J.y-3,20,6);g.fillRect(J.x-3,J.y-10,6,20);}}
+function drawLife(inV){drawStunts(inV);drawDucks(inV);drawSecrets(inV);for(const p of G.peds)if(p.perf&&!p.dead&&inV(p.x,p.y,60))drawPerfExtra(p);const J=G.pat;if(J&&J.st==='go'&&inV(J.x,J.y,60)){const pu=(Math.sin(G.time*5)+1)/2;g.fillStyle=`rgba(255,60,60,${0.25+pu*0.25})`;g.beginPath();g.arc(J.x,J.y,30+pu*6,0,TAU);g.fill();g.fillStyle='#f4f6f7';g.fillRect(J.x-10,J.y-3,20,6);g.fillRect(J.x-3,J.y-10,6,20);}}
 function drawSirens(){const on=Math.floor(G.time*8)%2;g.globalCompositeOperation='lighter';for(const v of G.vehicles){if(!v.siren||v.dead||!v.onScreen)continue;const ca=Math.cos(v.a),sa=Math.sin(v.a),f=v.t.l*0.18;
   glow(g,on?GL.red||'#ff3030':GL.blue||'#3d6bff',v.x+ca*f-sa*8,v.y+sa*f+ca*8,110,0.55);}g.globalAlpha=1;g.globalCompositeOperation='source-over';}
-function lifeTick(dt){trainsTick(dt);firesTick(dt);heliExtra(dt);roadblockTick(dt);emoteTick(dt);medicWatch(dt);fireWatch(dt);talkTick(dt);stuntTick(dt);medicJobTick(dt);
+function lifeTick(dt){policeCD(dt);ducksTick(dt);perfTick(dt);secretsTick(dt);trainsTick(dt);firesTick(dt);heliExtra(dt);roadblockTick(dt);emoteTick(dt);medicWatch(dt);fireWatch(dt);talkTick(dt);stuntTick(dt);medicJobTick(dt);
   if(ENV.dark>0.5&&rand()<dt*0.4){for(const p of G.peds)if(p.party&&!p.dead&&p.st==='chat'&&rand()<0.3&&onScreen(p.x,p.y,0)){say(p,'party',2.5);sfx.voice(p,0.6);break;}}}

@@ -107,7 +107,7 @@ function showFeed(t){const el=$('feed');el.textContent=t;el.dir=G.lang==='he'?'r
 function buildTalk(){const el=$('tbar');if(!G.talk){el.style.display='none';return;}el.style.display='flex';el.innerHTML='';el.dir=G.lang==='he'?'rtl':'ltr';const p=G.talk.p;
   const add=k=>{const b=document.createElement('button');b.className='wchip';b.textContent=tr('t_'+k);b.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();talkDo(k);});el.appendChild(b);};
   add('greet');add('taunt');if(p.type==='civ'&&G.weapon!=='fist'&&!p.mugged)add('rob');}const hudCache={};
-function setObj(t){if(G.obj===t)return;G.obj=t;$('obj').textContent=t;$('obj').style.display=t?'block':'none';$('obj').style.opacity=1;G.objT=6;}
+function setObjOld(t){if(G.obj===t)return;G.obj=t;$('obj').textContent=t;$('obj').style.display=t?'block':'none';$('obj').style.opacity=1;G.objT=6;}
 function toast(t,dur){const el=$('toast');el.textContent=bidi(t);el.style.opacity=1;toastT=dur||3.2;}
 function bigMsg(t,col,sub){const el=$('big');el.innerHTML='';const a=document.createElement('div');a.textContent=t;a.style.color=col;el.appendChild(a);
   if(sub){const b=document.createElement('small');b.textContent=sub;el.appendChild(b);}el.style.opacity=1;bigT=3;}
@@ -178,7 +178,7 @@ function buildShop(){const s=G.shop,P=G.player,md=G.shopMode,m=$('shop');m.inner
   const grid=document.createElement('div');grid.className='shopgrid';
   const item=(name,sub,price,fn,ic,dis)=>{const b=document.createElement('button');b.className='sitem'+((G.money<price||dis)?' dis':'');b.innerHTML=(ic||'')+'<b></b><span></span><i></i>';b.querySelector('b').textContent=name;b.querySelector('span').textContent=sub;b.querySelector('i').textContent=price?'$'+price:'';
     b.onclick=()=>{if(performance.now()-(G.panelT||0)<350)return;if(G.money<price||dis){sfx.no();return;}G.money-=price;fn();sfx.blip();buildShop();};grid.appendChild(b);};
-  if(md==='guns'){for(const w of WORDER.slice(1)){const W=WEAP[w];item(L(W),W.melee?(G.weapons[w]?tr('owned2'):''):'+'+W.pack+(G.weapons[w]?'  ('+G.weapons[w]+')':''),owned('b_guns')?Math.round(W.price*0.75):W.price,()=>giveWeapon(w,W.melee?1:W.pack),WICON[w],W.melee&&G.weapons[w]>0);}item(tr('armor'),Math.ceil(G.armor)+'/100',300,()=>{G.armor=100;},WICON.armor);}
+  if(md==='guns'){for(const w of WORDER.slice(1)){const W=WEAP[w];if(W.noshop)continue;item(L(W),W.melee?(G.weapons[w]?tr('owned2'):''):'+'+W.pack+(G.weapons[w]?'  ('+G.weapons[w]+')':''),owned('b_guns')?Math.round(W.price*0.75):W.price,()=>giveWeapon(w,W.melee?1:W.pack),WICON[w],W.melee&&G.weapons[w]>0);}item(tr('armor'),Math.ceil(G.armor)+'/100',300,()=>{G.armor=100;},WICON.armor);}
   if(md==='clothes')for(const o of OUTFITS){const own=G.outfits.includes(o.id),on=G.outfit===o.id;item(L(o),on?tr('wearing'):own?tr('wear'):'',own?0:o.price,()=>{if(!own)G.outfits.push(o.id);wearOutfit(o.id);},'<span class="sw" style="background:'+o.shirt+'"></span>',on);}
   if(md==='food'){item(tr('snackI'),'+40',15,()=>{P.hp=Math.min(100,P.hp+40);},null,P.hp>=100);item(tr('medkit'),G.meds+'/3',80,()=>{G.meds++;},null,G.meds>=3);}
   propPanel(md,item,m,P);if(md==='fly')flyPanel(item,m);if(md==='mis')misPanel(item,m);if(grid.children.length)m.appendChild(grid);

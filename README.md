@@ -2,12 +2,12 @@
 
 An original top-down open-world crime game for the mobile browser, inspired by the classic 2D era of the genre. Everything here — code, map, characters, story and sound — is original; no assets or code from any commercial game are used.
 
-**Play:** open `index.html` in a browser (works on phones, tablets and desktop). To host it, enable GitHub Pages for this repo (Settings → Pages → Deploy from branch → `main` / root).
+**Play:** https://orel009.github.io/solace-bay-/ (once GitHub Pages is enabled: Settings → Pages → Deploy from branch → `main` / root), or open `index.html` in any browser. On a phone, "Add to Home screen" runs it full screen.
 
 ## What is in the game
 
-- Three connected areas: the Solace Bay mainland (downtown, suburbs, harbor, beach, military island), the east district (villas, casino strip, pier, airport) and the second city, **Meridian** (Glass Quarter, Sunset Vista, The Forge, its own airport), linked by bridges.
-- Two story chapters (8 missions) plus 8 comedy side missions, with Hebrew and English subtitles.
+- Four connected areas: the Solace Bay mainland (downtown, suburbs, harbor, beach, military island), the east district (villas, casino strip, pier, airport), the second city, **Meridian** (Glass Quarter, Sunset Vista, The Forge, its own airport), and the resort island **Coral Key** (grand hotel, golf course, beach bar, villas and the Vale estate), linked by bridges with traffic.
+- Three story chapters (13 missions) plus 15 comedy side missions, with Hebrew and English subtitles. Story missions are marked in gold (★) and side missions in purple (?), on the map and in the objective bar.
 - 28 vehicle types, including boats, a jet ski, a tank, a flyable light plane and helicopter, ambulances, fire trucks and cash trucks; each district has its own traffic mix and special cars. Steering, spinning wheels, fuel, visible damage, car fires with an escape window, radio stations.
 - Flights between the two airports from the ticket desks.
 - Homes to buy and save in (starting at Ray's place), businesses that earn income, and five spray/repair garages that clear your wanted level.
@@ -20,6 +20,10 @@ An original top-down open-world crime game for the mobile browser, inspired by t
 - Two-way citizen conversations chosen by context (time, weather, district, recent events), with no-repeat lines and varied reactions to police, gunfire and explosions.
 - 13 weapons with distinct shapes (bat, knife, pistol, magnum, SMG, shotgun, rifle, sniper, flamethrower, molotovs, grenades, a rare bazooka, minigun), melee combos and kicks, police helicopters that can be shot down, cops who pull you out of cars, roadblocks, fire crews, and an emote button (fart, burp, whistle, laugh, dance, yell) that people react to.
 - Reactive pedestrians and drivers (shoot at a car and the driver floors it or bails out), knockdowns instead of instant deaths, climbable rooftops, hidden tokens, joke spots around the map.
+- Live duck families in ponds and on beaches: they cross roads (traffic stops), follow you when you whistle, scatter at gunfire, and mama ducks take revenge. A giant rubber duck floats in the harbor, and a side mission rewards a pet duck that rides on your car roof.
+- Street performers (mime, preacher, living statue, musician, protesters) and 13 secrets and easter eggs.
+- Police that pace themselves to your car's top speed, so a good driver can break line of sight and escape; a red search circle on the minimap shows where they last saw you.
+- Textured rooftops, street furniture (benches, hydrants, bus stops, street trees), road wear, and a graphics option (normal 60 FPS or steady 30 FPS) with an on-screen FPS counter.
 
 ## Controls
 
