@@ -25,7 +25,7 @@ const G={state:'title',lang:store.get('sb_lang','he'),sound:store.get('sb_sound'
   stamina:15,maxStam:15,fireCD:0,inBase:false,spawnT:0,seen:{},deadT:0,obj:'',dialog:null};
 
 const STR={
-he:{title:'סולס ביי',sub:'פרקים 1–2: מלח וניאון · צווארון ברזל',newgame:'משחק חדש',cont:'המשך משחק',lang:'English',sound:'סאונד',on:'פועל',off:'כבוי',
+he:{title:'סולס ביי',sub:'פרקים 1–3: מלח וניאון · צווארון ברזל · מלך האי',newgame:'משחק חדש',cont:'המשך משחק',lang:'English',sound:'סאונד',on:'פועל',off:'כבוי',
  resume:'חזרה למשחק',map:'מפה',save:'שמירה',menu:'תפריט ראשי',saved:'המשחק נשמר',wasted:'חוסלת',busted:'נעצרת',
  passed:'המשימה הושלמה!',failed:'המשימה נכשלה',restricted:'אזור צבאי סגור! החיילים פותחים באש',spray:'צבע חדש — המשטרה איבדה אותך (200$)',
  nomoney:'חסרים לך 200$ למוסך הצביעה',token:'מטבע נסתר {0}/{1}  +250$',alltokens:'מצאת את כל המטבעות! +5000$',
@@ -37,7 +37,7 @@ he:{title:'סולס ביי',sub:'פרקים 1–2: מלח וניאון · צוו
  free:'שוטטות חופשית — חפש מטבעות נסתרים',crates:'אסוף את הארגזים ({0}/{1})',safe:'הבית של ריי — המשחק נשמר',
  tokens:'מטבעות נסתרים',missions:'משימות',money:'כסף',yes:'כן',no:'לא',alarm:'החיילים זיהו אותך!',
  reward:'+{0}$',newweap:'קיבלת: {0}',tip:'טיפ: אפשר להוסיף את המשחק למסך הבית בטלפון, והוא ייפתח במסך מלא כמו אפליקציה',cont_hint:'',stam:'סיבולת'},
-en:{title:'SOLACE BAY',sub:'Chapters 1–2: Salt & Neon · Iron Collar',newgame:'New Game',cont:'Continue',lang:'עברית',sound:'Sound',on:'On',off:'Off',
+en:{title:'SOLACE BAY',sub:'Chapters 1–3: Salt & Neon · Iron Collar · King of the Island',newgame:'New Game',cont:'Continue',lang:'עברית',sound:'Sound',on:'On',off:'Off',
  resume:'Resume',map:'Map',save:'Save',menu:'Main Menu',saved:'Game saved',wasted:'WASTED',busted:'BUSTED',
  passed:'MISSION PASSED!',failed:'MISSION FAILED',restricted:'Restricted military area! Soldiers open fire',spray:'Fresh paint — the cops lost you ($200)',
  nomoney:'You need $200 for the spray shop',token:'Hidden token {0}/{1}  +$250',alltokens:'All tokens found! +$5000',

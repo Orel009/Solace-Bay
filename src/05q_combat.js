@@ -102,7 +102,7 @@ function begTick(p,dt){p.ft-=dt;p.walk=0;const P=G.player;p.a=Math.atan2(P.y-p.y
 // ---------- emotes: fart, burp, whistle, laugh, dance, yell ----------
 const EMOTES=['fart','burp','whistle','laugh','dance','yell'];
 function emote(){const P=G.player;if((G.emoteCD||0)>0||P.veh||P.dead||P.inside||P.ride||G.state!=='play')return;G.emoteCD=1.1;const k=EMOTES[bagPick('emote',EMOTES)],EM={fart:'💨',burp:'😮‍💨',whistle:'🎵',laugh:'😂',dance:'🕺',yell:'📣'};
-  P.say=EM[k];P.sayT=1.4;const ca=Math.cos(P.a),sa=Math.sin(P.a);
+  P.say=EM[k];P.sayT=1.4;const ca=Math.cos(P.a),sa=Math.sin(P.a);annoyEmote(k);
   if(k==='fart'){for(let i=0;i<6;i++)aT(rr(70,115),0.09,'sawtooth',0.16,{lp:420,at:i*0.065,to:rr(55,90)});aN(0.55,0.22,'bandpass',160,3,{to:90});for(let i=0;i<10;i++)part('gas',P.x-ca*10+rr(-8,8),P.y-sa*10+rr(-8,8),-ca*30+rr(-20,20),-sa*30+rr(-20,20),rr(1.2,2),rr(8,14));}
   else if(k==='burp'){aSyl(78,0,0.55,0.32,3);aSyl(70,0.5,0.25,0.2,4);}
   else if(k==='whistle'){aT(1300,0.25,'sine',0.13,{to:2300});aT(1250,0.45,'sine',0.13,{to:700,at:0.32});ducksCall();}

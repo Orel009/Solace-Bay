@@ -107,6 +107,7 @@ function aiPed(p,dt){if(p.dead||p.veh||p.medicP)return;
   if(p.sayT>0)p.sayT-=dt;
   p.cool-=dt;
   if(p.stun>0){p.stun-=dt;p.walk=0;return;}
+  if(p.gr&&grudgeTick(p,dt))return;if(p.foot)return;if(p.argue&&ev2Ped(p,dt))return;
   if(p.car&&p.type==='cop'&&copReturn(p,dt))return;
   if(p.brawl>0&&plusBrawl(p,dt))return;
   if(p.prey&&plusPrey(p,dt))return;

@@ -2,7 +2,7 @@
 
 An original top-down open-world crime game for the mobile browser, inspired by the classic 2D era of the genre. Everything here — code, map, characters, story and sound — is original; no assets or code from any commercial game are used.
 
-**Play:** https://orel009.github.io/solace-bay-/ (once GitHub Pages is enabled: Settings → Pages → Deploy from branch → `main` / root), or open `index.html` in any browser. On a phone, "Add to Home screen" runs it full screen.
+**Play:** https://orel009.github.io/Solace-Bay/ (once GitHub Pages is enabled: Settings → Pages → Deploy from branch → `main` / root), or open `index.html` in any browser. On a phone, "Add to Home screen" runs it full screen.
 
 ## What is in the game
 
@@ -22,6 +22,7 @@ An original top-down open-world crime game for the mobile browser, inspired by t
 - Reactive pedestrians and drivers (shoot at a car and the driver floors it or bails out), knockdowns instead of instant deaths, climbable rooftops, hidden tokens, joke spots around the map.
 - Live duck families in ponds and on beaches: they cross roads (traffic stops), follow you when you whistle, scatter at gunfire, and mama ducks take revenge. A giant rubber duck floats in the harbor, and a side mission rewards a pet duck that rides on your car roof.
 - Street performers (mime, preacher, living statue, musician, protesters) and 13 secrets and easter eggs.
+- People hold grudges: bump into them, nudge them with your car, honk or fart next to them and they chase you (friends join in), bang on your car window and pull you out. Car owners come back for their stolen car, sometimes in another stolen car; drivers you block honk and then get out. Street events: bag snatchers to catch, cops chasing suspects on foot, and fender-benders that turn into arguments.
 - Police that pace themselves to your car's top speed, so a good driver can break line of sight and escape; a red search circle on the minimap shows where they last saw you.
 - Textured rooftops, street furniture (benches, hydrants, bus stops, street trees), road wear, and a graphics option (normal 60 FPS or steady 30 FPS) with an on-screen FPS counter.
 
